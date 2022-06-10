@@ -1,62 +1,16 @@
-﻿#region PDFsharp - A .NET library for processing PDF
-//
-// Authors:
-//   Stefan Lange
-//
-// Copyright (c) 2005-2017 empira Software GmbH, Cologne Area (Germany)
-//
-// http://www.pdfsharp.com
-// http://sourceforge.net/projects/pdfsharp
-//
-// Permission is hereby granted, free of charge, to any person obtaining a
-// copy of this software and associated documentation files (the "Software"),
-// to deal in the Software without restriction, including without limitation
-// the rights to use, copy, modify, merge, publish, distribute, sublicense,
-// and/or sell copies of the Software, and to permit persons to whom the
-// Software is furnished to do so, subject to the following conditions:
-//
-// The above copyright notice and this permission notice shall be included
-// in all copies or substantial portions of the Software.
-//
-// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL
-// THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
-// FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER 
-// DEALINGS IN THE SOFTWARE.
-#endregion
-
-using System;
+﻿using System;
 using System.Diagnostics;
 using System.Globalization;
 using System.Runtime.InteropServices;
-#if GDI
-using System.Drawing;
-using System.Drawing.Drawing2D;
-#endif
-#if WPF
-using System.Windows;
-using System.Windows.Media;
-#endif
-#if !EDF_CORE
 using PdfSharp.Internal;
-#else
 using PdfSharp.Internal;
-#endif
 
-// ReSharper disable RedundantNameQualifier
-#if !EDF_CORE
+
 namespace PdfSharp.Drawing
-#else
-namespace Edf.Drawing
-#endif
+
 {
-    /// <summary>
-    /// Represents a 3-by-3 matrix that represents an affine 2D transformation.
-    /// </summary>
     [DebuggerDisplay("{DebuggerDisplay}")]
-    [Serializable, StructLayout(LayoutKind.Sequential)] //, TypeConverter(typeof(MatrixConverter)), ValueSerializer(typeof(MatrixValueSerializer))]
+    [Serializable, StructLayout(LayoutKind.Sequential)]   
     public struct XMatrix : IFormattable
     {
         [Flags]
@@ -68,9 +22,6 @@ namespace Edf.Drawing
             Unknown = 4
         }
 
-        /// <summary>
-        /// Initializes a new instance of the XMatrix struct.
-        /// </summary>
         public XMatrix(double m11, double m12, double m21, double m22, double offsetX, double offsetY)
         {
             _m11 = m11;
@@ -80,34 +31,23 @@ namespace Edf.Drawing
             _offsetX = offsetX;
             _offsetY = offsetY;
             _type = XMatrixTypes.Unknown;
-            //_padding = 0;
             DeriveMatrixType();
         }
 
-        /// <summary>
-        /// Gets the identity matrix. 
-        /// </summary>
         public static XMatrix Identity
         {
             get { return s_identity; }
         }
 
-        /// <summary>
-        /// Sets this matrix into an identity matrix.
-        /// </summary>
         public void SetIdentity()
         {
             _type = XMatrixTypes.Identity;
         }
 
-        /// <summary>
-        /// Gets a value indicating whether this matrix instance is the identity matrix.
-        /// </summary>
         public bool IsIdentity
         {
             get
             {
-                // ReSharper disable CompareOfFloatsByEqualityOperator
                 if (_type == XMatrixTypes.Identity)
                     return true;
                 if (_m11 == 1.0 && _m12 == 0 && _m21 == 0 && _m22 == 1.0 && _offsetX == 0 && _offsetY == 0)
@@ -116,22 +56,9 @@ namespace Edf.Drawing
                     return true;
                 }
                 return false;
-                // ReSharper restore CompareOfFloatsByEqualityOperator
             }
         }
 
-        ///// <summary>
-        ///// Gets an array of double values that represents the elements of this matrix.
-        ///// </summary>
-        //[Obsolete("Use GetElements().")]
-        //public double[] Elements
-        //{
-        //  get { return GetElements(); }
-        //}
-
-        /// <summary>
-        /// Gets an array of double values that represents the elements of this matrix.
-        /// </summary>
         public double[] GetElements()
         {
             if (_type == XMatrixTypes.Identity)
@@ -139,67 +66,45 @@ namespace Edf.Drawing
             return new double[] { _m11, _m12, _m21, _m22, _offsetX, _offsetY };
         }
 
-        /// <summary>
-        /// Multiplies two matrices.
-        /// </summary>
         public static XMatrix operator *(XMatrix trans1, XMatrix trans2)
         {
             MatrixHelper.MultiplyMatrix(ref trans1, ref trans2);
             return trans1;
         }
 
-        /// <summary>
-        /// Multiplies two matrices.
-        /// </summary>
         public static XMatrix Multiply(XMatrix trans1, XMatrix trans2)
         {
             MatrixHelper.MultiplyMatrix(ref trans1, ref trans2);
             return trans1;
         }
 
-        /// <summary>
-        /// Appends the specified matrix to this matrix. 
-        /// </summary>
         public void Append(XMatrix matrix)
         {
             this *= matrix;
         }
 
-        /// <summary>
-        /// Prepends the specified matrix to this matrix. 
-        /// </summary>
         public void Prepend(XMatrix matrix)
         {
             this = matrix * this;
         }
 
-        /// <summary>
-        /// Appends the specified matrix to this matrix. 
-        /// </summary>
         [Obsolete("Use Append.")]
         public void Multiply(XMatrix matrix)
         {
             Append(matrix);
         }
 
-        /// <summary>
-        /// Prepends the specified matrix to this matrix. 
-        /// </summary>
         [Obsolete("Use Prepend.")]
         public void MultiplyPrepend(XMatrix matrix)
         {
             Prepend(matrix);
         }
 
-        /// <summary>
-        /// Multiplies this matrix with the specified matrix.
-        /// </summary>
         public void Multiply(XMatrix matrix, XMatrixOrder order)
         {
             if (_type == XMatrixTypes.Identity)
                 this = CreateIdentity();
 
-            // Must use properties, the fields can be invalid if the matrix is identity matrix.
             double t11 = M11;
             double t12 = M12;
             double t21 = M21;
@@ -228,34 +133,13 @@ namespace Edf.Drawing
             DeriveMatrixType();
         }
 
-        /// <summary>
-        /// Appends a translation of the specified offsets to this matrix.
-        /// </summary>
         [Obsolete("Use TranslateAppend or TranslatePrepend explicitly, because in GDI+ and WPF the defaults are contrary.", true)]
         public void Translate(double offsetX, double offsetY)
         {
             throw new InvalidOperationException("Temporarily out of order.");
-            //if (_type == XMatrixTypes.Identity)
-            //{
-            //  SetMatrix(1.0, 0, 0, 1.0, offsetX, offsetY, XMatrixTypes.Translation);
-            //}
-            //else if (_type == XMatrixTypes.Unknown)
-            //{
-            //  _offsetX += offsetX;
-            //  _offsetY += offsetY;
-            //}
-            //else
-            //{
-            //  _offsetX += offsetX;
-            //  _offsetY += offsetY;
-            //  _type |= XMatrixTypes.Translation;
-            //}
         }
 
-        /// <summary>
-        /// Appends a translation of the specified offsets to this matrix.
-        /// </summary>
-        public void TranslateAppend(double offsetX, double offsetY) // TODO: will become default
+        public void TranslateAppend(double offsetX, double offsetY)     
         {
             if (_type == XMatrixTypes.Identity)
             {
@@ -274,17 +158,11 @@ namespace Edf.Drawing
             }
         }
 
-        /// <summary>
-        /// Prepends a translation of the specified offsets to this matrix.
-        /// </summary>
         public void TranslatePrepend(double offsetX, double offsetY)
         {
             this = CreateTranslation(offsetX, offsetY) * this;
         }
 
-        /// <summary>
-        /// Translates the matrix with the specified offsets.
-        /// </summary>
         public void Translate(double offsetX, double offsetY, XMatrixOrder order)
         {
             if (_type == XMatrixTypes.Identity)
@@ -303,34 +181,22 @@ namespace Edf.Drawing
             DeriveMatrixType();
         }
 
-        /// <summary>
-        /// Appends the specified scale vector to this matrix.
-        /// </summary>
         [Obsolete("Use ScaleAppend or ScalePrepend explicitly, because in GDI+ and WPF the defaults are contrary.", true)]
         public void Scale(double scaleX, double scaleY)
         {
             this = CreateScaling(scaleX, scaleY) * this;
         }
 
-        /// <summary>
-        /// Appends the specified scale vector to this matrix.
-        /// </summary>
-        public void ScaleAppend(double scaleX, double scaleY)  // TODO: will become default
+        public void ScaleAppend(double scaleX, double scaleY)      
         {
             this *= CreateScaling(scaleX, scaleY);
         }
 
-        /// <summary>
-        /// Prepends the specified scale vector to this matrix.
-        /// </summary>
         public void ScalePrepend(double scaleX, double scaleY)
         {
             this = CreateScaling(scaleX, scaleY) * this;
         }
 
-        /// <summary>
-        /// Scales the matrix with the specified scalars.
-        /// </summary>
         public void Scale(double scaleX, double scaleY, XMatrixOrder order)
         {
             if (_type == XMatrixTypes.Identity)
@@ -355,106 +221,61 @@ namespace Edf.Drawing
             DeriveMatrixType();
         }
 
-        /// <summary>
-        /// Scales the matrix with the specified scalar.
-        /// </summary>
         [Obsolete("Use ScaleAppend or ScalePrepend explicitly, because in GDI+ and WPF the defaults are contrary.", true)]
-        // ReSharper disable InconsistentNaming
         public void Scale(double scaleXY)
-        // ReSharper restore InconsistentNaming
         {
             throw new InvalidOperationException("Temporarily out of order.");
-            //Scale(scaleXY, scaleXY, XMatrixOrder.Prepend);
         }
 
-        /// <summary>
-        /// Appends the specified scale vector to this matrix.
-        /// </summary>
-        // ReSharper disable InconsistentNaming
         public void ScaleAppend(double scaleXY)
-        // ReSharper restore InconsistentNaming
         {
             Scale(scaleXY, scaleXY, XMatrixOrder.Append);
         }
 
-        /// <summary>
-        /// Prepends the specified scale vector to this matrix.
-        /// </summary>
-        // ReSharper disable InconsistentNaming
         public void ScalePrepend(double scaleXY)
-        // ReSharper restore InconsistentNaming
         {
             Scale(scaleXY, scaleXY, XMatrixOrder.Prepend);
         }
 
-        /// <summary>
-        /// Scales the matrix with the specified scalar.
-        /// </summary>
-        // ReSharper disable InconsistentNaming
         public void Scale(double scaleXY, XMatrixOrder order)
-        // ReSharper restore InconsistentNaming
         {
             Scale(scaleXY, scaleXY, order);
         }
 
-        /// <summary>
-        /// Function is obsolete.
-        /// </summary>
         [Obsolete("Use ScaleAtAppend or ScaleAtPrepend explicitly, because in GDI+ and WPF the defaults are contrary.", true)]
         public void ScaleAt(double scaleX, double scaleY, double centerX, double centerY)
         {
             throw new InvalidOperationException("Temporarily out of order.");
-            //this *= CreateScaling(scaleX, scaleY, centerX, centerY);
         }
 
-        /// <summary>
-        /// Apppends the specified scale about the specified point of this matrix.
-        /// </summary>
-        public void ScaleAtAppend(double scaleX, double scaleY, double centerX, double centerY) // TODO: will become default
+        public void ScaleAtAppend(double scaleX, double scaleY, double centerX, double centerY)     
         {
             this *= CreateScaling(scaleX, scaleY, centerX, centerY);
         }
 
-        /// <summary>
-        /// Prepends the specified scale about the specified point of this matrix.
-        /// </summary>
         public void ScaleAtPrepend(double scaleX, double scaleY, double centerX, double centerY)
         {
             this = CreateScaling(scaleX, scaleY, centerX, centerY) * this;
         }
 
-        /// <summary>
-        /// Function is obsolete.
-        /// </summary>
         [Obsolete("Use RotateAppend or RotatePrepend explicitly, because in GDI+ and WPF the defaults are contrary.", true)]
         public void Rotate(double angle)
         {
             throw new InvalidOperationException("Temporarily out of order.");
-            //angle = angle % 360.0;
-            //this *= CreateRotationRadians(angle * Const.Deg2Rad);
         }
 
-        /// <summary>
-        /// Appends a rotation of the specified angle to this matrix.
-        /// </summary>
-        public void RotateAppend(double angle) // TODO: will become default Rotate
+        public void RotateAppend(double angle)      
         {
             angle = angle % 360.0;
             this *= CreateRotationRadians(angle * Const.Deg2Rad);
         }
 
-        /// <summary>
-        /// Prepends a rotation of the specified angle to this matrix.
-        /// </summary>
         public void RotatePrepend(double angle)
         {
             angle = angle % 360.0;
             this = CreateRotationRadians(angle * Const.Deg2Rad) * this;
         }
 
-        /// <summary>
-        /// Rotates the matrix with the specified angle.
-        /// </summary>
         public void Rotate(double angle, XMatrixOrder order)
         {
             if (_type == XMatrixTypes.Identity)
@@ -492,64 +313,40 @@ namespace Edf.Drawing
             DeriveMatrixType();
         }
 
-        /// <summary>
-        /// Function is obsolete.
-        /// </summary>
         [Obsolete("Use RotateAtAppend or RotateAtPrepend explicitly, because in GDI+ and WPF the defaults are contrary.", true)]
         public void RotateAt(double angle, double centerX, double centerY)
         {
             throw new InvalidOperationException("Temporarily out of order.");
-            //angle = angle % 360.0;
-            //this *= CreateRotationRadians(angle * Const.Deg2Rad, centerX, centerY);
         }
 
-        /// <summary>
-        /// Appends a rotation of the specified angle at the specified point to this matrix.
-        /// </summary>
-        public void RotateAtAppend(double angle, double centerX, double centerY)  // TODO: will become default
+        public void RotateAtAppend(double angle, double centerX, double centerY)      
         {
             angle = angle % 360.0;
             this *= CreateRotationRadians(angle * Const.Deg2Rad, centerX, centerY);
         }
 
-        /// <summary>
-        /// Prepends a rotation of the specified angle at the specified point to this matrix.
-        /// </summary>
         public void RotateAtPrepend(double angle, double centerX, double centerY)
         {
             angle = angle % 360.0;
             this = CreateRotationRadians(angle * Const.Deg2Rad, centerX, centerY) * this;
         }
 
-        /// <summary>
-        /// Rotates the matrix with the specified angle at the specified point.
-        /// </summary>
         [Obsolete("Use RotateAtAppend or RotateAtPrepend explicitly, because in GDI+ and WPF the defaults are contrary.", true)]
         public void RotateAt(double angle, XPoint point)
         {
             throw new InvalidOperationException("Temporarily out of order.");
-            //RotateAt(angle, point, XMatrixOrder.Prepend);
         }
 
-        /// <summary>
-        /// Appends a rotation of the specified angle at the specified point to this matrix.
-        /// </summary>
         public void RotateAtAppend(double angle, XPoint point)
         {
             RotateAt(angle, point, XMatrixOrder.Append);
         }
 
-        /// <summary>
-        /// Prepends a rotation of the specified angle at the specified point to this matrix.
-        /// </summary>
         public void RotateAtPrepend(double angle, XPoint point)
         {
             RotateAt(angle, point, XMatrixOrder.Prepend);
         }
 
-        /// <summary>
-        /// Rotates the matrix with the specified angle at the specified point.
-        /// </summary>
         public void RotateAt(double angle, XPoint point, XMatrixOrder order)
         {
             if (order == XMatrixOrder.Append)
@@ -557,9 +354,6 @@ namespace Edf.Drawing
                 angle = angle % 360.0;
                 this *= CreateRotationRadians(angle * Const.Deg2Rad, point.X, point.Y);
 
-                //Translate(point.X, point.Y, order);
-                //Rotate(angle, order);
-                //Translate(-point.X, -point.Y, order);
             }
             else
             {
@@ -569,35 +363,22 @@ namespace Edf.Drawing
             DeriveMatrixType();
         }
 
-        /// <summary>
-        /// Function is obsolete.
-        /// </summary>
         [Obsolete("Use ShearAppend or ShearPrepend explicitly, because in GDI+ and WPF the defaults are contrary.", true)]
         public void Shear(double shearX, double shearY)
         {
             throw new InvalidOperationException("Temporarily out of order.");
-            //Shear(shearX, shearY, XMatrixOrder.Prepend);
         }
 
-        /// <summary>
-        /// Appends a skew of the specified degrees in the x and y dimensions to this matrix.
-        /// </summary>
-        public void ShearAppend(double shearX, double shearY) // TODO: will become default
+        public void ShearAppend(double shearX, double shearY)     
         {
             Shear(shearX, shearY, XMatrixOrder.Append);
         }
 
-        /// <summary>
-        /// Prepends a skew of the specified degrees in the x and y dimensions to this matrix.
-        /// </summary>
         public void ShearPrepend(double shearX, double shearY)
         {
             Shear(shearX, shearY, XMatrixOrder.Prepend);
         }
 
-        /// <summary>
-        /// Shears the matrix with the specified scalars.
-        /// </summary>
         public void Shear(double shearX, double shearY, XMatrixOrder order)
         {
             if (_type == XMatrixTypes.Identity)
@@ -628,21 +409,12 @@ namespace Edf.Drawing
             DeriveMatrixType();
         }
 
-        /// <summary>
-        /// Function is obsolete.
-        /// </summary>
         [Obsolete("Use SkewAppend or SkewPrepend explicitly, because in GDI+ and WPF the defaults are contrary.", true)]
         public void Skew(double skewX, double skewY)
         {
             throw new InvalidOperationException("Temporarily out of order.");
-            //skewX = skewX % 360.0;
-            //skewY = skewY % 360.0;
-            //this *= CreateSkewRadians(skewX * Const.Deg2Rad, skewY * Const.Deg2Rad);
         }
 
-        /// <summary>
-        /// Appends a skew of the specified degrees in the x and y dimensions to this matrix.
-        /// </summary>
         public void SkewAppend(double skewX, double skewY)
         {
             skewX = skewX % 360.0;
@@ -650,9 +422,6 @@ namespace Edf.Drawing
             this *= CreateSkewRadians(skewX * Const.Deg2Rad, skewY * Const.Deg2Rad);
         }
 
-        /// <summary>
-        /// Prepends a skew of the specified degrees in the x and y dimensions to this matrix.
-        /// </summary>
         public void SkewPrepend(double skewX, double skewY)
         {
             skewX = skewX % 360.0;
@@ -660,9 +429,6 @@ namespace Edf.Drawing
             this = CreateSkewRadians(skewX * Const.Deg2Rad, skewY * Const.Deg2Rad) * this;
         }
 
-        /// <summary>
-        /// Transforms the specified point by this matrix and returns the result.
-        /// </summary>
         public XPoint Transform(XPoint point)
         {
             double x = point.X;
@@ -671,9 +437,6 @@ namespace Edf.Drawing
             return new XPoint(x, y);
         }
 
-        /// <summary>
-        /// Transforms the specified points by this matrix. 
-        /// </summary>
         public void Transform(XPoint[] points)
         {
             if (points != null)
@@ -690,9 +453,6 @@ namespace Edf.Drawing
             }
         }
 
-        /// <summary>
-        /// Multiplies all points of the specified array with the this matrix.
-        /// </summary>
         public void TransformPoints(XPoint[] points)
         {
             if (points == null)
@@ -711,55 +471,8 @@ namespace Edf.Drawing
             }
         }
 
-#if GDI
-        /// <summary>
-        /// Multiplies all points of the specified array with the this matrix.
-        /// </summary>
-        public void TransformPoints(System.Drawing.Point[] points)
-        {
-            if (points == null)
-                throw new ArgumentNullException("points");
 
-            if (IsIdentity)
-                return;
 
-            int count = points.Length;
-            for (int idx = 0; idx < count; idx++)
-            {
-                double x = points[idx].X;
-                double y = points[idx].Y;
-                points[idx].X = (int)(x * _m11 + y * _m21 + _offsetX);
-                points[idx].Y = (int)(x * _m12 + y * _m22 + _offsetY);
-            }
-        }
-#endif
-
-#if WPF
-        /// <summary>
-        /// Transforms an array of points.
-        /// </summary>
-        public void TransformPoints(System.Windows.Point[] points)
-        {
-            if (points == null)
-                throw new ArgumentNullException("points");
-
-            if (IsIdentity)
-                return;
-
-            int count = points.Length;
-            for (int idx = 0; idx < count; idx++)
-            {
-                double x = points[idx].X;
-                double y = points[idx].Y;
-                points[idx].X = (int)(x * _m11 + y * _m21 + _offsetX);
-                points[idx].Y = (int)(x * _m12 + y * _m22 + _offsetY);
-            }
-        }
-#endif
-
-        /// <summary>
-        /// Transforms the specified vector by this Matrix and returns the result.
-        /// </summary>
         public XVector Transform(XVector vector)
         {
             double x = vector.X;
@@ -768,9 +481,6 @@ namespace Edf.Drawing
             return new XVector(x, y);
         }
 
-        /// <summary>
-        /// Transforms the specified vectors by this matrix.
-        /// </summary>
         public void Transform(XVector[] vectors)
         {
             if (vectors != null)
@@ -787,33 +497,7 @@ namespace Edf.Drawing
             }
         }
 
-#if GDI
-        /// <summary>
-        /// Multiplies all vectors of the specified array with the this matrix. The translation elements 
-        /// of this matrix (third row) are ignored.
-        /// </summary>
-        public void TransformVectors(PointF[] points)
-        {
-            if (points == null)
-                throw new ArgumentNullException("points");
 
-            if (IsIdentity)
-                return;
-
-            int count = points.Length;
-            for (int idx = 0; idx < count; idx++)
-            {
-                double x = points[idx].X;
-                double y = points[idx].Y;
-                points[idx].X = (float)(x * _m11 + y * _m21 + _offsetX);
-                points[idx].Y = (float)(x * _m12 + y * _m22 + _offsetY);
-            }
-        }
-#endif
-
-        /// <summary>
-        /// Gets the determinant of this matrix.
-        /// </summary>
         public double Determinant
         {
             get
@@ -832,22 +516,16 @@ namespace Edf.Drawing
             }
         }
 
-        /// <summary>
-        /// Gets a value that indicates whether this matrix is invertible.
-        /// </summary>
         public bool HasInverse
         {
             get { return !DoubleUtil.IsZero(Determinant); }
         }
 
-        /// <summary>
-        /// Inverts the matrix.
-        /// </summary>
         public void Invert()
         {
             double determinant = Determinant;
             if (DoubleUtil.IsZero(determinant))
-                throw new InvalidOperationException("NotInvertible"); //SR.Get(SRID.Transform_NotInvertible, new object[0]));
+                throw new InvalidOperationException("NotInvertible");   
 
             switch (_type)
             {
@@ -880,9 +558,6 @@ namespace Edf.Drawing
             }
         }
 
-        /// <summary>
-        /// Gets or sets the value of the first row and first column of this matrix.
-        /// </summary>
         public double M11
         {
             get
@@ -904,9 +579,6 @@ namespace Edf.Drawing
             }
         }
 
-        /// <summary>
-        /// Gets or sets the value of the first row and second column of this matrix.
-        /// </summary>
         public double M12
         {
             get
@@ -927,9 +599,6 @@ namespace Edf.Drawing
             }
         }
 
-        /// <summary>
-        /// Gets or sets the value of the second row and first column of this matrix.
-        /// </summary>
         public double M21
         {
             get
@@ -950,9 +619,6 @@ namespace Edf.Drawing
             }
         }
 
-        /// <summary>
-        /// Gets or sets the value of the second row and second column of this matrix.
-        /// </summary>
         public double M22
         {
             get
@@ -974,9 +640,6 @@ namespace Edf.Drawing
             }
         }
 
-        /// <summary>
-        /// Gets or sets the value of the third row and first column of this matrix.
-        /// </summary>
         public double OffsetX
         {
             get
@@ -998,9 +661,6 @@ namespace Edf.Drawing
             }
         }
 
-        /// <summary>
-        /// Gets or sets the value of the third row and second  column of this matrix.
-        /// </summary>
         public double OffsetY
         {
             get
@@ -1022,111 +682,21 @@ namespace Edf.Drawing
             }
         }
 
-#if GDI
-//#if UseGdiObjects
-        /// <summary>
-        /// Converts this matrix to a System.Drawing.Drawing2D.Matrix object.
-        /// </summary>
-        public System.Drawing.Drawing2D.Matrix ToGdiMatrix()
-        {
-            if (IsIdentity)
-                return new System.Drawing.Drawing2D.Matrix();
 
-            return new System.Drawing.Drawing2D.Matrix((float)_m11, (float)_m12, (float)_m21, (float)_m22,
-              (float)_offsetX, (float)_offsetY);
-        }
-//#endif
-#endif
-
-#if WPF
-        /// Converts this matrix to a System.Windows.Media.Matrix object.
-        /// <summary>
-        /// </summary>
-        public System.Windows.Media.Matrix ToWpfMatrix()
-        {
-            return (System.Windows.Media.Matrix)this;
-            //return new System.Windows.Media.Matrix(_m11, _m12, _m21, _m22, _offsetX, _offsetY);
-        }
-#endif
-
-#if GDI
-        /// <summary>
-        /// Explicitly converts a XMatrix to a Matrix.
-        /// </summary>
-        public static explicit operator System.Drawing.Drawing2D.Matrix(XMatrix matrix)
-        {
-            if (matrix.IsIdentity)
-                return new System.Drawing.Drawing2D.Matrix();
-
-            return new System.Drawing.Drawing2D.Matrix(
-              (float)matrix._m11, (float)matrix._m12,
-              (float)matrix._m21, (float)matrix._m22,
-              (float)matrix._offsetX, (float)matrix._offsetY);
-        }
-#endif
-
-#if WPF
-        /// <summary>
-        /// Explicitly converts an XMatrix to a Matrix.
-        /// </summary>
-        public static explicit operator System.Windows.Media.Matrix(XMatrix matrix)
-        {
-            if (matrix.IsIdentity)
-                return new System.Windows.Media.Matrix();
-
-            return new System.Windows.Media.Matrix(
-              matrix._m11, matrix._m12,
-              matrix._m21, matrix._m22,
-              matrix._offsetX, matrix._offsetY);
-        }
-#endif
-
-#if GDI
-        /// <summary>
-        /// Implicitly converts a Matrix to an XMatrix.
-        /// </summary>
-        public static implicit operator XMatrix(System.Drawing.Drawing2D.Matrix matrix)
-        {
-            float[] elements = matrix.Elements;
-            return new XMatrix(elements[0], elements[1], elements[2], elements[3], elements[4], elements[5]);
-        }
-#endif
-
-#if WPF
-        /// <summary>
-        /// Implicitly converts a Matrix to an XMatrix.
-        /// </summary>
-        public static implicit operator XMatrix(System.Windows.Media.Matrix matrix)
-        {
-            return new XMatrix(matrix.M11, matrix.M12, matrix.M21, matrix.M22, matrix.OffsetX, matrix.OffsetY);
-        }
-#endif
-
-        /// <summary>
-        /// Determines whether the two matrices are equal.
-        /// </summary>
         public static bool operator ==(XMatrix matrix1, XMatrix matrix2)
         {
-            // ReSharper disable CompareOfFloatsByEqualityOperator
             if (matrix1.IsDistinguishedIdentity || matrix2.IsDistinguishedIdentity)
                 return (matrix1.IsIdentity == matrix2.IsIdentity);
 
             return matrix1.M11 == matrix2.M11 && matrix1.M12 == matrix2.M12 && matrix1.M21 == matrix2.M21 && matrix1.M22 == matrix2.M22 &&
               matrix1.OffsetX == matrix2.OffsetX && matrix1.OffsetY == matrix2.OffsetY;
-            // ReSharper restore CompareOfFloatsByEqualityOperator
         }
 
-        /// <summary>
-        /// Determines whether the two matrices are not equal.
-        /// </summary>
         public static bool operator !=(XMatrix matrix1, XMatrix matrix2)
         {
             return !(matrix1 == matrix2);
         }
 
-        /// <summary>
-        /// Determines whether the two matrices are equal.
-        /// </summary>
         public static bool Equals(XMatrix matrix1, XMatrix matrix2)
         {
             if (matrix1.IsDistinguishedIdentity || matrix2.IsDistinguishedIdentity)
@@ -1137,9 +707,6 @@ namespace Edf.Drawing
               matrix1.OffsetX.Equals(matrix2.OffsetX) && matrix1.OffsetY.Equals(matrix2.OffsetY);
         }
 
-        /// <summary>
-        /// Determines whether this matrix is equal to the specified object.
-        /// </summary>
         public override bool Equals(object o)
         {
             if (!(o is XMatrix))
@@ -1147,17 +714,11 @@ namespace Edf.Drawing
             return Equals(this, (XMatrix)o);
         }
 
-        /// <summary>
-        /// Determines whether this matrix is equal to the specified matrix.
-        /// </summary>
         public bool Equals(XMatrix value)
         {
             return Equals(this, value);
         }
 
-        /// <summary>
-        /// Returns the hash code for this instance.
-        /// </summary>
         public override int GetHashCode()
         {
             if (IsDistinguishedIdentity)
@@ -1165,12 +726,9 @@ namespace Edf.Drawing
             return M11.GetHashCode() ^ M12.GetHashCode() ^ M21.GetHashCode() ^ M22.GetHashCode() ^ OffsetX.GetHashCode() ^ OffsetY.GetHashCode();
         }
 
-        /// <summary>
-        /// Parses a matrix from a string.
-        /// </summary>
         public static XMatrix Parse(string source)
         {
-            IFormatProvider cultureInfo = CultureInfo.InvariantCulture; //.GetCultureInfo("en-us");
+            IFormatProvider cultureInfo = CultureInfo.InvariantCulture; 
             TokenizerHelper helper = new TokenizerHelper(source, cultureInfo);
             string str = helper.NextTokenRequired();
             XMatrix identity = str == "Identity" ? Identity : new XMatrix(
@@ -1184,25 +742,16 @@ namespace Edf.Drawing
             return identity;
         }
 
-        /// <summary>
-        /// Converts this XMatrix to a human readable string.
-        /// </summary>
         public override string ToString()
         {
             return ConvertToString(null, null);
         }
 
-        /// <summary>
-        /// Converts this XMatrix to a human readable string.
-        /// </summary>
         public string ToString(IFormatProvider provider)
         {
             return ConvertToString(null, provider);
         }
 
-        /// <summary>
-        /// Converts this XMatrix to a human readable string.
-        /// </summary>
         string IFormattable.ToString(string format, IFormatProvider provider)
         {
             return ConvertToString(format, provider);
@@ -1215,10 +764,8 @@ namespace Edf.Drawing
 
             char numericListSeparator = TokenizerHelper.GetNumericListSeparator(provider);
             provider = provider ?? CultureInfo.InvariantCulture;
-            // ReSharper disable FormatStringProblem
             return string.Format(provider, "{1:" + format + "}{0}{2:" + format + "}{0}{3:" + format + "}{0}{4:" + format + "}{0}{5:" + format + "}{0}{6:" + format + "}",
                 new object[] { numericListSeparator, _m11, _m12, _m21, _m22, _offsetX, _offsetY });
-            // ReSharper restore FormatStringProblem
         }
 
         internal void MultiplyVector(ref double x, ref double y)
@@ -1335,9 +882,6 @@ namespace Edf.Drawing
             return matrix;
         }
 
-        /// <summary>
-        /// Sets the matrix.
-        /// </summary>
         void SetMatrix(double m11, double m12, double m21, double m22, double offsetX, double offsetY, XMatrixTypes type)
         {
             _m11 = m11;
@@ -1351,7 +895,6 @@ namespace Edf.Drawing
 
         void DeriveMatrixType()
         {
-            // ReSharper disable CompareOfFloatsByEqualityOperator
             _type = XMatrixTypes.Identity;
             if (_m12 != 0 || _m21 != 0)
             {
@@ -1368,7 +911,6 @@ namespace Edf.Drawing
                 if ((_type & (XMatrixTypes.Scaling | XMatrixTypes.Translation)) == XMatrixTypes.Identity)
                     _type = XMatrixTypes.Identity;
             }
-            // ReSharper restore CompareOfFloatsByEqualityOperator
         }
 
         bool IsDistinguishedIdentity
@@ -1376,8 +918,6 @@ namespace Edf.Drawing
             get { return (_type == XMatrixTypes.Identity); }
         }
 
-        // Keep the fields private and force using the properties.
-        // This prevents using m11 and m22 by mistake when the matrix is identity.
         double _m11;
         double _m12;
         double _m21;
@@ -1387,12 +927,8 @@ namespace Edf.Drawing
         XMatrixTypes _type;
         static readonly XMatrix s_identity = CreateIdentity();
 
-        /// <summary>
-        /// Internal matrix helper.
-        /// </summary>
         internal static class MatrixHelper
         {
-            // Fast mutiplication taking matrix type into account. Reflectored from WPF.
             internal static void MultiplyMatrix(ref XMatrix matrix1, ref XMatrix matrix2)
             {
                 XMatrixTypes type1 = matrix1._type;
@@ -1530,13 +1066,7 @@ namespace Edf.Drawing
             }
         }
 
-        /// <summary>
-        /// Gets the DebuggerDisplayAttribute text.
-        /// </summary>
-        /// <value>The debugger display.</value>
-        // ReSharper disable UnusedMember.Local
         string DebuggerDisplay
-        // ReSharper restore UnusedMember.Local
         {
             get
             {
@@ -1545,7 +1075,6 @@ namespace Edf.Drawing
 
                 const string format = Config.SignificantFigures7;
 
-                // Calculate the angle in degrees.
                 XPoint point = new XMatrix(_m11, _m12, _m21, _m22, 0, 0).Transform(new XPoint(1, 0));
                 double φ = Math.Atan2(point.Y, point.X) / Const.Deg2Rad;
                 return String.Format(CultureInfo.InvariantCulture,
