@@ -1,32 +1,3 @@
-#region PDFsharp - A .NET library for processing PDF
-//
-// Authors:
-//   Stefan Lange
-//
-// Copyright (c) 2005-2017 empira Software GmbH, Cologne Area (Germany)
-//
-// http://www.pdfsharp.com
-// http://sourceforge.net/projects/pdfsharp
-//
-// Permission is hereby granted, free of charge, to any person obtaining a
-// copy of this software and associated documentation files (the "Software"),
-// to deal in the Software without restriction, including without limitation
-// the rights to use, copy, modify, merge, publish, distribute, sublicense,
-// and/or sell copies of the Software, and to permit persons to whom the
-// Software is furnished to do so, subject to the following conditions:
-//
-// The above copyright notice and this permission notice shall be included
-// in all copies or substantial portions of the Software.
-//
-// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL
-// THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
-// FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER 
-// DEALINGS IN THE SOFTWARE.
-#endregion
-
 using System;
 using System.Globalization;
 using System.Diagnostics;
@@ -35,22 +6,11 @@ using System.IO;
 using PdfSharp.Internal;
 using PdfSharp.Pdf.Internal;
 
-#pragma warning disable 1591
 
 namespace PdfSharp.Pdf.IO
 {
-    /// <summary>
-    /// Lexical analyzer for PDF files. Technically a PDF file is a stream of bytes. Some chunks
-    /// of bytes represent strings in several encodings. The actual encoding depends on the
-    /// context where the string is used. Therefore the bytes are 'raw encoded' into characters,
-    /// i.e. a character or token read by the lexer has always character values in the range from
-    /// 0 to 255.
-    /// </summary>
     public class Lexer
     {
-        /// <summary>
-        /// Initializes a new instance of the Lexer class.
-        /// </summary>
         public Lexer(Stream pdfInputStream)
         {
             _pdfSteam = pdfInputStream;
@@ -59,9 +19,6 @@ namespace PdfSharp.Pdf.IO
             Position = 0;
         }
 
-        /// <summary>
-        /// Gets or sets the position within the PDF stream.
-        /// </summary>
         public int Position
         {
             get { return _idxChar; }
@@ -69,21 +26,12 @@ namespace PdfSharp.Pdf.IO
             {
                 _idxChar = value;
                 _pdfSteam.Position = value;
-                // ReadByte return -1 (eof) at the end of the stream.
                 _currChar = (char)_pdfSteam.ReadByte();
                 _nextChar = (char)_pdfSteam.ReadByte();
                 _token = new StringBuilder();
             }
         }
 
-        /// <summary>
-        /// Reads the next token and returns its type. If the token starts with a digit, the parameter
-        /// testReference specifies how to treat it. If it is false, the lexer scans for a single integer.
-        /// If it is true, the lexer checks if the digit is the prefix of a reference. If it is a reference,
-        /// the token is set to the object ID followed by the generation number separated by a blank
-        /// (the 'R' is omitted from the token).
-        /// </summary>
-        // /// <param name="testReference">Indicates whether to test the next token if it is a reference.</param>
         public Symbol ScanNextToken()
         {
             Again:
@@ -93,23 +41,13 @@ namespace PdfSharp.Pdf.IO
             switch (ch)
             {
                 case '%':
-                    // Eat comments, the parser doesn't handle them
-                    //return symbol = ScanComment();
                     ScanComment();
                     goto Again;
 
                 case '/':
                     return _symbol = ScanName();
 
-                //case 'R':
-                //  if (Lexer.IsWhiteSpace(nextChar))
-                //  {
-                //    ScanNextChar();
-                //    return Symbol.R;
-                //  }
-                //  break;
-
-                case '+': //TODO is it so easy?
+                case '+':     
                 case '-':
                     return _symbol = ScanNumber();
 
@@ -148,7 +86,6 @@ namespace PdfSharp.Pdf.IO
             }
             if (char.IsDigit(ch))
 #if true_
-                return ScanNumberOrReference();
 #else
                 if (PeekReference())
                     return _symbol = ScanNumber();
@@ -162,24 +99,17 @@ namespace PdfSharp.Pdf.IO
             if (ch == Chars.EOF)
                 return _symbol = Symbol.Eof;
 
-            // #???
-
             ParserDiagnostics.HandleUnexpectedCharacter(ch);
             return _symbol = Symbol.None;
         }
 
-        /// <summary>
-        /// Reads the raw content of a stream.
-        /// </summary>
         public byte[] ReadStream(int length)
         {
             int pos;
 
-            // Skip illegal blanks behind «stream».
             while (_currChar == Chars.SP)
                 ScanNextChar(true);
 
-            // Skip new line behind «stream».
             if (_currChar == Chars.CR)
             {
                 if (_nextChar == Chars.LF)
@@ -194,20 +124,15 @@ namespace PdfSharp.Pdf.IO
             byte[] bytes = new byte[length];
             int read = _pdfSteam.Read(bytes, 0, length);
             Debug.Assert(read == length);
-            // With corrupted files, read could be different from length.
             if (bytes.Length != read)
             {
                 Array.Resize(ref bytes, read);
             }
 
-            // Synchronize idxChar etc.
             Position = pos + read;
             return bytes;
         }
 
-        /// <summary>
-        /// Reads a string in raw encoding.
-        /// </summary>
         public String ReadRawString(int position, int length)
         {
             _pdfSteam.Position = position;
@@ -216,9 +141,6 @@ namespace PdfSharp.Pdf.IO
             return PdfEncoders.RawEncoding.GetString(bytes, 0, bytes.Length);
         }
 
-        /// <summary>
-        /// Scans a comment line.
-        /// </summary>
         public Symbol ScanComment()
         {
             Debug.Assert(_currChar == Chars.Percent);
@@ -230,15 +152,11 @@ namespace PdfSharp.Pdf.IO
                 if (ch == Chars.LF || ch == Chars.EOF)
                     break;
             }
-            // TODO: not correct
             if (_token.ToString().StartsWith("%%EOF"))
                 return Symbol.Eof;
             return _symbol = Symbol.Comment;
         }
 
-        /// <summary>
-        /// Scans a name.
-        /// </summary>
         public Symbol ScanName()
         {
             Debug.Assert(_currChar == Chars.Slash);
@@ -257,30 +175,19 @@ namespace PdfSharp.Pdf.IO
                     hex[0] = _currChar;
                     hex[1] = _nextChar;
                     ScanNextChar(true);
-                    // TODO Check syntax
                     ch = (char)(ushort)int.Parse(new string(hex), NumberStyles.AllowHexSpecifier);
                     _currChar = ch;
                 }
             }
         }
 
-        /// <summary>
-        /// Scans a number.
-        /// </summary>
         public Symbol ScanNumber()
         {
-            // I found a PDF file created with Acrobat 7 with this entry 
-            //   /Checksum 2996984786
-            // What is this? It is neither an integer nor a real.
-            // I introduced an UInteger...
             bool period = false;
-            //bool sign;
-
             _token = new StringBuilder();
             char ch = _currChar;
             if (ch == '+' || ch == '-')
             {
-                //sign = true;
                 _token.Append(ch);
                 ch = ScanNextChar(true);
             }
@@ -311,10 +218,7 @@ namespace PdfSharp.Pdf.IO
             if (l > 0 && l <= UInt32.MaxValue)
                 return Symbol.UInteger;
 
-            // Got an AutoCAD PDF file that contains this: /C 264584027963392
-            // Best we can do is to convert it to real value.
             return Symbol.Real;
-            //thr ow new PdfReaderException("Number exceeds integer range.");
         }
 
         public Symbol ScanNumberOrReference()
@@ -328,14 +232,10 @@ namespace PdfSharp.Pdf.IO
             return result;
         }
 
-        /// <summary>
-        /// Scans a keyword.
-        /// </summary>
         public Symbol ScanKeyword()
         {
             _token = new StringBuilder();
             char ch = _currChar;
-            // Scan token
             while (true)
             {
                 if (char.IsLetter(ch))
@@ -345,7 +245,6 @@ namespace PdfSharp.Pdf.IO
                 ch = ScanNextChar(false);
             }
 
-            // Check known tokens.
             switch (_token.ToString())
             {
                 case "obj":
@@ -380,24 +279,16 @@ namespace PdfSharp.Pdf.IO
                     return _symbol = Symbol.StartXRef;
             }
 
-            // Anything else is treated as a keyword. Samples are f or n in iref.
             return _symbol = Symbol.Keyword;
         }
 
-        /// <summary>
-        /// Scans a literal string, contained between "(" and ")".
-        /// </summary>
         public Symbol ScanLiteralString()
         {
-            // Reference: 3.2.3  String Objects / Page 53
-            // Reference: TABLE 3.32  String Types / Page 157
-
             Debug.Assert(_currChar == Chars.ParenLeft);
             _token = new StringBuilder();
             int parenLevel = 0;
             char ch = ScanNextChar(false);
 
-            // Phase 1: deal with escape characters.
             while (ch != Chars.EOF)
             {
                 switch (ch)
@@ -410,7 +301,6 @@ namespace PdfSharp.Pdf.IO
                         if (parenLevel == 0)
                         {
                             ScanNextChar(false);
-                            // Is goto evil? We could move Phase 2 code here or create a subroutine for Phase 1.
                             goto Phase2;
                         }
                         parenLevel--;
@@ -453,7 +343,6 @@ namespace PdfSharp.Pdf.IO
                                     ch = Chars.BackSlash;
                                     break;
 
-                                // AutoCAD PDFs my contain such strings: (\ ) 
                                 case ' ':
                                     ch = ' ';
                                     break;
@@ -464,27 +353,16 @@ namespace PdfSharp.Pdf.IO
                                     continue;
 
                                 default:
-                                    // TODO IsOctalDigit(ch).
-                                    if (char.IsDigit(ch) && _nextChar != '8' && _nextChar != '9')  // First octal character.
+                                    if (char.IsDigit(ch) && _nextChar != '8' && _nextChar != '9')     
                                     {
-                                        //// Octal character code.
-                                        //if (ch >= '8')
-                                        //    ParserDiagnostics.HandleUnexpectedCharacter(ch);
-
                                         int n = ch - '0';
-                                        if (char.IsDigit(_nextChar) && _nextChar != '8' && _nextChar != '9')  // Second octal character.
+                                        if (char.IsDigit(_nextChar) && _nextChar != '8' && _nextChar != '9')     
                                         {
                                             ch = ScanNextChar(false);
-                                            //if (ch >= '8')
-                                            //    ParserDiagnostics.HandleUnexpectedCharacter(ch);
-
                                             n = n * 8 + ch - '0';
-                                            if (char.IsDigit(_nextChar) && _nextChar != '8' && _nextChar != '9')  // Third octal character.
+                                            if (char.IsDigit(_nextChar) && _nextChar != '8' && _nextChar != '9')     
                                             {
                                                 ch = ScanNextChar(false);
-                                                //if (ch >= '8')
-                                                //    ParserDiagnostics.HandleUnexpectedCharacter(ch);
-
                                                 n = n * 8 + ch - '0';
                                             }
                                         }
@@ -492,11 +370,6 @@ namespace PdfSharp.Pdf.IO
                                     }
                                     else
                                     {
-                                        // PDF 32000: "If the character following the REVERSE SOLIDUS is not one of those shown in Table 3, the REVERSE SOLIDUS shall be ignored."
-                                        //TODO
-                                        // Debug.As sert(false, "Not implemented; unknown escape character.");
-                                        // ParserDiagnostics.HandleUnexpectedCharacter(ch);
-                                        //GetType();
                                     }
                                     break;
                             }
@@ -510,17 +383,13 @@ namespace PdfSharp.Pdf.IO
                 ch = ScanNextChar(false);
             }
 
-            // Phase 2: deal with UTF-16BE if necessary.
-            // UTF-16BE Unicode strings start with U+FEFF ("þÿ"). There can be empty strings with UTF-16BE prefix.
             Phase2:
             if (_token.Length >= 2 && _token[0] == '\xFE' && _token[1] == '\xFF')
             {
-                // Combine two ANSI characters to get one Unicode character.
                 StringBuilder temp = _token;
                 int length = temp.Length;
                 if ((length & 1) == 1)
                 {
-                    // TODO What does the PDF Reference say about this case? Assume (char)0 or treat the file as corrupted?
                     temp.Append(0);
                     ++length;
                     DebugBreak.Break();
@@ -532,15 +401,12 @@ namespace PdfSharp.Pdf.IO
                 }
                 return _symbol = Symbol.UnicodeString;
             }
-            // Adobe Reader also supports UTF-16LE.
             if (_token.Length >= 2 && _token[0] == '\xFF' && _token[1] == '\xFE')
             {
-                // Combine two ANSI characters to get one Unicode character.
                 StringBuilder temp = _token;
                 int length = temp.Length;
                 if ((length & 1) == 1)
                 {
-                    // TODO What does the PDF Reference say about this case? Assume (char)0 or treat the file as corrupted?
                     temp.Append(0);
                     ++length;
                     DebugBreak.Break();
@@ -573,7 +439,6 @@ namespace PdfSharp.Pdf.IO
                 if (char.IsLetterOrDigit(_currChar))
                 {
                     hex[0] = char.ToUpper(_currChar);
-                    // Second char is optional in PDF spec.
                     if (char.IsLetterOrDigit(_nextChar))
                     {
                         hex[1] = char.ToUpper(_nextChar);
@@ -581,7 +446,6 @@ namespace PdfSharp.Pdf.IO
                     }
                     else
                     {
-                        // We could check for ">" here and throw if we find anything else. The throw comes after the next iteration anyway.
                         hex[1] = '0';
                     }
                     ScanNextChar(true);
@@ -605,9 +469,6 @@ namespace PdfSharp.Pdf.IO
             return _symbol = Symbol.HexString;
         }
 
-        /// <summary>
-        /// Move current position one character further in PDF stream.
-        /// </summary>
         internal char ScanNextChar(bool handleCRLF)
         {
             if (_pdfLength <= _idxChar)
@@ -624,14 +485,12 @@ namespace PdfSharp.Pdf.IO
                 {
                     if (_nextChar == Chars.LF)
                     {
-                        // Treat CR LF as LF.
                         _currChar = _nextChar;
                         _nextChar = (char)_pdfSteam.ReadByte();
                         _idxChar++;
                     }
                     else
                     {
-                        // Treat single CR as LF.
                         _currChar = Chars.LF;
                     }
                 }
@@ -639,51 +498,31 @@ namespace PdfSharp.Pdf.IO
             return _currChar;
         }
 
-        ///// <summary>
-        ///// Resets the current token to the empty string.
-        ///// </summary>
-        //void ClearToken()
-        //{
-        //    _token.Length = 0;
-        //}
-
         bool PeekReference()
         {
-            // A Reference has the form "nnn mmm R". The implementation of the parser used a
-            // reduce/shift algorithm in the first place. But this case is the only one we need to
-            // look ahead 3 tokens. 
             int positon = Position;
 
-            // Skip digits.
             while (char.IsDigit(_currChar))
                 ScanNextChar(true);
 
-            // Space expected.
             if (_currChar != Chars.SP)
                 goto False;
 
-            // Skip spaces.
             while (_currChar == Chars.SP)
                 ScanNextChar(true);
 
-            // Digit expected.
             if (!char.IsDigit(_currChar))
                 goto False;
 
-            // Skip digits.
             while (char.IsDigit(_currChar))
                 ScanNextChar(true);
 
-            // Space expected.
             if (_currChar != Chars.SP)
                 goto False;
 
-            // Skip spaces.
             while (_currChar == Chars.SP)
                 ScanNextChar(true);
 
-            // "R" expected.
-            // We can ignore _nextChar because there is no other valid token that starts with an 'R'.
             if (_currChar != 'R')
                 goto False;
 
@@ -695,9 +534,6 @@ namespace PdfSharp.Pdf.IO
             return false;
         }
 
-        /// <summary>
-        /// Appends current character to the token and reads next one.
-        /// </summary>
         internal char AppendAndScanNextChar()
         {
             if (_currChar == Chars.EOF)
@@ -707,11 +543,6 @@ namespace PdfSharp.Pdf.IO
             return ScanNextChar(true);
         }
 
-        /// <summary>
-        /// If the current character is not a white space, the function immediately returns it.
-        /// Otherwise the PDF cursor is moved forward to the first non-white space or EOF.
-        /// White spaces are NUL, HT, LF, FF, CR, and SP.
-        /// </summary>
         public char MoveToNonWhiteSpace()
         {
             while (_currChar != Chars.EOF)
@@ -740,53 +571,17 @@ namespace PdfSharp.Pdf.IO
             return _currChar;
         }
 
-#if DEBUG
-        public string SurroundingsOfCurrentPosition(bool hex)
-        {
-            const int range = 20;
-            int start = Math.Max(Position - range, 0);
-            int length = Math.Min(2 * range, PdfLength - start);
-            long posOld = _pdfSteam.Position;
-            _pdfSteam.Position = start;
-            byte[] bytes = new byte[length];
-            _pdfSteam.Read(bytes, 0, length);
-            _pdfSteam.Position = posOld;
-            string result = "";
-            if (hex)
-            {
-                for (int idx = 0; idx < length; idx++)
-                    result += ((int)bytes[idx]).ToString("x2");
-                //result += string.Format("{0:", (int) bytes[idx]);
-            }
-            else
-            {
-                for (int idx = 0; idx < length; idx++)
-                    result += (char)bytes[idx];
-            }
-            return result;
-        }
-#endif
-
-        /// <summary>
-        /// Gets the current symbol.
-        /// </summary>
         public Symbol Symbol
         {
             get { return _symbol; }
             set { _symbol = value; }
         }
 
-        /// <summary>
-        /// Gets the current token.
-        /// </summary>
         public string Token
         {
             get { return _token.ToString(); }
         }
 
-        /// <summary>
-        /// Interprets current token as boolean literal.
-        /// </summary>
         public bool TokenToBoolean
         {
             get
@@ -796,41 +591,27 @@ namespace PdfSharp.Pdf.IO
             }
         }
 
-        /// <summary>
-        /// Interprets current token as integer literal.
-        /// </summary>
         public int TokenToInteger
         {
             get
             {
-                //Debug.As sert(_token.ToString().IndexOf('.') == -1);
                 return int.Parse(_token.ToString(), CultureInfo.InvariantCulture);
             }
         }
 
-        /// <summary>
-        /// Interprets current token as unsigned integer literal.
-        /// </summary>
         public uint TokenToUInteger
         {
             get
             {
-                //Debug.As sert(_token.ToString().IndexOf('.') == -1);
                 return uint.Parse(_token.ToString(), CultureInfo.InvariantCulture);
             }
         }
 
-        /// <summary>
-        /// Interprets current token as real or integer literal.
-        /// </summary>
         public double TokenToReal
         {
             get { return double.Parse(_token.ToString(), CultureInfo.InvariantCulture); }
         }
 
-        /// <summary>
-        /// Interprets current token as object ID.
-        /// </summary>
         public PdfObjectID TokenToObjectID
         {
             get
@@ -842,27 +623,21 @@ namespace PdfSharp.Pdf.IO
             }
         }
 
-        /// <summary>
-        /// Indicates whether the specified character is a PDF white-space character.
-        /// </summary>
         internal static bool IsWhiteSpace(char ch)
         {
             switch (ch)
             {
-                case Chars.NUL:  // 0 Null
-                case Chars.HT:   // 9 Horizontal Tab
-                case Chars.LF:   // 10 Line Feed
-                case Chars.FF:   // 12 Form Feed
-                case Chars.CR:   // 13 Carriage Return
-                case Chars.SP:   // 32 Space
+                case Chars.NUL:    
+                case Chars.HT:      
+                case Chars.LF:      
+                case Chars.FF:      
+                case Chars.CR:      
+                case Chars.SP:     
                     return true;
             }
             return false;
         }
 
-        /// <summary>
-        /// Indicates whether the specified character is a PDF delimiter character.
-        /// </summary>
         internal static bool IsDelimiter(char ch)
         {
             switch (ch)
@@ -882,9 +657,6 @@ namespace PdfSharp.Pdf.IO
             return false;
         }
 
-        /// <summary>
-        /// Gets the length of the PDF output.
-        /// </summary>
         public int PdfLength
         {
             get { return _pdfLength; }
