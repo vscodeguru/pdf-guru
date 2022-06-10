@@ -1,32 +1,3 @@
-#region PDFsharp - A .NET library for processing PDF
-//
-// Authors:
-//   Stefan Lange
-//
-// Copyright (c) 2005-2017 empira Software GmbH, Cologne Area (Germany)
-//
-// http://www.pdfsharp.com
-// http://sourceforge.net/projects/pdfsharp
-//
-// Permission is hereby granted, free of charge, to any person obtaining a
-// copy of this software and associated documentation files (the "Software"),
-// to deal in the Software without restriction, including without limitation
-// the rights to use, copy, modify, merge, publish, distribute, sublicense,
-// and/or sell copies of the Software, and to permit persons to whom the
-// Software is furnished to do so, subject to the following conditions:
-//
-// The above copyright notice and this permission notice shall be included
-// in all copies or substantial portions of the Software.
-//
-// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL
-// THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
-// FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER 
-// DEALINGS IN THE SOFTWARE.
-#endregion
-
 using System;
 using System.Diagnostics;
 using System.Resources;
@@ -35,38 +6,10 @@ using PdfSharp.Drawing;
 using PdfSharp.Internal;
 using PdfSharp.Pdf;
 
-#pragma warning disable 1591
-
 namespace PdfSharp
 {
-    /// <summary>
-    /// The Pdf-Sharp-String-Resources.
-    /// </summary>
-    // ReSharper disable once InconsistentNaming
     static class PSSR
     {
-        // How to use:
-        // Create a function or property for each message text, depending on how many parameters are
-        // part of the message. For the beginning, type plain English text in the function or property. 
-        // The use of functions is safe when a parameter must be changed. The compiler tells you all
-        // places in your code that must be modified.
-        // For localization, create an enum value for each function or property with the same name. Then
-        // create localized message files with the enum values as messages identifiers. In the properties
-        // and functions all text is replaced by Format or GetString functions with the corresponding enum value
-        // as first parameter. The use of enums ensures that typing errors in message resource names are 
-        // simply impossible. Use the TestResourceMessages function to ensure that each enum value has an 
-        // appropriate message text.
-
-        #region Helper functions
-        /// <summary>
-        /// Loads the message from the resource associated with the enum type and formats it
-        /// using 'String.Format'. Because this function is intended to be used during error
-        /// handling it never raises an exception.
-        /// </summary>
-        /// <param name="id">The type of the parameter identifies the resource
-        /// and the name of the enum identifies the message in the resource.</param>
-        /// <param name="args">Parameters passed through 'String.Format'.</param>
-        /// <returns>The formatted message.</returns>
         public static string Format(PSMsgID id, params object[] args)
         {
             string message;
@@ -100,17 +43,10 @@ namespace PdfSharp
             return message;
         }
 
-        /// <summary>
-        /// Gets the localized message identified by the specified DomMsgID.
-        /// </summary>
         public static string GetString(PSMsgID id)
         {
             return ResMngr.GetString(id.ToString());
         }
-
-        #endregion
-
-        #region General messages
 
         public static string IndexOutOfRange
         {
@@ -168,12 +104,6 @@ namespace PdfSharp
             get { return "Error while parsing an OpenType font."; }
         }
 
-        #endregion
-
-        #region XGraphics specific messages
-
-        // ----- XGraphics ----------------------------------------------------------------------------
-
         public static string PointArrayEmpty
         {
             get { return "The PointF array must not be empty."; }
@@ -203,12 +133,6 @@ namespace PdfSharp
         {
             return String.Format("Not implemented for font '{0}', because it was retrieved with font resolver.", name);
         }
-
-        #endregion
-
-        #region PDF specific messages
-
-        // ----- PDF ----------------------------------------------------------------------------------
 
         public static string InvalidPdf
         {
@@ -243,7 +167,6 @@ namespace PdfSharp
         public static string UserOrOwnerPasswordRequired
         {
             get { return GetString(PSMsgID.UserOrOwnerPasswordRequired); }
-            //get { return "At least a user or an owner password is required to encrypt the document."; }
         }
 
         public static string CannotModify
@@ -253,7 +176,6 @@ namespace PdfSharp
 
         public static string NameMustStartWithSlash
         {
-            //get { return GetString(PSMsgID.NameMustStartWithSlash); }
             get { return "A PDF name must start with a slash (/)."; }
         }
 
@@ -320,27 +242,16 @@ namespace PdfSharp
         }
 
 
-        // ----- PdfParser ----------------------------------------------------------------------------
-
         public static string UnexpectedToken(string token)
         {
             return Format(PSMsgID.UnexpectedToken, token);
-            //return Format("Token '{0}' was not expected.", token);
         }
 
         public static string UnknownEncryption
         {
             get { return GetString(PSMsgID.UnknownEncryption); }
-            //get { return "The PDF document is protected with an encryption not supported by PDFsharp."; }
         }
 
-        #endregion
-
-        #region Resource manager
-
-        /// <summary>
-        /// Gets the resource manager for this module.
-        /// </summary>
         public static ResourceManager ResMngr
         {
             get
@@ -352,16 +263,10 @@ namespace PdfSharp
                         Lock.EnterFontFactory();
                         if (_resmngr == null)
                         {
-#if true_
-                            // Force the English language.
-                            System.Threading.Thread.CurrentThread.CurrentUICulture = System.Globalization.CultureInfo.InvariantCulture;
-#endif
+
 #if !NETFX_CORE && !UWP
                             _resmngr = new ResourceManager("PdfSharp.Resources.Messages",
                                 Assembly.GetExecutingAssembly());
-#else
-                            _resmngr = new ResourceManager("PdfSharp.Resources.Messages",
-                                typeof(PSSR).GetTypeInfo().Assembly);
 #endif
                         }
                     }
@@ -372,9 +277,6 @@ namespace PdfSharp
         }
         static ResourceManager _resmngr;
 
-        /// <summary>
-        /// Writes all messages defined by PSMsgID.
-        /// </summary>
         [Conditional("DEBUG")]
         public static void TestResourceMessages()
         {
@@ -395,6 +297,5 @@ namespace PdfSharp
             TestResourceMessages();
         }
 
-        #endregion
     }
 }
