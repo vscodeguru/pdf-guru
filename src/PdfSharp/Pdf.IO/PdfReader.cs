@@ -43,8 +43,7 @@ namespace PdfSharp.Pdf.IO
                 {
                     if (stream != null)
                     {
-#if UWP
-#else
+
                         stream.Close();
 #endif
                     }
@@ -53,7 +52,6 @@ namespace PdfSharp.Pdf.IO
                 {
                 }
             }
-#endif
             return 0;
         }
 

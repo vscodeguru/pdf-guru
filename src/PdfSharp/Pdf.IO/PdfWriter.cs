@@ -23,10 +23,9 @@ namespace PdfSharp.Pdf.IO
         {
             if (_stream != null && closeUnderlyingStream)
             {
-#if UWP
-#else
+
                 _stream.Close();
-#endif
+
             }
             _stream = null;
         }

@@ -15,8 +15,7 @@ namespace PdfSharp.Pdf.Internal
         {
             for (int count = charCount; count > 0; charIndex++, byteIndex++, count--)
             {
-#if DEBUG_
-#endif
+
                 bytes[byteIndex] = (byte)chars[charIndex];
             }
             return charCount;

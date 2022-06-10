@@ -39,16 +39,14 @@ namespace PdfSharp.Pdf.IO
             _lexer.Position = position;
             int objectNumber = ReadInteger();
             int generationNumber = ReadInteger();
-#if DEBUG && CORE
-#endif
+
             return new PdfObjectID(objectNumber, generationNumber);
         }
 
 
         public PdfObject ReadObject(PdfObject pdfObject, PdfObjectID objectID, bool includeReferences, bool fromObjecStream)
         {
-#if DEBUG_
-#endif
+
             int objectNumber = objectID.ObjectNumber;
             int generationNumber = objectID.GenerationNumber;
             if (!fromObjecStream)
@@ -159,8 +157,7 @@ namespace PdfSharp.Pdf.IO
             {
                 PdfDictionary dict = (PdfDictionary)pdfObject;
                 Debug.Assert(checkForStream, "Unexpected stream...");
-#if true_
-#else
+
                 int length = GetStreamLength(dict);
                 byte[] bytes = _lexer.ReadStream(length);
 
