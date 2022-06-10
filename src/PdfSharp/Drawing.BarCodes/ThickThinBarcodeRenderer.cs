@@ -1,44 +1,9 @@
-//
-// PDFsharp - A library for processing PDF
-//
-// Authors:
-//   Klaus Potzesny
-//
-// Copyright (c) 2005-2017 empira Software GmbH, Cologne Area (Germany)
-//
-// http://www.pdfsharp.com
-//
-// Permission is hereby granted, free of charge, to any person obtaining
-// a copy of this software and associated documentation files (the
-// "Software"), to deal in the Software without restriction, including
-// without limitation the rights to use, copy, modify, merge, publish,
-// distribute, sublicense, and/or sell copies of the Software, and to
-// permit persons to whom the Software is furnished to do so, subject to
-// the following conditions:
-// 
-// The above copyright notice and this permission notice shall be
-// included in all copies or substantial portions of the Software.
-// 
-// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
-// EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
-// MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
-// NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE
-// LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
-// OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
-// WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
-
 using System;
 
 namespace PdfSharp.Drawing.BarCodes
 {
-    /// <summary>
-    /// Internal base class for several bar code types.
-    /// </summary>
-    public abstract class ThickThinBarCode : BarCode  // TODO: The name is not optimal
+    public abstract class ThickThinBarCode : BarCode        
     {
-        /// <summary>
-        /// Initializes a new instance of the <see cref="ThickThinBarCode"/> class.
-        /// </summary>
         public ThickThinBarCode(string code, XSize size, CodeDirection direction)
             : base(code, size, direction)
         { }
@@ -48,16 +13,9 @@ namespace PdfSharp.Drawing.BarCodes
             base.InitRendering(info);
             CalcThinBarWidth(info);
             info.BarHeight = Size.Height;
-            // HACK in ThickThinBarCode
             if (TextLocation != TextLocation.None)
                 info.BarHeight *= 4.0 / 5;
 
-#if DEBUG_
-            XColor back = XColors.LightSalmon;
-            back.A = 0.3;
-            XSolidBrush brush = new XSolidBrush(back);
-            info.Gfx.DrawRectangle(brush, new XRect(info.Center - size / 2, size));
-#endif
             switch (Direction)
             {
                 case CodeDirection.RightToLeft:
@@ -74,10 +32,6 @@ namespace PdfSharp.Drawing.BarCodes
             }
         }
 
-        /// <summary>
-        /// Gets or sets the ration between thick an thin lines. Must be between 2 and 3.
-        /// Optimal and also default value is 2.6.
-        /// </summary>
         public override double WideNarrowRatio
         {
             get { return _wideNarrowRatio; }
@@ -90,11 +44,6 @@ namespace PdfSharp.Drawing.BarCodes
         }
         double _wideNarrowRatio = 2.6;
 
-        /// <summary>
-        /// Renders a thick or thin line for the bar code.
-        /// </summary>
-        /// <param name="info"></param>
-        /// <param name="isThick">Determines whether a thick or a thin line is about to be rendered.</param>
         internal void RenderBar(BarCodeRenderInfo info, bool isThick)
         {
             double barWidth = GetBarWidth(info, isThick);
@@ -118,30 +67,22 @@ namespace PdfSharp.Drawing.BarCodes
             info.CurrPos.X += barWidth;
         }
 
-        /// <summary>
-        /// Renders a thick or thin gap for the bar code.
-        /// </summary>
-        /// <param name="info"></param>
-        /// <param name="isThick">Determines whether a thick or a thin gap is about to be rendered.</param>
         internal void RenderGap(BarCodeRenderInfo info, bool isThick)
         {
             info.CurrPos.X += GetBarWidth(info, isThick);
         }
 
-        /// <summary>
-        /// Renders a thick bar before or behind the code.
-        /// </summary>
         internal void RenderTurboBit(BarCodeRenderInfo info, bool startBit)
         {
             if (startBit)
                 info.CurrPos.X -= 0.5 + GetBarWidth(info, true);
             else
-                info.CurrPos.X += 0.5; //GetBarWidth(info, true);
+                info.CurrPos.X += 0.5;  
 
             RenderBar(info, true);
 
             if (startBit)
-                info.CurrPos.X += 0.5; //GetBarWidth(info, true);
+                info.CurrPos.X += 0.5;  
         }
 
         internal void RenderText(BarCodeRenderInfo info)
@@ -169,11 +110,6 @@ namespace PdfSharp.Drawing.BarCodes
             }
         }
 
-        /// <summary>
-        /// Gets the width of a thick or a thin line (or gap). CalcLineWidth must have been called before.
-        /// </summary>
-        /// <param name="info"></param>
-        /// <param name="isThick">Determines whether a thick line's with shall be returned.</param>
         internal double GetBarWidth(BarCodeRenderInfo info, bool isThick)
         {
             if (isThick)
