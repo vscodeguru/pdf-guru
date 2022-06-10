@@ -1,51 +1,10 @@
-#region PDFsharp - A .NET library for processing PDF
-//
-// Authors:
-//   Stefan Lange
-//
-// Copyright (c) 2005-2017 empira Software GmbH, Cologne Area (Germany)
-//
-// http://www.pdfsharp.com
-// http://sourceforge.net/projects/pdfsharp
-//
-// Permission is hereby granted, free of charge, to any person obtaining a
-// copy of this software and associated documentation files (the "Software"),
-// to deal in the Software without restriction, including without limitation
-// the rights to use, copy, modify, merge, publish, distribute, sublicense,
-// and/or sell copies of the Software, and to permit persons to whom the
-// Software is furnished to do so, subject to the following conditions:
-//
-// The above copyright notice and this permission notice shall be included
-// in all copies or substantial portions of the Software.
-//
-// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL
-// THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
-// FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER 
-// DEALINGS IN THE SOFTWARE.
-#endregion
-
 using System.Diagnostics;
 using System.Collections.Generic;
 
 namespace PdfSharp.Pdf.Content.Objects
 {
-    /// <summary>
-    /// Represents a PDF content stream operator description.
-    /// </summary>
     public sealed class OpCode
     {
-        /// <summary>
-        /// Initializes a new instance of the <see cref="OpCode"/> class.
-        /// </summary>
-        /// <param name="name">The name.</param>
-        /// <param name="opcodeName">The enum value of the operator.</param>
-        /// <param name="operands">The number of operands.</param>
-        /// <param name="postscript">The postscript equivalent, or null, if no such operation exists.</param>
-        /// <param name="flags">The flags.</param>
-        /// <param name="description">The description from Adobe PDF Reference.</param>
         internal OpCode(string name, OpCodeName opcodeName, int operands, string postscript, OpCodeFlags flags, string description)
         {
             Name = name;
@@ -56,46 +15,21 @@ namespace PdfSharp.Pdf.Content.Objects
             Description = description;
         }
 
-        /// <summary>
-        /// The name of the operator.
-        /// </summary>
         public readonly string Name;
 
-        /// <summary>
-        /// The enum value of the operator.
-        /// </summary>
         public readonly OpCodeName OpCodeName;
 
-        /// <summary>
-        /// The number of operands. -1 indicates a variable number of operands.
-        /// </summary>
         public readonly int Operands;
 
-        /// <summary>
-        /// The flags.
-        /// </summary>
         public readonly OpCodeFlags Flags;
 
-        /// <summary>
-        /// The postscript equivalent, or null, if no such operation exists.
-        /// </summary>
         public readonly string Postscript;
 
-        /// <summary>
-        /// The description from Adobe PDF Reference.
-        /// </summary>
         public readonly string Description;
     }
 
-    /// <summary>
-    /// Static class with all PDF op-codes.
-    /// </summary>
     public static class OpCodes
     {
-        /// <summary>
-        /// Operators from name.
-        /// </summary>
-        /// <param name="name">The name.</param>
         public static COperator OperatorFromName(string name)
         {
             COperator op = null;
@@ -111,9 +45,6 @@ namespace PdfSharp.Pdf.Content.Objects
             return op;
         }
 
-        /// <summary>
-        /// Initializes the <see cref="OpCodes"/> class.
-        /// </summary>
         static OpCodes()
         {
             StringToOpCode = new Dictionary<string, OpCode>();
@@ -124,8 +55,6 @@ namespace PdfSharp.Pdf.Content.Objects
             }
         }
         static readonly Dictionary<string, OpCode> StringToOpCode;
-
-        // ReSharper disable InconsistentNaming
 
         static readonly OpCode Dictionary = new OpCode("Dictionary", OpCodeName.Dictionary, -1, "name, dictionary", OpCodeFlags.None,
             "E.g.: /Name << ... >>");
@@ -349,12 +278,8 @@ namespace PdfSharp.Pdf.Content.Objects
         static readonly OpCode QuoteDbl = new OpCode("\"", OpCodeName.QuoteDbl, 3, null, OpCodeFlags.TextOut,
             "Set word and character spacing, move to next line, and show text");
 
-        /// <summary>
-        /// Array of all OpCodes.
-        /// </summary>
-        static readonly OpCode[] ops = // new OpCode[]
+        static readonly OpCode[] ops =   
             { 
-                // Must be defined behind the code above to ensure that the values are initialized.
                 Dictionary,
                 b, B, bx, Bx, BDC, BI, BMC, BT, BX, c, cm, CS, cs, d, d0, d1, Do,
                 DP, EI, EMC, ET, EX, f, F, fx, G, g, gs, h, i, ID, j, J, K, k, l, m, M, MP,
@@ -362,6 +287,5 @@ namespace PdfSharp.Pdf.Content.Objects
                 Tx, Tc, Td, TD, Tf, Tj, TJ, TL, Tm, Tr, Ts, Tw, Tz, v, w, W, Wx, y,
                 QuoteSingle, QuoteDbl
             };
-        // ReSharper restore InconsistentNaming
     }
 }
