@@ -1,32 +1,3 @@
-#region PDFsharp - A .NET library for processing PDF
-//
-// Authors:
-//   Stefan Lange
-//
-// Copyright (c) 2005-2017 empira Software GmbH, Cologne Area (Germany)
-//
-// http://www.pdfsharp.com
-// http://sourceforge.net/projects/pdfsharp
-//
-// Permission is hereby granted, free of charge, to any person obtaining a
-// copy of this software and associated documentation files (the "Software"),
-// to deal in the Software without restriction, including without limitation
-// the rights to use, copy, modify, merge, publish, distribute, sublicense,
-// and/or sell copies of the Software, and to permit persons to whom the
-// Software is furnished to do so, subject to the following conditions:
-//
-// The above copyright notice and this permission notice shall be included
-// in all copies or substantial portions of the Software.
-//
-// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL
-// THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
-// FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER 
-// DEALINGS IN THE SOFTWARE.
-#endregion
-
 using System;
 using System.Diagnostics;
 using System.Text;
@@ -35,110 +6,54 @@ using PdfSharp.Pdf.Internal;
 
 namespace PdfSharp.Pdf
 {
-    /// <summary>
-    /// Determines the encoding of a PdfString or PdfStringObject.
-    /// </summary>
     [Flags]
     public enum PdfStringEncoding
     {
-        /// <summary>
-        /// The characters of the string are actually bytes with an unknown or context specific meaning or encoding.
-        /// With this encoding the 8 high bits of each character is zero.
-        /// </summary>
         RawEncoding = PdfStringFlags.RawEncoding,
 
-        /// <summary>
-        /// Not yet used by PDFsharp.
-        /// </summary>
         StandardEncoding = PdfStringFlags.StandardEncoding,
 
-        /// <summary>
-        /// The characters of the string are actually bytes with PDF document encoding.
-        /// With this encoding the 8 high bits of each character is zero.
-        /// </summary>
-        // ReSharper disable InconsistentNaming because the name is spelled as in the Adobe reference.
         PDFDocEncoding = PdfStringFlags.PDFDocEncoding,
-        // ReSharper restore InconsistentNaming
-
-        /// <summary>
-        /// The characters of the string are actually bytes with Windows ANSI encoding.
-        /// With this encoding the 8 high bits of each character is zero.
-        /// </summary>
         WinAnsiEncoding = PdfStringFlags.WinAnsiEncoding,
 
-        /// <summary>
-        /// Not yet used by PDFsharp.
-        /// </summary>
         MacRomanEncoding = PdfStringFlags.MacExpertEncoding,
 
-        /// <summary>
-        /// Not yet used by PDFsharp.
-        /// </summary>
         MacExpertEncoding = PdfStringFlags.MacExpertEncoding,
 
-        /// <summary>
-        /// The characters of the string are Unicode characters.
-        /// </summary>
         Unicode = PdfStringFlags.Unicode,
     }
 
-    /// <summary>
-    /// Internal wrapper for PdfStringEncoding.
-    /// </summary>
     [Flags]
     enum PdfStringFlags
     {
-        // ReSharper disable InconsistentNaming
         RawEncoding = 0x00,
-        StandardEncoding = 0x01,  // not used by PDFsharp
+        StandardEncoding = 0x01,      
         PDFDocEncoding = 0x02,
         WinAnsiEncoding = 0x03,
-        MacRomanEncoding = 0x04,  // not used by PDFsharp
-        MacExpertEncoding = 0x05,  // not used by PDFsharp
+        MacRomanEncoding = 0x04,      
+        MacExpertEncoding = 0x05,      
         Unicode = 0x06,
         EncodingMask = 0x0F,
 
         HexLiteral = 0x80,
-        // ReSharper restore InconsistentNaming
     }
 
-    /// <summary>
-    /// Represents a direct text string value.
-    /// </summary>
     [DebuggerDisplay("({Value})")]
     public sealed class PdfString : PdfItem
     {
-        /// <summary>
-        /// Initializes a new instance of the <see cref="PdfString"/> class.
-        /// </summary>
         public PdfString()
         {
-            // Redundant assignment.
-            //_flags = PdfStringFlags.RawEncoding;
         }
 
-        /// <summary>
-        /// Initializes a new instance of the <see cref="PdfString"/> class.
-        /// </summary>
-        /// <param name="value">The value.</param>
         public PdfString(string value)
         {
 #if true
             if (!IsRawEncoding(value))
                 _flags = PdfStringFlags.Unicode;
             _value = value;
-#else
-            CheckRawEncoding(value);
-            _value = value;
-            //_flags = PdfStringFlags.RawEncoding;
 #endif
         }
 
-        /// <summary>
-        /// Initializes a new instance of the <see cref="PdfString"/> class.
-        /// </summary>
-        /// <param name="value">The value.</param>
-        /// <param name="encoding">The encoding.</param>
         public PdfString(string value, PdfStringEncoding encoding)
         {
             switch (encoding)
@@ -167,8 +82,6 @@ namespace PdfSharp.Pdf
                     throw new ArgumentOutOfRangeException("encoding");
             }
             _value = value;
-            //if ((flags & PdfStringFlags.EncodingMask) == 0)
-            //  flags |= PdfStringFlags.PDFDocEncoding;
             _flags = (PdfStringFlags)encoding;
         }
 
@@ -178,25 +91,16 @@ namespace PdfSharp.Pdf
             _flags = flags;
         }
 
-        /// <summary>
-        /// Gets the number of characters in this string.
-        /// </summary>
         public int Length
         {
             get { return _value == null ? 0 : _value.Length; }
         }
 
-        /// <summary>
-        /// Gets the encoding.
-        /// </summary>
         public PdfStringEncoding Encoding
         {
             get { return (PdfStringEncoding)(_flags & PdfStringFlags.EncodingMask); }
         }
 
-        /// <summary>
-        /// Gets a value indicating whether the string is a hexadecimal literal.
-        /// </summary>
         public bool HexLiteral
         {
             get { return (_flags & PdfStringFlags.HexLiteral) != 0; }
@@ -208,30 +112,18 @@ namespace PdfSharp.Pdf
         }
         readonly PdfStringFlags _flags;
 
-        /// <summary>
-        /// Gets the string value.
-        /// </summary>
         public string Value
         {
-            // This class must behave like a value type. Therefore it cannot be changed (like System.String).
             get { return _value ?? ""; }
         }
         string _value;
 
-        /// <summary>
-        /// Gets or sets the string value for encryption purposes.
-        /// </summary>
         internal byte[] EncryptionValue
         {
-            // TODO: Unicode case is not handled!
             get { return _value == null ? new byte[0] : PdfEncoders.RawEncoding.GetBytes(_value); }
-            // BUG: May lead to trouble with the value semantics of PdfString
             set { _value = PdfEncoders.RawEncoding.GetString(value, 0, value.Length); }
         }
 
-        /// <summary>
-        /// Returns the string.
-        /// </summary>
         public override string ToString()
         {
 #if true
@@ -240,14 +132,9 @@ namespace PdfSharp.Pdf
                 PdfEncoders.ToStringLiteral(_value, encoding, null) :
                 PdfEncoders.ToHexStringLiteral(_value, encoding, null);
             return pdf;
-#else
-            return _value;
 #endif
         }
 
-        /// <summary>
-        /// Hack for document encoded bookmarks.
-        /// </summary>
         public string ToStringFromPdfDocEncoded()
         {
             int length = _value.Length;
@@ -261,7 +148,6 @@ namespace PdfSharp.Pdf
                 }
                 else
                 {
-                    //Debug-Break.Break();
                     throw new InvalidOperationException("DocEncoded string contains char greater 255.");
                 }
             }
@@ -316,9 +202,6 @@ namespace PdfSharp.Pdf
             return true;
         }
 
-        /// <summary>
-        /// Writes the string DocEncoded.
-        /// </summary>
         internal override void WriteObject(PdfWriter writer)
         {
             writer.Write(this);
