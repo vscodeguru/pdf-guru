@@ -1,55 +1,15 @@
-#region PDFsharp - A .NET library for processing PDF
-//
-// Authors:
-//   David Stephensen
-//
-// Copyright (c) 2005-2017 empira Software GmbH, Cologne Area (Germany)
-//
-// http://www.pdfsharp.com
-// http://sourceforge.net/projects/pdfsharp
-//
-// Permission is hereby granted, free of charge, to any person obtaining a
-// copy of this software and associated documentation files (the "Software"),
-// to deal in the Software without restriction, including without limitation
-// the rights to use, copy, modify, merge, publish, distribute, sublicense,
-// and/or sell copies of the Software, and to permit persons to whom the
-// Software is furnished to do so, subject to the following conditions:
-//
-// The above copyright notice and this permission notice shall be included
-// in all copies or substantial portions of the Software.
-//
-// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL
-// THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
-// FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER 
-// DEALINGS IN THE SOFTWARE.
-#endregion
-
 using System;
 using System.IO;
 
 namespace PdfSharp.Pdf.Filters
 {
-    /// <summary>
-    /// Implements the LzwDecode filter.
-    /// </summary>
     public class LzwDecode : Filter
     {
-        // Reference: 3.3.3  LZWDecode and FlateDecode Filters / Page 71
-
-        /// <summary>
-        /// Throws a NotImplementedException because the obsolete LZW encoding is not supported by PDFsharp.
-        /// </summary>
         public override byte[] Encode(byte[] data)
         {
             throw new NotImplementedException("PDFsharp does not support LZW encoding.");
         }
 
-        /// <summary>
-        /// Decodes the specified data.
-        /// </summary>
         public override byte[] Decode(byte[] data, FilterParms parms)
         {
             if (data[0] == 0x00 && data[1] == 0x01)
@@ -104,16 +64,11 @@ namespace PdfSharp.Pdf.Filters
 #if !NETFX_CORE && !UWP
                 outputStream.Capacity = (int)outputStream.Length;
                 return outputStream.GetBuffer();
-#else
-                return outputStream.ToArray();
 #endif
             }
             return null;
         }
 
-        /// <summary>
-        /// Initialize the dictionary.
-        /// </summary>
         void InitializeDictionary()
         {
             _stringTable = new byte[8192][];
@@ -128,9 +83,6 @@ namespace PdfSharp.Pdf.Filters
             _bitsToGet = 9;
         }
 
-        /// <summary>
-        /// Add a new entry to the Dictionary.
-        /// </summary>
         void AddEntry(byte[] oldstring, byte newstring)
         {
             int length = oldstring.Length;
@@ -148,9 +100,6 @@ namespace PdfSharp.Pdf.Filters
                 _bitsToGet = 12;
         }
 
-        /// <summary>
-        /// Returns the next set of bits.
-        /// </summary>
         int NextCode
         {
             get
