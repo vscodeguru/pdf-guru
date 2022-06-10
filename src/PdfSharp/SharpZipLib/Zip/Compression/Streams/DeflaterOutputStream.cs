@@ -179,8 +179,6 @@ namespace PdfSharp.SharpZipLib.Zip.Compression.Streams
                 }
 #if true
                 if (keys != null)
-#else
-				if (cryptoTransform_ != null) 
 #endif
                 {
                     EncryptBlock(buffer_, 0, deflateCount);

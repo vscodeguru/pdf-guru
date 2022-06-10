@@ -288,7 +288,6 @@ namespace PdfSharp
                 Debug.Assert(message != null);
                 Debug.WriteLine(message);
             }
-#else
 #endif
         }
 
