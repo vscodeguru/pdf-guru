@@ -1,6 +1,3 @@
-#region PDFsharp - A .NET library for processing PDF
-#endregion
-
 using System;
 
 namespace PdfSharp.Drawing
