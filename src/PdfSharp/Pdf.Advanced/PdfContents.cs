@@ -1,32 +1,3 @@
-#region PDFsharp - A .NET library for processing PDF
-//
-// Authors:
-//   Stefan Lange
-//
-// Copyright (c) 2005-2017 empira Software GmbH, Cologne Area (Germany)
-//
-// http://www.pdfsharp.com
-// http://sourceforge.net/projects/pdfsharp
-//
-// Permission is hereby granted, free of charge, to any person obtaining a
-// copy of this software and associated documentation files (the "Software"),
-// to deal in the Software without restriction, including without limitation
-// the rights to use, copy, modify, merge, publish, distribute, sublicense,
-// and/or sell copies of the Software, and to permit persons to whom the
-// Software is furnished to do so, subject to the following conditions:
-//
-// The above copyright notice and this permission notice shall be included
-// in all copies or substantial portions of the Software.
-//
-// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL
-// THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
-// FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER 
-// DEALINGS IN THE SOFTWARE.
-#endregion
-
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -36,15 +7,8 @@ using PdfSharp.Pdf.IO;
 
 namespace PdfSharp.Pdf.Advanced
 {
-    /// <summary>
-    /// Represents an array of PDF content streams of a page.
-    /// </summary>
     public sealed class PdfContents : PdfArray
     {
-        /// <summary>
-        /// Initializes a new instance of the <see cref="PdfContents"/> class.
-        /// </summary>
-        /// <param name="document">The document.</param>
         public PdfContents(PdfDocument document)
             : base(document)
         { }
@@ -55,12 +19,10 @@ namespace PdfSharp.Pdf.Advanced
             int count = Elements.Count;
             for (int idx = 0; idx < count; idx++)
             {
-                // Convert the references from PdfDictionary to PdfContent
                 PdfItem item = Elements[idx];
                 PdfReference iref = item as PdfReference;
                 if (iref != null && iref.Value is PdfDictionary)
                 {
-                    // The following line is correct!
                     new PdfContent((PdfDictionary)iref.Value);
                 }
                 else
@@ -68,9 +30,6 @@ namespace PdfSharp.Pdf.Advanced
             }
         }
 
-        /// <summary>
-        /// Appends a new content stream and returns it.
-        /// </summary>
         public PdfContent AppendContent()
         {
             Debug.Assert(Owner != null);
@@ -83,9 +42,6 @@ namespace PdfSharp.Pdf.Advanced
             return content;
         }
 
-        /// <summary>
-        /// Prepends a new content stream and returns it.
-        /// </summary>
         public PdfContent PrependContent()
         {
             Debug.Assert(Owner != null);
@@ -98,10 +54,6 @@ namespace PdfSharp.Pdf.Advanced
             return content;
         }
 
-        /// <summary>
-        /// Creates a single content stream with the bytes from the array of the content streams.
-        /// This operation does not modify any of the content streams in this array.
-        /// </summary>
         public PdfContent CreateSingleContent()
         {
             byte[] bytes = new byte[0];
@@ -122,9 +74,6 @@ namespace PdfSharp.Pdf.Advanced
             return content;
         }
 
-        /// <summary>
-        /// Replaces the current content of the page with the specified content sequence.
-        /// </summary>
         public PdfContent ReplaceContent(CSequence cseq)
         {
             if (cseq == null)
@@ -133,9 +82,6 @@ namespace PdfSharp.Pdf.Advanced
             return ReplaceContent(cseq.ToContent());
         }
 
-        /// <summary>
-        /// Replaces the current content of the page with the specified bytes.
-        /// </summary>
         PdfContent ReplaceContent(byte[] contentBytes)
         {
             Debug.Assert(Owner != null);
@@ -165,7 +111,6 @@ namespace PdfSharp.Pdf.Advanced
                 }
                 else if (count > 1)
                 {
-                    // Surround content streams with q/Q operations
                     byte[] value;
                     int length;
                     PdfContent content = (PdfContent)((PdfReference)Elements[0]).Value;
@@ -198,16 +143,12 @@ namespace PdfSharp.Pdf.Advanced
 
         internal override void WriteObject(PdfWriter writer)
         {
-            // Save two bytes in PDF stream...
             if (Elements.Count == 1)
                 Elements[0].WriteObject(writer);
             else
                 base.WriteObject(writer);
         }
 
-        /// <summary>
-        /// Gets the enumerator.
-        /// </summary>
         public new IEnumerator<PdfContent> GetEnumerator()
         {
             return new PdfPageContentEnumerator(this);
@@ -256,7 +197,6 @@ namespace PdfSharp.Pdf.Advanced
 
             public void Dispose()
             {
-                // Nothing to do.
             }
 
             PdfContent _currentElement;
