@@ -1,48 +1,11 @@
-#region PDFsharp - A .NET library for processing PDF
-//
-// Authors:
-//   Stefan Lange
-//
-// Copyright (c) 2005-2017 empira Software GmbH, Cologne Area (Germany)
-//
-// http://www.pdfsharp.com
-// http://sourceforge.net/projects/pdfsharp
-//
-// Permission is hereby granted, free of charge, to any person obtaining a
-// copy of this software and associated documentation files (the "Software"),
-// to deal in the Software without restriction, including without limitation
-// the rights to use, copy, modify, merge, publish, distribute, sublicense,
-// and/or sell copies of the Software, and to permit persons to whom the
-// Software is furnished to do so, subject to the following conditions:
-//
-// The above copyright notice and this permission notice shall be included
-// in all copies or substantial portions of the Software.
-//
-// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL
-// THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
-// FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER 
-// DEALINGS IN THE SOFTWARE.
-#endregion
-
 using System;
 using System.Collections.Generic;
 using PdfSharp.Pdf.IO;
 
 namespace PdfSharp.Drawing.Layout
 {
-    /// <summary>
-    /// Represents a very simple text formatter.
-    /// If this class does not satisfy your needs on formatting paragraphs I recommend to take a look
-    /// at MigraDoc Foundation. Alternatively you should copy this class in your own source code and modify it.
-    /// </summary>
     public class XTextFormatter
     {
-        /// <summary>
-        /// Initializes a new instance of the <see cref="XTextFormatter"/> class.
-        /// </summary>
         public XTextFormatter(XGraphics gfx)
         {
             if (gfx == null)
@@ -51,10 +14,6 @@ namespace PdfSharp.Drawing.Layout
         }
         readonly XGraphics _gfx;
 
-        /// <summary>
-        /// Gets or sets the text.
-        /// </summary>
-        /// <value>The text.</value>
         public string Text
         {
             get { return _text; }
@@ -62,9 +21,6 @@ namespace PdfSharp.Drawing.Layout
         }
         string _text;
 
-        /// <summary>
-        /// Gets or sets the font.
-        /// </summary>
         public XFont Font
         {
             get { return _font; }
@@ -74,11 +30,10 @@ namespace PdfSharp.Drawing.Layout
                     throw new ArgumentNullException("Font");
                 _font = value;
 
-                _lineSpace = _font.GetHeight(); // old: _font.GetHeight(_gfx);
+                _lineSpace = _font.GetHeight();   
                 _cyAscent = _lineSpace * _font.CellAscent / _font.CellSpace;
                 _cyDescent = _lineSpace * _font.CellDescent / _font.CellSpace;
 
-                // HACK in XTextFormatter
                 _spaceWidth = _gfx.MeasureString("x x", value).Width;
                 _spaceWidth -= _gfx.MeasureString("xx", value).Width;
             }
@@ -89,9 +44,6 @@ namespace PdfSharp.Drawing.Layout
         double _cyDescent;
         double _spaceWidth;
 
-        /// <summary>
-        /// Gets or sets the bounding box of the layout.
-        /// </summary>
         public XRect LayoutRectangle
         {
             get { return _layoutRectangle; }
@@ -99,9 +51,6 @@ namespace PdfSharp.Drawing.Layout
         }
         XRect _layoutRectangle;
 
-        /// <summary>
-        /// Gets or sets the alignment of the text.
-        /// </summary>
         public XParagraphAlignment Alignment
         {
             get { return _alignment; }
@@ -109,26 +58,11 @@ namespace PdfSharp.Drawing.Layout
         }
         XParagraphAlignment _alignment = XParagraphAlignment.Left;
 
-        /// <summary>
-        /// Draws the text.
-        /// </summary>
-        /// <param name="text">The text to be drawn.</param>
-        /// <param name="font">The font.</param>
-        /// <param name="brush">The text brush.</param>
-        /// <param name="layoutRectangle">The layout rectangle.</param>
         public void DrawString(string text, XFont font, XBrush brush, XRect layoutRectangle)
         {
             DrawString(text, font, brush, layoutRectangle, XStringFormats.TopLeft);
         }
 
-        /// <summary>
-        /// Draws the text.
-        /// </summary>
-        /// <param name="text">The text to be drawn.</param>
-        /// <param name="font">The font.</param>
-        /// <param name="brush">The text brush.</param>
-        /// <param name="layoutRectangle">The layout rectangle.</param>
-        /// <param name="format">The format. Must be <c>XStringFormat.TopLeft</c></param>
         public void DrawString(string text, XFont font, XBrush brush, XRect layoutRectangle, XStringFormat format)
         {
             if (text == null)
@@ -175,7 +109,6 @@ namespace PdfSharp.Drawing.Layout
             {
                 char ch = _text[idx];
 
-                // Treat CR and CRLF as LF
                 if (ch == Chars.CR)
                 {
                     if (idx < length - 1 && _text[idx + 1] == Chars.LF)
@@ -194,7 +127,6 @@ namespace PdfSharp.Drawing.Layout
                     blockLength = 0;
                     _blocks.Add(new Block(BlockType.LineBreak));
                 }
-                // The non-breaking space is whitespace, so we treat it like non-whitespace.
                 else if (ch != Chars.NonBreakableSpace && char.IsWhiteSpace(ch))
                 {
                     if (inNonWhiteSpace)
@@ -275,9 +207,6 @@ namespace PdfSharp.Drawing.Layout
                 AlignLine(firstIndex, count - 1, rectWidth);
         }
 
-        /// <summary>
-        /// Align center, right, or justify.
-        /// </summary>
         void AlignLine(int firstIndex, int lastIndex, double layoutWidth)
         {
             XParagraphAlignment blockAlignment = _blocks[firstIndex].Alignment;
@@ -293,7 +222,6 @@ namespace PdfSharp.Drawing.Layout
                 totalWidth += _blocks[idx].Width + _spaceWidth;
 
             double dx = Math.Max(layoutWidth - totalWidth, 0);
-            //Debug.Assert(dx >= 0);
             if (_alignment != XParagraphAlignment.Justify)
             {
                 if (_alignment == XParagraphAlignment.Center)
@@ -304,7 +232,7 @@ namespace PdfSharp.Drawing.Layout
                     block.Location += new XSize(dx, 0);
                 }
             }
-            else if (count > 1) // case: justify
+            else if (count > 1)   
             {
                 dx /= count - 1;
                 for (int idx = firstIndex + 1, i = 1; idx <= lastIndex; idx++, i++)
@@ -322,17 +250,8 @@ namespace PdfSharp.Drawing.Layout
             Text, Space, Hyphen, LineBreak,
         }
 
-        /// <summary>
-        /// Represents a single word.
-        /// </summary>
         class Block
         {
-            /// <summary>
-            /// Initializes a new instance of the <see cref="Block"/> class.
-            /// </summary>
-            /// <param name="text">The text of the block.</param>
-            /// <param name="type">The type of the block.</param>
-            /// <param name="width">The width of the text.</param>
             public Block(string text, BlockType type, double width)
             {
                 Text = text;
@@ -340,60 +259,22 @@ namespace PdfSharp.Drawing.Layout
                 Width = width;
             }
 
-            /// <summary>
-            /// Initializes a new instance of the <see cref="Block"/> class.
-            /// </summary>
-            /// <param name="type">The type.</param>
             public Block(BlockType type)
             {
                 Type = type;
             }
 
-            /// <summary>
-            /// The text represented by this block.
-            /// </summary>
             public readonly string Text;
 
-            /// <summary>
-            /// The type of the block.
-            /// </summary>
             public readonly BlockType Type;
 
-            /// <summary>
-            /// The width of the text.
-            /// </summary>
             public readonly double Width;
 
-            /// <summary>
-            /// The location relative to the upper left corner of the layout rectangle.
-            /// </summary>
             public XPoint Location;
 
-            /// <summary>
-            /// The alignment of this line.
-            /// </summary>
             public XParagraphAlignment Alignment;
 
-            /// <summary>
-            /// A flag indicating that this is the last block that fits in the layout rectangle.
-            /// </summary>
             public bool Stop;
         }
-        // TODO:
-        // - more XStringFormat variations
-        // - calculate bounding box
-        // - left and right indent
-        // - first line indent
-        // - margins and paddings
-        // - background color
-        // - text background color
-        // - border style
-        // - hyphens, soft hyphens, hyphenation
-        // - kerning
-        // - change font, size, text color etc.
-        // - line spacing
-        // - underline and strike-out variation
-        // - super- and sub-script
-        // - ...
     }
 }
