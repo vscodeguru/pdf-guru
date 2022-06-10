@@ -1,33 +1,4 @@
 ﻿
-#region PDFsharp - A .NET library for processing PDF
-//
-// Authors:
-//   Stefan Lange
-//
-// Copyright (c) 2005-2017 empira Software GmbH, Cologne Area (Germany)
-//
-// http://www.pdfsharp.com
-// http://sourceforge.net/projects/pdfsharp
-//
-// Permission is hereby granted, free of charge, to any person obtaining a
-// copy of this software and associated documentation files (the "Software"),
-// to deal in the Software without restriction, including without limitation
-// the rights to use, copy, modify, merge, publish, distribute, sublicense,
-// and/or sell copies of the Software, and to permit persons to whom the
-// Software is furnished to do so, subject to the following conditions:
-//
-// The above copyright notice and this permission notice shall be included
-// in all copies or substantial portions of the Software.
-//
-// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL
-// THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
-// FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER 
-// DEALINGS IN THE SOFTWARE.
-#endregion
-
 using System;
 using System.Globalization;
 using System.Diagnostics;
@@ -35,37 +6,23 @@ using System.Text;
 using System.IO;
 using PdfSharp.Internal;
 
-#pragma warning disable 1591
 
 namespace PdfSharp.Pdf.Content
 {
-    /// <summary>
-    /// Lexical analyzer for PDF content files. Adobe specifies no grammar, but it seems that it
-    /// is a simple post-fix notation.
-    /// </summary>
     public class CLexer
     {
-        /// <summary>
-        /// Initializes a new instance of the Lexer class.
-        /// </summary>
         public CLexer(byte[] content)
         {
             _content = content;
             _charIndex = 0;
         }
 
-        /// <summary>
-        /// Initializes a new instance of the Lexer class.
-        /// </summary>
         public CLexer(MemoryStream content)
         {
             _content = content.ToArray();
             _charIndex = 0;
         }
 
-        /// <summary>
-        /// Reads the next token and returns its type.
-        /// </summary>
         public CSymbol ScanNextToken()
         {
             Again:
@@ -74,21 +31,11 @@ namespace PdfSharp.Pdf.Content
             switch (ch)
             {
                 case '%':
-                    // Eat comments, the parser doesn't handle them
-                    //return symbol = ScanComment();
                     ScanComment();
                     goto Again;
 
                 case '/':
                     return _symbol = ScanName();
-
-                //case 'R':
-                //  if (Lexer.IsWhiteSpace(nextChar))
-                //  {
-                //    ScanNextChar();
-                //    return Symbol.R;
-                //  }
-                //  break;
 
                 case '+':
                 case '-':
@@ -130,9 +77,6 @@ namespace PdfSharp.Pdf.Content
             return _symbol = CSymbol.None;
         }
 
-        /// <summary>
-        /// Scans a comment line. (Not yet used, comments are skipped by lexer.)
-        /// </summary>
         public CSymbol ScanComment()
         {
             Debug.Assert(_currChar == Chars.Percent);
@@ -143,39 +87,24 @@ namespace PdfSharp.Pdf.Content
             return _symbol = CSymbol.Comment;
         }
 
-        /// <summary>
-        /// Scans the bytes of an inline image.
-        /// NYI: Just scans over it.
-        /// </summary>
         public CSymbol ScanInlineImage()
         {
-            // TODO: Implement inline images.
-            // Skip this:
-            // BI
-            // … Key-value pairs …
-            // ID
-            // … Image data …
-            // EI
-
             bool ascii85 = false;
             do
             {
                 ScanNextToken();
-                // HACK: Is image ASCII85 decoded?
                 if (!ascii85 && _symbol == CSymbol.Name && (Token == "/ASCII85Decode" || Token == "/A85"))
                     ascii85 = true;
             } while (_symbol != CSymbol.Operator || Token != "ID");
 
             if (ascii85)
             {
-                // Look for '~>' because 'EI' may be part of the encoded image.
                 while (_currChar != Chars.EOF && (_currChar != '~' || _nextChar != '>'))
                     ScanNextChar();
                 if (_currChar == Chars.EOF)
                     ContentReaderDiagnostics.HandleUnexpectedCharacter(_currChar);
             }
 
-            // Look for '<ws>EI<ws>', as 'EI' may be part of the binary image data here too.
             while (_currChar != Chars.EOF)
             {
                 if (IsWhiteSpace(_currChar))
@@ -191,13 +120,9 @@ namespace PdfSharp.Pdf.Content
             if (_currChar == Chars.EOF)
                 ContentReaderDiagnostics.HandleUnexpectedCharacter(_currChar);
 
-            // We currently do nothing with inline images.
             return CSymbol.None;
         }
 
-        /// <summary>
-        /// Scans a name.
-        /// </summary>
         public CSymbol ScanName()
         {
             Debug.Assert(_currChar == Chars.Slash);
@@ -216,7 +141,6 @@ namespace PdfSharp.Pdf.Content
                     hex[0] = _currChar;
                     hex[1] = _nextChar;
                     ScanNextChar();
-                    // TODO Check syntax
                     ch = (char)(ushort)int.Parse(new string(hex), NumberStyles.AllowHexSpecifier);
                     _currChar = ch;
                 }
@@ -225,11 +149,9 @@ namespace PdfSharp.Pdf.Content
 
         protected CSymbol ScanDictionary()
         {
-            // TODO Do an actual recursive parse instead of this simple scan.
-
             ClearToken();
-            _token.Append(_currChar);      // '<'
-            _token.Append(ScanNextChar()); // '<'
+            _token.Append(_currChar);       
+            _token.Append(ScanNextChar());  
 
             bool inString = false, inHexString = false;
             int nestedDict = 0, nestedStringParen = 0;
@@ -281,8 +203,7 @@ namespace PdfSharp.Pdf.Content
 
 #if true
                             return CSymbol.Dictionary;
-#else
-                            return CSymbol.String;
+
 #endif
                         }
                     }
@@ -292,9 +213,6 @@ namespace PdfSharp.Pdf.Content
             }
         }
 
-        /// <summary>
-        /// Scans an integer or real number.
-        /// </summary>
         public CSymbol ScanNumber()
         {
             long value = 0;
@@ -343,7 +261,6 @@ namespace PdfSharp.Pdf.Content
                 if (decimalDigits > 0)
                 {
                     _tokenAsReal = value / PowersOf10[decimalDigits];
-                    //_tokenAsLong = value / PowersOf10[decimalDigits];
                 }
                 else
                 {
@@ -365,21 +282,16 @@ namespace PdfSharp.Pdf.Content
         }
         static readonly double[] PowersOf10 = { 1, 10, 100, 1000, 10000, 100000, 1000000, 10000000, 100000000, 1000000000, 10000000000 };
 
-        /// <summary>
-        /// Scans an operator.
-        /// </summary>
         public CSymbol ScanOperator()
         {
             ClearToken();
             char ch = _currChar;
-            // Scan token
             while (IsOperatorChar(ch))
                 ch = AppendAndScanNextChar();
 
             return _symbol = CSymbol.Operator;
         }
 
-        // TODO
         public CSymbol ScanLiteralString()
         {
             Debug.Assert(_currChar == Chars.ParenLeft);
@@ -387,17 +299,12 @@ namespace PdfSharp.Pdf.Content
             ClearToken();
             int parenLevel = 0;
             char ch = ScanNextChar();
-            // Test UNICODE string
             if (ch == '\xFE' && _nextChar == '\xFF')
             {
-                // I'm not sure if the code is correct in any case.
-                // ? Can a UNICODE character not start with ')' as hibyte
-                // ? What about \# escape sequences
                 ScanNextChar();
                 char chHi = ScanNextChar();
                 if (chHi == ')')
                 {
-                    // The empty unicode string...
                     ScanNextChar();
                     return _symbol = CSymbol.String;
                 }
@@ -423,7 +330,6 @@ namespace PdfSharp.Pdf.Content
 
                         case '\\':
                             {
-                                // TODO: not sure that this is correct...
                                 ch = ScanNextChar();
                                 switch (ch)
                                 {
@@ -466,7 +372,6 @@ namespace PdfSharp.Pdf.Content
                                     default:
                                         if (char.IsDigit(ch))
                                         {
-                                            // Octal character code
                                             int n = ch - '0';
                                             if (char.IsDigit(_nextChar))
                                             {
@@ -481,12 +386,7 @@ namespace PdfSharp.Pdf.Content
                                 break;
                             }
 
-                        //case '#':
-                        //    ContentReaderDiagnostics.HandleUnexpectedCharacter('#');
-                        //    break;
-
                         default:
-                            // Every other char is appended to the token.
                             break;
                     }
                     _token.Append(ch);
@@ -502,7 +402,6 @@ namespace PdfSharp.Pdf.Content
             }
             else
             {
-                // 8-bit characters
                 while (true)
                 {
                     SkipChar:
@@ -565,7 +464,6 @@ namespace PdfSharp.Pdf.Content
                                     default:
                                         if (char.IsDigit(ch))
                                         {
-                                            // Octal character code.
                                             int n = ch - '0';
                                             if (char.IsDigit(_nextChar))
                                             {
@@ -580,22 +478,15 @@ namespace PdfSharp.Pdf.Content
                                 break;
                             }
 
-                        //case '#':
-                        //    ContentReaderDiagnostics.HandleUnexpectedCharacter('#');
-                        //    break;
-
                         default:
-                            // Every other char is appended to the token.
                             break;
                     }
                     _token.Append(ch);
-                    //token.Append(Encoding.GetEncoding(1252).GetString(new byte[] { (byte)ch }));
                     ch = ScanNextChar();
                 }
             }
         }
 
-        // TODO
         public CSymbol ScanHexadecimalString()
         {
             Debug.Assert(_currChar == Chars.Less);
@@ -633,9 +524,6 @@ namespace PdfSharp.Pdf.Content
             return _symbol = CSymbol.HexString;
         }
 
-        /// <summary>
-        /// Move current position one character further in content stream.
-        /// </summary>
         internal char ScanNextChar()
         {
             if (ContLength <= _charIndex)
@@ -653,7 +541,6 @@ namespace PdfSharp.Pdf.Content
                 {
                     if (_nextChar == Chars.LF)
                     {
-                        // Treat CR LF as LF
                         _currChar = _nextChar;
                         if (ContLength <= _charIndex)
                             _nextChar = Chars.EOF;
@@ -662,7 +549,6 @@ namespace PdfSharp.Pdf.Content
                     }
                     else
                     {
-                        // Treat single CR as LF
                         _currChar = Chars.LF;
                     }
                 }
@@ -670,9 +556,6 @@ namespace PdfSharp.Pdf.Content
             return _currChar;
         }
 
-        /// <summary>
-        /// Resets the current token to the empty string.
-        /// </summary>
         void ClearToken()
         {
             _token.Length = 0;
@@ -680,20 +563,12 @@ namespace PdfSharp.Pdf.Content
             _tokenAsReal = 0;
         }
 
-        /// <summary>
-        /// Appends current character to the token and reads next one.
-        /// </summary>
         internal char AppendAndScanNextChar()
         {
             _token.Append(_currChar);
             return ScanNextChar();
         }
 
-        /// <summary>
-        /// If the current character is not a white space, the function immediately returns it.
-        /// Otherwise the PDF cursor is moved forward to the first non-white space or EOF.
-        /// White spaces are NUL, HT, LF, FF, CR, and SP.
-        /// </summary>
         public char MoveToNonWhiteSpace()
         {
             while (_currChar != Chars.EOF)
@@ -716,26 +591,17 @@ namespace PdfSharp.Pdf.Content
             return _currChar;
         }
 
-        /// <summary>
-        /// Gets or sets the current symbol.
-        /// </summary>
         public CSymbol Symbol
         {
             get { return _symbol; }
             set { _symbol = value; }
         }
 
-        /// <summary>
-        /// Gets the current token.
-        /// </summary>
         public string Token
         {
             get { return _token.ToString(); }
         }
 
-        /// <summary>
-        /// Interprets current token as integer literal.
-        /// </summary>
         internal int TokenToInteger
         {
             get
@@ -745,57 +611,44 @@ namespace PdfSharp.Pdf.Content
             }
         }
 
-        /// <summary>
-        /// Interpret current token as real or integer literal.
-        /// </summary>
         internal double TokenToReal
         {
             get
             {
-                // ReSharper disable once CompareOfFloatsByEqualityOperator
                 Debug.Assert(_tokenAsReal == double.Parse(_token.ToString(), CultureInfo.InvariantCulture));
                 return _tokenAsReal;
             }
         }
 
-        /// <summary>
-        /// Indicates whether the specified character is a content stream white-space character.
-        /// </summary>
         internal static bool IsWhiteSpace(char ch)
         {
             switch (ch)
             {
-                case Chars.NUL:  // 0 Null
-                case Chars.HT:   // 9 Tab
-                case Chars.LF:   // 10 Line feed
-                case Chars.FF:   // 12 Form feed
-                case Chars.CR:   // 13 Carriage return
-                case Chars.SP:   // 32 Space
+                case Chars.NUL:    
+                case Chars.HT:     
+                case Chars.LF:      
+                case Chars.FF:      
+                case Chars.CR:      
+                case Chars.SP:     
                     return true;
             }
             return false;
         }
 
-        /// <summary>
-        /// Indicates whether the specified character is an content operator character.
-        /// </summary>
         internal static bool IsOperatorChar(char ch)
         {
             if (char.IsLetter(ch))
                 return true;
             switch (ch)
             {
-                case Chars.Asterisk:    // *
-                case Chars.QuoteSingle: // '
-                case Chars.QuoteDbl:    // "
+                case Chars.Asterisk:     
+                case Chars.QuoteSingle:  
+                case Chars.QuoteDbl:     
                     return true;
             }
             return false;
         }
 
-        /// <summary>
-        /// Indicates whether the specified character is a PDF delimiter character.
-        /// </summary>
         internal static bool IsDelimiter(char ch)
         {
             switch (ch)
@@ -806,8 +659,6 @@ namespace PdfSharp.Pdf.Content
                 case '>':
                 case '[':
                 case ']':
-                //case '{':
-                //case '}':
                 case '/':
                 case '%':
                     return true;
@@ -815,15 +666,11 @@ namespace PdfSharp.Pdf.Content
             return false;
         }
 
-        /// <summary>
-        /// Gets the length of the content.
-        /// </summary>
         public int ContLength
         {
             get { return _content.Length; }
         }
 
-        // ad
         public int Position
         {
             get { return _charIndex; }

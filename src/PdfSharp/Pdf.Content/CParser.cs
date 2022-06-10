@@ -1,45 +1,12 @@
-#region PDFsharp - A .NET library for processing PDF
-//
-// Authors:
-//   Stefan Lange
-//
-// Copyright (c) 2005-2017 empira Software GmbH, Cologne Area (Germany)
-//
-// http://www.pdfsharp.com
-// http://sourceforge.net/projects/pdfsharp
-//
-// Permission is hereby granted, free of charge, to any person obtaining a
-// copy of this software and associated documentation files (the "Software"),
-// to deal in the Software without restriction, including without limitation
-// the rights to use, copy, modify, merge, publish, distribute, sublicense,
-// and/or sell copies of the Software, and to permit persons to whom the
-// Software is furnished to do so, subject to the following conditions:
-//
-// The above copyright notice and this permission notice shall be included
-// in all copies or substantial portions of the Software.
-//
-// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL
-// THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
-// FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER 
-// DEALINGS IN THE SOFTWARE.
-#endregion
 
-using System.Diagnostics;
 using System.IO;
 using PdfSharp.Internal;
 using PdfSharp.Pdf.Advanced;
 using PdfSharp.Pdf.Content.Objects;
 
-#pragma warning disable 1591
 
 namespace PdfSharp.Pdf.Content
 {
-    /// <summary>
-    /// Provides the functionality to parse PDF content streams.
-    /// </summary>
     public sealed class CParser
     {
         public CParser(PdfPage page)
@@ -79,9 +46,6 @@ namespace PdfSharp.Pdf.Content
             return sequence;
         }
 
-        /// <summary>
-        /// Parses whatever comes until the specified stop symbol is reached.
-        /// </summary>
         void ParseObject(CSequence sequence, CSymbol stop)
         {
             CSymbol symbol;
@@ -95,7 +59,6 @@ namespace PdfSharp.Pdf.Content
                 switch (symbol)
                 {
                     case CSymbol.Comment:
-                        // ignore comments
                         break;
 
                     case CSymbol.Integer:
@@ -125,7 +88,6 @@ namespace PdfSharp.Pdf.Content
                         s.CStringType = CStringType.Dictionary;
                         _operands.Add(s);
                         op = CreateOperator(OpCodeName.Dictionary);
-                        //_operands.Clear();
                         sequence.Add(op);
 
                         break;
@@ -138,7 +100,6 @@ namespace PdfSharp.Pdf.Content
 
                     case CSymbol.Operator:
                         op = CreateOperator();
-                        //_operands.Clear();
                         sequence.Add(op);
                         break;
 
@@ -157,11 +118,6 @@ namespace PdfSharp.Pdf.Content
                         ContentReaderDiagnostics.HandleUnexpectedCharacter(']');
                         break;
 
-#if DEBUG
-                    default:
-                        Debug.Assert(false);
-                        break;
-#endif
                 }
             }
         }
@@ -186,16 +142,6 @@ namespace PdfSharp.Pdf.Content
             {
                 _lexer.ScanInlineImage();
             }
-#if DEBUG
-            if (op.OpCode.Operands != -1 && op.OpCode.Operands != _operands.Count)
-            {
-                if (op.OpCode.OpCodeName != OpCodeName.ID)
-                {
-                    GetType();
-                    Debug.Assert(false, "Invalid number of operands.");
-                }
-            }
-#endif
             op.Operands.Add(_operands);
             _operands.Clear();
             return op;
@@ -213,9 +159,6 @@ namespace PdfSharp.Pdf.Content
             return symbol;
         }
 
-        /// <summary>
-        /// Reads the next symbol that must be the specified one.
-        /// </summary>
         CSymbol ReadSymbol(CSymbol symbol)
         {
             CSymbol current = _lexer.ScanNextToken();
