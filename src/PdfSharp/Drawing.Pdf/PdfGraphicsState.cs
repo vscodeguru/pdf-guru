@@ -1,57 +1,14 @@
-#region PDFsharp - A .NET library for processing PDF
-//
-// Authors:
-//   Stefan Lange
-//
-// Copyright (c) 2005-2017 empira Software GmbH, Cologne Area (Germany)
-//
-// http://www.pdfsharp.com
-// http://sourceforge.net/projects/pdfsharp
-//
-// Permission is hereby granted, free of charge, to any person obtaining a
-// copy of this software and associated documentation files (the "Software"),
-// to deal in the Software without restriction, including without limitation
-// the rights to use, copy, modify, merge, publish, distribute, sublicense,
-// and/or sell copies of the Software, and to permit persons to whom the
-// Software is furnished to do so, subject to the following conditions:
-//
-// The above copyright notice and this permission notice shall be included
-// in all copies or substantial portions of the Software.
-//
-// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL
-// THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
-// FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER 
-// DEALINGS IN THE SOFTWARE.
-#endregion
-
 using System;
 using System.Diagnostics;
 using System.Globalization;
 using System.Text;
-#if GDI
-using System.Drawing;
-using System.Drawing.Drawing2D;
-#endif
-#if WPF
-#endif
 using PdfSharp.Internal;
 using PdfSharp.Pdf;
 using PdfSharp.Pdf.Advanced;
 using PdfSharp.Pdf.Internal;
 
-// ReSharper disable CompareOfFloatsByEqualityOperator
-
 namespace PdfSharp.Drawing.Pdf
 {
-    /// <summary>
-    /// Represents the current PDF graphics state.
-    /// </summary>
-    /// <remarks>
-    /// Completely revised for PDFsharp 1.4.
-    /// </remarks>
     internal sealed class PdfGraphicsState : ICloneable
     {
         public PdfGraphicsState(XGraphicsPdfRenderer renderer)
@@ -77,17 +34,13 @@ namespace PdfSharp.Drawing.Pdf
 
         public void PushState()
         {
-            // BeginGraphic
             _renderer.Append("q/n");
         }
 
         public void PopState()
         {
-            //BeginGraphic
             _renderer.Append("Q/n");
         }
-
-        #region Stroke
 
         double _realizedLineWith = -1;
         int _realizedLineCap = -1;
@@ -138,7 +91,6 @@ namespace PdfSharp.Drawing.Pdf
                 double dot = pen.Width;
                 double dash = 3 * dot;
 
-                // Line width 0 is not recommended but valid.
                 XDashStyle dashStyle = pen.DashStyle;
                 if (dot == 0)
                     dashStyle = XDashStyle.Solid;
@@ -175,7 +127,6 @@ namespace PdfSharp.Drawing.Pdf
                                     pdf.Append(' ');
                                 pdf.Append(PdfEncoders.ToString(pen._dashPattern[idx] * pen._width));
                             }
-                            // Make an even number of values look like in GDI+
                             if (len > 0 && len % 2 == 1)
                             {
                                 pdf.Append(' ');
@@ -184,9 +135,6 @@ namespace PdfSharp.Drawing.Pdf
                             pdf.AppendFormat(CultureInfo.InvariantCulture, "]{0:" + format + "} d\n", pen._dashOffset * pen._width);
                             string pattern = pdf.ToString();
 
-                            // BUG: drice2@ageone.de reported a realizing problem
-                            // HACK: I remove the if clause
-                            //if (_realizedDashPattern != pattern)
                             {
                                 _realizedDashPattern = pattern;
                                 _renderer.Append(pattern);
@@ -220,7 +168,6 @@ namespace PdfSharp.Drawing.Pdf
                 string gs = _renderer.Resources.AddExtGState(extGState);
                 _renderer.AppendFormatString("{0} gs\n", gs);
 
-                // Must create transparency group.
                 if (_renderer._page != null && color.A < 1)
                     _renderer._page.TransparencyUsed = true;
             }
@@ -228,18 +175,11 @@ namespace PdfSharp.Drawing.Pdf
             _realizedStrokeOverPrint = overPrint;
         }
 
-        #endregion
-
-        #region Fill
-
         XColor _realizedFillColor = XColor.Empty;
         bool _realizedNonStrokeOverPrint;
 
         public void RealizeBrush(XBrush brush, PdfColorMode colorMode, int renderingMode, double fontEmSize)
         {
-            // Rendering mode 2 is used for bold simulation.
-            // Reference: TABLE 5.3  Text rendering modes / Page 402
-
             XSolidBrush solidBrush = brush as XSolidBrush;
             if (solidBrush != null)
             {
@@ -252,9 +192,7 @@ namespace PdfSharp.Drawing.Pdf
                 }
                 else if (renderingMode == 2)
                 {
-                    // Come here in case of bold simulation.
                     RealizeFillColor(color, false, colorMode);
-                    //color = XColors.Green;
                     RealizePen(new XPen(color, fontEmSize * Const.BoldEmphasis), colorMode);
                 }
                 else
@@ -277,7 +215,6 @@ namespace PdfSharp.Drawing.Pdf
                     _renderer.AppendFormatString("/Pattern cs\n", name);
                     _renderer.AppendFormatString("{0} scn\n", name);
 
-                    // Invalidate fill color.
                     _realizedFillColor = XColor.Empty;
                 }
             }
@@ -313,7 +250,6 @@ namespace PdfSharp.Drawing.Pdf
                 string gs = _renderer.Resources.AddExtGState(extGState);
                 _renderer.AppendFormatString("{0} gs\n", gs);
 
-                // Must create transparency group.
                 if (_renderer._page != null && color.A < 1)
                     _renderer._page.TransparencyUsed = true;
             }
@@ -328,31 +264,24 @@ namespace PdfSharp.Drawing.Pdf
             RealizeFillColor(color, _realizedNonStrokeOverPrint, colorMode);
         }
 
-        #endregion
-
-        #region Text
-
         internal PdfFont _realizedFont;
         string _realizedFontName = String.Empty;
         double _realizedFontSize;
-        int _realizedRenderingMode;  // Reference: TABLE 5.2  Text state operators / Page 398
-        double _realizedCharSpace;  // Reference: TABLE 5.2  Text state operators / Page 398
+        int _realizedRenderingMode;            
+        double _realizedCharSpace;            
 
         public void RealizeFont(XFont font, XBrush brush, int renderingMode)
         {
             const string format = Config.SignificantFigures3;
 
-            // So far rendering mode 0 (fill text) and 2 (fill, then stroke text) only.
-            RealizeBrush(brush, _renderer._colorMode, renderingMode, font.Size); // _renderer.page.document.Options.ColorMode);
+            RealizeBrush(brush, _renderer._colorMode, renderingMode, font.Size);  
 
-            // Realize rendering mode.
             if (_realizedRenderingMode != renderingMode)
             {
                 _renderer.AppendFormatInt("{0} Tr\n", renderingMode);
                 _realizedRenderingMode = renderingMode;
             }
 
-            // Realize character spacing.
             if (_realizedRenderingMode == 0)
             {
                 if (_realizedCharSpace != 0)
@@ -361,7 +290,7 @@ namespace PdfSharp.Drawing.Pdf
                     _realizedCharSpace = 0;
                 }
             }
-            else  // _realizedRenderingMode is 2.
+            else     
             {
                 double charSpace = font.Size * Const.BoldEmphasis;
                 if (_realizedCharSpace != charSpace)
@@ -386,75 +315,23 @@ namespace PdfSharp.Drawing.Pdf
 
         public XPoint RealizedTextPosition;
 
-        /// <summary>
-        /// Indicates that the text transformation matrix currently skews 20° to the right.
-        /// </summary>
         public bool ItalicSimulationOn;
 
-        #endregion
-
-        #region Transformation
-
-        /// <summary>
-        /// The already realized part of the current transformation matrix.
-        /// </summary>
         public XMatrix RealizedCtm;
 
-        /// <summary>
-        /// The not yet realized part of the current transformation matrix.
-        /// </summary>
         public XMatrix UnrealizedCtm;
 
-        /// <summary>
-        /// Product of RealizedCtm and UnrealizedCtm.
-        /// </summary>
         public XMatrix EffectiveCtm;
 
-        /// <summary>
-        /// Inverse of EffectiveCtm used for transformation.
-        /// </summary>
         public XMatrix InverseEffectiveCtm;
 
         public XMatrix WorldTransform;
 
-        ///// <summary>
-        ///// The world transform in PDF world space.
-        ///// </summary>
-        //public XMatrix EffectiveCtm
-        //{
-        //  get
-        //  {
-        //    //if (MustRealizeCtm)
-        //    if (!UnrealizedCtm.IsIdentity)
-        //    {
-        //      XMatrix matrix = RealizedCtm;
-        //      matrix.Prepend(UnrealizedCtm);
-        //      return matrix;
-        //    }
-        //    return RealizedCtm;
-        //  }
-        //  //set
-        //  //{
-        //  //  XMatrix matrix = realizedCtm;
-        //  //  matrix.Invert();
-        //  //  matrix.Prepend(value);
-        //  //  unrealizedCtm = matrix;
-        //  //  MustRealizeCtm = !unrealizedCtm.IsIdentity;
-        //  //}
-        //}
-
         public void AddTransform(XMatrix value, XMatrixOrder matrixOrder)
         {
-            // TODO: User matrixOrder
-#if DEBUG
-            if (matrixOrder == XMatrixOrder.Append)
-                throw new NotImplementedException("XMatrixOrder.Append");
-#endif
             XMatrix transform = value;
             if (_renderer.Gfx.PageDirection == XPageDirection.Downwards)
             {
-                // Take chirality into account and
-                // invert the direction of rotation.
                 transform.M12 = -value.M12;
                 transform.M21 = -value.M21;
             }
@@ -463,12 +340,8 @@ namespace PdfSharp.Drawing.Pdf
             WorldTransform.Prepend(value);
         }
 
-        /// <summary>
-        /// Realizes the CTM.
-        /// </summary>
         public void RealizeCtm()
         {
-            //if (MustRealizeCtm)
             if (!UnrealizedCtm.IsIdentity)
             {
                 Debug.Assert(!UnrealizedCtm.IsIdentity, "mrCtm is unnecessarily set.");
@@ -476,7 +349,6 @@ namespace PdfSharp.Drawing.Pdf
                 const string format = Config.SignificantFigures7;
 
                 double[] matrix = UnrealizedCtm.GetElements();
-                // Use up to six decimal digits to prevent round up problems.
                 _renderer.AppendFormatArgs("{0:" + format + "} {1:" + format + "} {2:" + format + "} {3:" + format + "} {4:" + format + "} {5:" + format + "} cm\n",
                     matrix[0], matrix[1], matrix[2], matrix[3], matrix[4], matrix[5]);
 
@@ -487,10 +359,6 @@ namespace PdfSharp.Drawing.Pdf
                 InverseEffectiveCtm.Invert();
             }
         }
-        #endregion
-
-        #region Clip Path
-
         public void SetAndRealizeClipRect(XRect clipRect)
         {
             XGraphicsPath clipPath = new XGraphicsPath();
@@ -508,36 +376,13 @@ namespace PdfSharp.Drawing.Pdf
 #if CORE
             DiagnosticsHelper.HandleNotImplemented("RealizeClipPath");
 #endif
-#if GDI
-            // Do not render an empty path.
-            if (clipPath._gdipPath.PointCount < 0)
-                return;
-#endif
-#if WPF
-            // Do not render an empty path.
-            if (clipPath._pathGeometry.Bounds.IsEmpty)
-                return;
-#endif
             _renderer.BeginGraphicMode();
             RealizeCtm();
 #if CORE
             _renderer.AppendPath(clipPath._corePath);
 #endif
-#if GDI && !WPF
-            _renderer.AppendPath(clipPath._gdipPath);
-#endif
-#if WPF && !GDI
-            _renderer.AppendPath(clipPath._pathGeometry);
-#endif
-#if WPF && GDI
-            if (_renderer.Gfx.TargetContext == XGraphicTargetContext.GDI)
-                _renderer.AppendPath(clipPath._gdipPath);
-            else
-                _renderer.AppendPath(clipPath._pathGeometry);
-#endif
             _renderer.Append(clipPath.FillMode == XFillMode.Winding ? "W n\n" : "W* n\n");
         }
 
-        #endregion
     }
 }
