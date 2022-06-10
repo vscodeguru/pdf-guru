@@ -1,10 +1,5 @@
 using System;
-#if CORE || GDI
-using System.Drawing;
 using GdiFont = System.Drawing.Font;
-using GdiFontFamily = System.Drawing.FontFamily;
-using GdiFontStyle = System.Drawing.FontStyle;
-#endif
 using PdfSharp.Fonts;
 using PdfSharp.Fonts.OpenType;
 

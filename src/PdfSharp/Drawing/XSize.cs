@@ -3,7 +3,6 @@ using System.Diagnostics;
 using System.Globalization;
 using System.Runtime.InteropServices;
 using PdfSharp.Internal;
-using PdfSharp.Internal;
 
 namespace PdfSharp.Drawing
 {

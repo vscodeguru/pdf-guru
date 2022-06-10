@@ -1,13 +1,9 @@
 using System;
 using System.Diagnostics;
 using System.Globalization;
-using System.IO;
 using System.Runtime.InteropServices;
 using PdfSharp.Fonts;
-#if CORE || GDI
 using GdiFont = System.Drawing.Font;
-using GdiFontStyle = System.Drawing.FontStyle;
-#endif
 using PdfSharp.Internal;
 using PdfSharp.Fonts.OpenType;
 

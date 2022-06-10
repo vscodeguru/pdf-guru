@@ -1,10 +1,7 @@
 using System;
 using System.Diagnostics;
 using System.IO;
-using PdfSharp.Pdf;
-#if CORE
 using System.Drawing;
-#endif
 using PdfSharp.Drawing.Internal;
 using PdfSharp.Internal;
 using PdfSharp.Pdf.IO;

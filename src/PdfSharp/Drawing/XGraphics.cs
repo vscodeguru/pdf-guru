@@ -1,13 +1,8 @@
 using System;
 using System.Diagnostics;
-using System.IO;
-using System.Text;
 using PdfSharp.Pdf;
 using PdfSharp.Drawing.Pdf;
-using PdfSharp.Internal;
 using PdfSharp.Pdf.Advanced;
-
-#pragma warning disable 1587
 namespace PdfSharp.Drawing     
 {
     [Flags]

@@ -3,7 +3,6 @@ using System.Diagnostics;
 using System.Globalization;
 using System.Runtime.InteropServices;
 using PdfSharp.Internal;
-using PdfSharp.Internal;
 
 #if !EDF_CORE
 namespace PdfSharp.Drawing

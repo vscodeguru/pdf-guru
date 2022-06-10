@@ -1,10 +1,8 @@
 using System;
 using System.Diagnostics;
-using System.IO;
 using PdfSharp.Drawing.Pdf;
 using PdfSharp.Pdf;
 using PdfSharp.Pdf.Advanced;
-using PdfSharp.Pdf.Filters;
 
 namespace PdfSharp.Drawing
 {

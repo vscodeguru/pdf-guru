@@ -1,16 +1,6 @@
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
-using System.Runtime.InteropServices;
-using PdfSharp.Fonts;
-using System.Drawing;
-using System.Drawing.Drawing2D;
-using GdiFontFamily = System.Drawing.FontFamily;
-using GdiFont = System.Drawing.Font;
-using GdiFontStyle = System.Drawing.FontStyle;
-using GdiPrivateFontCollection = System.Drawing.Text.PrivateFontCollection;
-
 
 namespace PdfSharp.Drawing
 {
