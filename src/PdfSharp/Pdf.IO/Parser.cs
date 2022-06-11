@@ -165,7 +165,7 @@ namespace PdfSharp.Pdf.IO
                 dict.Stream = stream;
                 ReadSymbol(Symbol.EndStream);
                 symbol = ScanNextToken();
-#endif
+
             }
             if (!fromObjecStream && symbol != Symbol.EndObj)
                 ParserDiagnostics.ThrowParserException(PSSR.UnexpectedToken(_lexer.Token));
