@@ -115,6 +115,53 @@ using System;
 using System;
 using System;
 using System;
+using System;
+using System.Diagnostics;
+using System.IO;
+using System.Collections.Generic;
+using System.IO;
+using System;
+using System;
+using System;
+using System;
+using System.Collections.Generic;
+using System;
+using System;
+using System;
+using System.Diagnostics;
+using System.Globalization;
+using System.Text;
+using System;
+using System.Diagnostics;
+using System.Globalization;
+using System.Collections.Generic;
+using System.Text;
+using System;
+using System.Diagnostics;
+using System.Collections.Generic;
+using System;
+using System.Collections.Generic;
+using System;
+using System.Diagnostics;
+using System.Collections.Generic;
+using System.Text;
+using System;
+using System.Diagnostics;
+using System.Globalization;
+using System.IO;
+using System;
+using System;
+using System.Diagnostics;
+using GdiFont = System.Drawing.Font;
+using GdiFontStyle = System.Drawing.FontStyle;
+using System.Drawing;
+using GdiFont = System.Drawing.Font;
+
+
+
+
+
+
 
 namespace pdf_guru
 {
@@ -12830,6 +12877,3732 @@ namespace pdf_guru
 
         internal abstract void CalcThinBarWidth(BarCodeRenderInfo info);
     }
+    internal interface IImageImporter
+    {
+        ImportedImage ImportImage(StreamReaderHelper stream, PdfDocument document);
+
+        ImageData PrepareImage(ImagePrivateData data);
+    }
+
+    internal class StreamReaderHelper
+    {
+        internal StreamReaderHelper(Stream stream)
+        {
+            _stream = stream;
+            _stream.Position = 0;
+            if (_stream.Length > int.MaxValue)
+                throw new ArgumentException("Stream is too large.", "stream");
+            _length = (int)_stream.Length;
+            _data = new byte[_length];
+            _stream.Read(_data, 0, _length);
+        }
+
+        internal byte GetByte(int offset)
+        {
+            if (_currentOffset + offset >= _length)
+            {
+                Debug.Assert(false);
+                return 0;
+            }
+            return _data[_currentOffset + offset];
+        }
+
+        internal ushort GetWord(int offset, bool bigEndian)
+        {
+            return (ushort)(bigEndian ?
+                GetByte(offset) * 256 + GetByte(offset + 1) :
+                GetByte(offset) + GetByte(offset + 1) * 256);
+        }
+
+        internal uint GetDWord(int offset, bool bigEndian)
+        {
+            return (uint)(bigEndian ?
+                GetWord(offset, true) * 65536 + GetWord(offset + 2, true) :
+                GetWord(offset, false) + GetWord(offset + 2, false) * 65536);
+        }
+
+        private static void CopyStream(Stream input, Stream output)
+        {
+            byte[] buffer = new byte[65536];
+            int read;
+            while ((read = input.Read(buffer, 0, buffer.Length)) > 0)
+            {
+                output.Write(buffer, 0, read);
+            }
+        }
+
+        public void Reset()
+        {
+            _currentOffset = 0;
+        }
+
+        public Stream OriginalStream
+        {
+            get { return _stream; }
+        }
+        private readonly Stream _stream;
+
+        internal int CurrentOffset
+        {
+            get { return _currentOffset; }
+            set { _currentOffset = value; }
+        }
+        private int _currentOffset;
+
+        public byte[] Data
+        {
+            get { return _data; }
+        }
+        private readonly byte[] _data;
+
+        public int Length
+        {
+            get { return _length; }
+        }
+
+        private readonly int _length;
+
+    }
+
+    internal abstract class ImportedImage
+    {
+        protected ImportedImage(IImageImporter importer, ImagePrivateData data, PdfDocument document)
+        {
+            Data = data;
+            _document = document;
+            data.Image = this;
+            _importer = importer;
+        }
+
+
+        public ImageInformation Information
+        {
+            get { return _information; }
+            private set { _information = value; }
+        }
+        private ImageInformation _information = new ImageInformation();
+
+        public bool HasImageData
+        {
+            get { return _imageData != null; }
+        }
+
+        public ImageData ImageData
+        {
+            get { if (!HasImageData) _imageData = PrepareImageData(); return _imageData; }
+            private set { _imageData = value; }
+        }
+        private ImageData _imageData;
+
+        internal virtual ImageData PrepareImageData()
+        {
+            throw new NotImplementedException();
+        }
+
+        private IImageImporter _importer;
+        internal ImagePrivateData Data;
+        internal readonly PdfDocument _document;
+    }
+
+    internal class ImageInformation
+    {
+        internal enum ImageFormats
+        {
+            JPEG,
+            JPEGGRAY,
+            JPEGRGBW,
+            JPEGCMYK,
+            Palette1,
+            Palette4,
+            Palette8,
+            RGB24,
+            ARGB32
+        }
+
+        internal ImageFormats ImageFormat;
+
+        internal uint Width;
+        internal uint Height;
+
+        internal decimal HorizontalDPI;
+        internal decimal VerticalDPI;
+
+        internal decimal HorizontalDPM;
+        internal decimal VerticalDPM;
+
+        internal decimal HorizontalAspectRatio;
+        internal decimal VerticalAspectRatio;
+
+        internal uint ColorsUsed;
+    }
+
+    internal abstract class ImagePrivateData
+    {
+        internal ImagePrivateData()
+        {
+        }
+
+        public ImportedImage Image
+        {
+            get { return _image; }
+            internal set { _image = value; }
+        }
+        private ImportedImage _image;
+    }
+
+    internal abstract class ImageData
+    {
+    }
+    internal class ImageImporter
+    {
+        public static ImageImporter GetImageImporter()
+        {
+            return new ImageImporter();
+        }
+
+        private ImageImporter()
+        {
+            _importers.Add(new ImageImporterJpeg());
+            _importers.Add(new ImageImporterBmp());
+        }
+
+        public ImportedImage ImportImage(Stream stream, PdfDocument document)
+        {
+            StreamReaderHelper helper = new StreamReaderHelper(stream);
+
+            foreach (IImageImporter importer in _importers)
+            {
+                helper.Reset();
+                ImportedImage image = importer.ImportImage(helper, document);
+                if (image != null)
+                    return image;
+            }
+            return null;
+        }
+
+#if GDI || WPF || CORE
+        public ImportedImage ImportImage(string filename, PdfDocument document)
+        {
+            ImportedImage ii;
+            using (Stream fs = File.OpenRead(filename))
+            {
+                ii = ImportImage(fs, document);
+            }
+            return ii;
+        }
+#endif
+
+        private readonly List<IImageImporter> _importers = new List<IImageImporter>();
+    }
+    internal class ImageImporterBmp : ImageImporterRoot, IImageImporter
+    {
+        public ImportedImage ImportImage(StreamReaderHelper stream, PdfDocument document)
+        {
+            try
+            {
+                stream.CurrentOffset = 0;
+                int offsetImageData;
+                if (TestBitmapFileHeader(stream, out offsetImageData))
+                {
+                    ImagePrivateDataBitmap ipd = new ImagePrivateDataBitmap(stream.Data, stream.Length);
+                    ImportedImage ii = new ImportedImageBitmap(this, ipd, document);
+                    if (TestBitmapInfoHeader(stream, ii, offsetImageData))
+                    {
+                        return ii;
+                    }
+                }
+            }
+            catch (Exception)
+            {
+            }
+            return null;
+        }
+
+        private bool TestBitmapFileHeader(StreamReaderHelper stream, out int offset)
+        {
+            offset = 0;
+            if (stream.GetWord(0, true) == 0x424d)
+            {
+                int filesize = (int)stream.GetDWord(2, false);
+                if (filesize < stream.Length)
+                    return false;
+
+                offset = (int)stream.GetDWord(10, false);
+                stream.CurrentOffset += 14;
+                return true;
+            }
+            return false;
+        }
+
+        private bool TestBitmapInfoHeader(StreamReaderHelper stream, ImportedImage ii, int offset)
+        {
+            int size = (int)stream.GetDWord(0, false);
+            if (size == 40 || size == 108 || size == 124)
+            {
+                uint width = stream.GetDWord(4, false);
+                int height = (int)stream.GetDWord(8, false);
+                int planes = stream.GetWord(12, false);
+                int bitcount = stream.GetWord(14, false);
+                int compression = (int)stream.GetDWord(16, false);
+                int sizeImage = (int)stream.GetDWord(20, false);
+                int xPelsPerMeter = (int)stream.GetDWord(24, false);
+                int yPelsPerMeter = (int)stream.GetDWord(28, false);
+                uint colorsUsed = stream.GetDWord(32, false);
+                uint colorsImportant = stream.GetDWord(36, false);
+                if (sizeImage != 0 && sizeImage + offset > stream.Length)
+                    return false;
+
+                ImagePrivateDataBitmap privateData = (ImagePrivateDataBitmap)ii.Data;
+
+                if (compression == 0 || compression == 3)
+                {
+                    ((ImagePrivateDataBitmap)ii.Data).Offset = offset;
+                    ((ImagePrivateDataBitmap)ii.Data).ColorPaletteOffset = stream.CurrentOffset + size;
+                    ii.Information.Width = width;
+                    ii.Information.Height = (uint)Math.Abs(height);
+                    ii.Information.HorizontalDPM = xPelsPerMeter;
+                    ii.Information.VerticalDPM = yPelsPerMeter;
+                    privateData.FlippedImage = height < 0;
+                    if (planes == 1 && bitcount == 24)
+                    {
+                        ii.Information.ImageFormat = ImageInformation.ImageFormats.RGB24;
+
+                        return true;
+                    }
+                    if (planes == 1 && bitcount == 32)
+                    {
+                        ii.Information.ImageFormat = compression == 0 ?
+                            ImageInformation.ImageFormats.RGB24 :
+                            ImageInformation.ImageFormats.ARGB32;
+
+                        return true;
+                    }
+                    if (planes == 1 && bitcount == 8)
+                    {
+                        ii.Information.ImageFormat = ImageInformation.ImageFormats.Palette8;
+                        ii.Information.ColorsUsed = colorsUsed;
+
+                        return true;
+                    }
+                    if (planes == 1 && bitcount == 4)
+                    {
+                        ii.Information.ImageFormat = ImageInformation.ImageFormats.Palette4;
+                        ii.Information.ColorsUsed = colorsUsed;
+
+                        return true;
+                    }
+                    if (planes == 1 && bitcount == 1)
+                    {
+                        ii.Information.ImageFormat = ImageInformation.ImageFormats.Palette1;
+                        ii.Information.ColorsUsed = colorsUsed;
+
+                        return true;
+                    }
+                }
+            }
+            return false;
+        }
+
+
+        public ImageData PrepareImage(ImagePrivateData data)
+        {
+            throw new NotImplementedException();
+        }
+    }
+
+    internal class ImportedImageBitmap : ImportedImage
+    {
+        public ImportedImageBitmap(IImageImporter importer, ImagePrivateDataBitmap data, PdfDocument document)
+            : base(importer, data, document)
+        { }
+
+        internal override ImageData PrepareImageData()
+        {
+            ImagePrivateDataBitmap data = (ImagePrivateDataBitmap)Data;
+            ImageDataBitmap imageData = new ImageDataBitmap(_document);
+            data.CopyBitmap(imageData);
+
+            return imageData;
+        }
+    }
+
+    internal class ImageDataBitmap : ImageData
+    {
+        private ImageDataBitmap()
+        {
+        }
+
+        internal ImageDataBitmap(PdfDocument document)
+        {
+            _document = document;
+        }
+
+        public byte[] Data
+        {
+            get { return _data; }
+            internal set { _data = value; }
+        }
+        private byte[] _data;
+
+        public int Length
+        {
+            get { return _length; }
+            internal set { _length = value; }
+        }
+        private int _length;
+
+        public byte[] DataFax
+        {
+            get { return _dataFax; }
+            internal set { _dataFax = value; }
+        }
+        private byte[] _dataFax;
+
+        public int LengthFax
+        {
+            get { return _lengthFax; }
+            internal set { _lengthFax = value; }
+        }
+        private int _lengthFax;
+
+        public byte[] AlphaMask
+        {
+            get { return _alphaMask; }
+            internal set { _alphaMask = value; }
+        }
+        private byte[] _alphaMask;
+
+        public int AlphaMaskLength
+        {
+            get { return _alphaMaskLength; }
+            internal set { _alphaMaskLength = value; }
+        }
+        private int _alphaMaskLength;
+
+        public byte[] BitmapMask
+        {
+            get { return _bitmapMask; }
+            internal set { _bitmapMask = value; }
+        }
+        private byte[] _bitmapMask;
+
+        public int BitmapMaskLength
+        {
+            get { return _bitmapMaskLength; }
+            internal set { _bitmapMaskLength = value; }
+        }
+        private int _bitmapMaskLength;
+
+        public byte[] PaletteData
+        {
+            get { return _paletteData; }
+            set { _paletteData = value; }
+        }
+        private byte[] _paletteData;
+
+        public int PaletteDataLength
+        {
+            get { return _paletteDataLength; }
+            set { _paletteDataLength = value; }
+        }
+        private int _paletteDataLength;
+
+        public bool SegmentedColorMask;
+
+        public int IsBitonal;
+
+        public int K;
+
+        public bool IsGray;
+
+        internal readonly PdfDocument _document;
+    }
+
+    internal class ImagePrivateDataBitmap : ImagePrivateData
+    {
+        public ImagePrivateDataBitmap(byte[] data, int length)
+        {
+            _data = data;
+            _length = length;
+        }
+
+        public byte[] Data
+        {
+            get { return _data; }
+        }
+        private readonly byte[] _data;
+
+        public int Length
+        {
+            get { return _length; }
+        }
+        private readonly int _length;
+
+        internal bool FlippedImage;
+
+        internal int Offset;
+
+        internal int ColorPaletteOffset;
+
+        internal void CopyBitmap(ImageDataBitmap dest)
+        {
+            switch (Image.Information.ImageFormat)
+            {
+                case ImageInformation.ImageFormats.ARGB32:
+                    CopyTrueColorMemoryBitmap(3, 8, true, dest);
+                    break;
+
+                case ImageInformation.ImageFormats.RGB24:
+                    CopyTrueColorMemoryBitmap(4, 8, false, dest);
+                    break;
+
+                case ImageInformation.ImageFormats.Palette8:
+                    CopyIndexedMemoryBitmap(8, dest);
+                    break;
+
+                case ImageInformation.ImageFormats.Palette4:
+                    CopyIndexedMemoryBitmap(4, dest);
+                    break;
+
+                case ImageInformation.ImageFormats.Palette1:
+                    CopyIndexedMemoryBitmap(1, dest);
+                    break;
+
+
+
+                default:
+                    throw new NotImplementedException();
+            }
+        }
+
+        private void CopyTrueColorMemoryBitmap(int components, int bits, bool hasAlpha, ImageDataBitmap dest)
+        {
+            int width = (int)Image.Information.Width;
+            int height = (int)Image.Information.Height;
+
+            int logicalComponents = components;
+            if (components == 4)
+                logicalComponents = 3;
+
+            byte[] imageData = new byte[components * width * height];
+
+            bool hasMask = false;
+            bool hasAlphaMask = false;
+            byte[] alphaMask = hasAlpha ? new byte[width * height] : null;
+            MonochromeMask mask = hasAlpha ?
+              new MonochromeMask(width, height) : null;
+
+            int nFileOffset = Offset;
+            int nOffsetRead = 0;
+            if (logicalComponents == 3)
+            {
+                for (int y = 0; y < height; ++y)
+                {
+                    int nOffsetWrite = 3 * (height - 1 - y) * width;
+                    int nOffsetWriteAlpha = 0;
+                    if (hasAlpha)
+                    {
+                        mask.StartLine(y);
+                        nOffsetWriteAlpha = (height - 1 - y) * width;
+                    }
+
+                    for (int x = 0; x < width; ++x)
+                    {
+                        imageData[nOffsetWrite] = Data[nFileOffset + nOffsetRead + 2];
+                        imageData[nOffsetWrite + 1] = Data[nFileOffset + nOffsetRead + 1];
+                        imageData[nOffsetWrite + 2] = Data[nFileOffset + nOffsetRead];
+                        if (hasAlpha)
+                        {
+                            mask.AddPel(Data[nFileOffset + nOffsetRead + 3]);
+                            alphaMask[nOffsetWriteAlpha] = Data[nFileOffset + nOffsetRead + 3];
+                            if (!hasMask || !hasAlphaMask)
+                            {
+                                if (Data[nFileOffset + nOffsetRead + 3] != 255)
+                                {
+                                    hasMask = true;
+                                    if (Data[nFileOffset + nOffsetRead + 3] != 0)
+                                        hasAlphaMask = true;
+                                }
+                            }
+                            ++nOffsetWriteAlpha;
+                        }
+                        nOffsetRead += hasAlpha ? 4 : components;
+                        nOffsetWrite += 3;
+                    }
+                    nOffsetRead = 4 * ((nOffsetRead + 3) / 4);
+                }
+            }
+            else if (components == 1)
+            {
+                throw new NotImplementedException("Image format not supported (grayscales).");
+            }
+
+            dest.Data = imageData;
+            dest.Length = imageData.Length;
+
+            if (alphaMask != null)
+            {
+                dest.AlphaMask = alphaMask;
+                dest.AlphaMaskLength = alphaMask.Length;
+            }
+
+            if (mask != null)
+            {
+                dest.BitmapMask = mask.MaskData;
+                dest.BitmapMaskLength = mask.MaskData.Length;
+            }
+        }
+
+        private void CopyIndexedMemoryBitmap(int bits, ImageDataBitmap dest)
+        {
+            int firstMaskColor = -1, lastMaskColor = -1;
+            bool segmentedColorMask = false;
+
+            int bytesColorPaletteOffset = ((ImagePrivateDataBitmap)Image.Data).ColorPaletteOffset;
+
+            int bytesFileOffset = ((ImagePrivateDataBitmap)Image.Data).Offset;
+            uint paletteColors = Image.Information.ColorsUsed;
+            int width = (int)Image.Information.Width;
+            int height = (int)Image.Information.Height;
+
+            MonochromeMask mask = new MonochromeMask(width, height);
+
+            bool isGray = bits == 8 && (paletteColors == 256 || paletteColors == 0);
+            int isBitonal = 0;
+            byte[] paletteData = new byte[3 * paletteColors];
+            for (int color = 0; color < paletteColors; ++color)
+            {
+                paletteData[3 * color] = Data[bytesColorPaletteOffset + 4 * color + 2];
+                paletteData[3 * color + 1] = Data[bytesColorPaletteOffset + 4 * color + 1];
+                paletteData[3 * color + 2] = Data[bytesColorPaletteOffset + 4 * color + 0];
+                if (isGray)
+                    isGray = paletteData[3 * color] == paletteData[3 * color + 1] &&
+                      paletteData[3 * color] == paletteData[3 * color + 2];
+
+                if (Data[bytesColorPaletteOffset + 4 * color + 3] < 128)
+                {
+                    if (firstMaskColor == -1)
+                        firstMaskColor = color;
+                    if (lastMaskColor == -1 || lastMaskColor == color - 1)
+                        lastMaskColor = color;
+                    if (lastMaskColor != color)
+                        segmentedColorMask = true;
+                }
+            }
+
+            if (bits == 1)
+            {
+                if (paletteColors == 0)
+                    isBitonal = 1;
+                if (paletteColors == 2)
+                {
+                    if (paletteData[0] == 0 &&
+                      paletteData[1] == 0 &&
+                      paletteData[2] == 0 &&
+                      paletteData[3] == 255 &&
+                      paletteData[4] == 255 &&
+                      paletteData[5] == 255)
+                        isBitonal = 1;
+                    if (paletteData[5] == 0 &&
+                      paletteData[4] == 0 &&
+                      paletteData[3] == 0 &&
+                      paletteData[2] == 255 &&
+                      paletteData[1] == 255 &&
+                      paletteData[0] == 255)
+                        isBitonal = -1;
+                }
+            }
+
+            bool isFaxEncoding = false;
+            byte[] imageData = new byte[((width * bits + 7) / 8) * height];
+            byte[] imageDataFax = null;
+            int k = 0;
+
+
+            if (bits == 1 && dest._document.Options.EnableCcittCompressionForBilevelImages)
+            {
+                byte[] tempG4 = new byte[imageData.Length];
+                int ccittSizeG4 = PdfImage.DoFaxEncodingGroup4(ref tempG4, Data, (uint)bytesFileOffset, (uint)width, (uint)height);
+
+                isFaxEncoding = ccittSizeG4 > 0;
+                if (isFaxEncoding)
+                {
+                    if (ccittSizeG4 == 0)
+                        ccittSizeG4 = 0x7fffffff;
+                    {
+                        Array.Resize(ref tempG4, ccittSizeG4);
+                        imageDataFax = tempG4;
+                        k = -1;
+                    }
+                }
+            }
+
+            {
+                int bytesOffsetRead = 0;
+                if (bits == 8 || bits == 4 || bits == 1)
+                {
+                    int bytesPerLine = (width * bits + 7) / 8;
+                    for (int y = 0; y < height; ++y)
+                    {
+                        mask.StartLine(y);
+                        int bytesOffsetWrite = (height - 1 - y) * ((width * bits + 7) / 8);
+                        for (int x = 0; x < bytesPerLine; ++x)
+                        {
+                            if (isGray)
+                            {
+                                imageData[bytesOffsetWrite] = paletteData[3 * Data[bytesFileOffset + bytesOffsetRead]];
+                            }
+                            else
+                            {
+                                imageData[bytesOffsetWrite] = Data[bytesFileOffset + bytesOffsetRead];
+                            }
+                            if (firstMaskColor != -1)
+                            {
+                                int n = Data[bytesFileOffset + bytesOffsetRead];
+                                if (bits == 8)
+                                {
+                                    mask.AddPel((n >= firstMaskColor) && (n <= lastMaskColor));
+                                }
+                                else if (bits == 4)
+                                {
+                                    int n1 = (n & 0xf0) / 16;
+                                    int n2 = (n & 0x0f);
+                                    mask.AddPel((n1 >= firstMaskColor) && (n1 <= lastMaskColor));
+                                    mask.AddPel((n2 >= firstMaskColor) && (n2 <= lastMaskColor));
+                                }
+                                else if (bits == 1)
+                                {
+                                    for (int bit = 1; bit <= 8; ++bit)
+                                    {
+                                        int n1 = (n & 0x80) / 128;
+                                        mask.AddPel((n1 >= firstMaskColor) && (n1 <= lastMaskColor));
+                                        n *= 2;
+                                    }
+                                }
+                            }
+                            bytesOffsetRead += 1;
+                            bytesOffsetWrite += 1;
+                        }
+                        bytesOffsetRead = 4 * ((bytesOffsetRead + 3) / 4);
+                    }
+                }
+                else
+                {
+                    throw new NotImplementedException("ReadIndexedMemoryBitmap: unsupported format #3");
+                }
+            }
+
+            dest.Data = imageData;
+            dest.Length = imageData.Length;
+
+            if (imageDataFax != null)
+            {
+                dest.DataFax = imageDataFax;
+                dest.LengthFax = imageDataFax.Length;
+            }
+
+            dest.IsGray = isGray;
+            dest.K = k;
+            dest.IsBitonal = isBitonal;
+
+            dest.PaletteData = paletteData;
+            dest.PaletteDataLength = paletteData.Length;
+            dest.SegmentedColorMask = segmentedColorMask;
+
+            if (mask != null && firstMaskColor != -1)
+            {
+                dest.BitmapMask = mask.MaskData;
+                dest.BitmapMaskLength = mask.MaskData.Length;
+            }
+
+        }
+    }
+    internal class ImageImporterJpeg : ImageImporterRoot, IImageImporter
+    {
+        public ImportedImage ImportImage(StreamReaderHelper stream, PdfDocument document)
+        {
+            try
+            {
+
+                stream.CurrentOffset = 0;
+                if (TestFileHeader(stream))
+                {
+                    stream.CurrentOffset += 2;
+
+                    ImagePrivateDataDct ipd = new ImagePrivateDataDct(stream.Data, stream.Length);
+                    ImportedImage ii = new ImportedImageJpeg(this, ipd, document);
+                    if (TestJfifHeader(stream, ii))
+                    {
+                        bool colorHeader = false, infoHeader = false;
+
+                        while (MoveToNextHeader(stream))
+                        {
+                            if (TestColorFormatHeader(stream, ii))
+                            {
+                                colorHeader = true;
+                            }
+                            else if (TestInfoHeader(stream, ii))
+                            {
+                                infoHeader = true;
+                            }
+                        }
+                        if (colorHeader && infoHeader)
+                            return ii;
+                    }
+                }
+            }
+            catch (Exception)
+            {
+            }
+            return null;
+        }
+
+        private bool TestFileHeader(StreamReaderHelper stream)
+        {
+            return stream.GetWord(0, true) == 0xffd8;
+        }
+
+        private bool TestJfifHeader(StreamReaderHelper stream, ImportedImage ii)
+        {
+            if (stream.GetWord(0, true) == 0xffe0)
+            {
+                if (stream.GetDWord(4, true) == 0x4a464946)
+                {
+                    int blockLength = stream.GetWord(2, true);
+                    if (blockLength >= 16)
+                    {
+                        int version = stream.GetWord(9, true);
+                        int units = stream.GetByte(11);
+                        int densityX = stream.GetWord(12, true);
+                        int densityY = stream.GetWord(14, true);
+
+                        switch (units)
+                        {
+                            case 0:
+                                ii.Information.HorizontalAspectRatio = densityX;
+                                ii.Information.VerticalAspectRatio = densityY;
+                                break;
+                            case 1:
+                                ii.Information.HorizontalDPI = densityX;
+                                ii.Information.VerticalDPI = densityY;
+                                break;
+                            case 2:
+                                ii.Information.HorizontalDPM = densityX * 100;
+                                ii.Information.VerticalDPM = densityY * 100;
+                                break;
+                        }
+
+                        return true;
+                    }
+                }
+            }
+            return false;
+        }
+
+        private bool TestColorFormatHeader(StreamReaderHelper stream, ImportedImage ii)
+        {
+            if (stream.GetWord(0, true) == 0xffda)
+            {
+                int components = stream.GetByte(4);
+                if (components < 1 || components > 4 || components == 2)
+                    return false;
+                int blockLength = stream.GetWord(2, true);
+                if (blockLength != 6 + 2 * components)
+                    return false;
+
+                ii.Information.ImageFormat = components == 3 ? ImageInformation.ImageFormats.JPEG :
+                    (components == 1 ? ImageInformation.ImageFormats.JPEGGRAY : ImageInformation.ImageFormats.JPEGRGBW);
+
+                return true;
+            }
+            return false;
+        }
+
+        private bool TestInfoHeader(StreamReaderHelper stream, ImportedImage ii)
+        {
+            int header = stream.GetWord(0, true);
+            if (header >= 0xffc0 && header <= 0xffc3 ||
+                header >= 0xffc9 && header <= 0xffcb)
+            {
+                int sizeY = stream.GetWord(5, true);
+                int sizeX = stream.GetWord(7, true);
+
+                ii.Information.Width = (uint)sizeX;
+                ii.Information.Height = (uint)sizeY;
+
+                return true;
+            }
+            return false;
+        }
+
+        private bool MoveToNextHeader(StreamReaderHelper stream)
+        {
+            int blockLength = stream.GetWord(2, true);
+
+            int headerMagic = stream.GetByte(0);
+            int headerType = stream.GetByte(1);
+
+            if (headerMagic == 0xff)
+            {
+                if (headerType == 0xd9)
+                    return false;
+
+                if (headerType == 0x01 || headerType >= 0xd0 && headerType <= 0xd7)
+                {
+                    stream.CurrentOffset += 2;
+                    return true;
+                }
+
+                stream.CurrentOffset += 2 + blockLength;
+                return true;
+            }
+            return false;
+        }
+
+        public ImageData PrepareImage(ImagePrivateData data)
+        {
+            throw new NotImplementedException();
+        }
+
+
+    }
+
+    internal class ImportedImageJpeg : ImportedImage
+    {
+        public ImportedImageJpeg(IImageImporter importer, ImagePrivateDataDct data, PdfDocument document)
+            : base(importer, data, document)
+        { }
+
+        internal override ImageData PrepareImageData()
+        {
+            ImagePrivateDataDct data = (ImagePrivateDataDct)Data;
+            ImageDataDct imageData = new ImageDataDct();
+            imageData.Data = data.Data;
+            imageData.Length = data.Length;
+
+            return imageData;
+        }
+    }
+
+    internal class ImageDataDct : ImageData
+    {
+        public byte[] Data
+        {
+            get { return _data; }
+            internal set { _data = value; }
+        }
+        private byte[] _data;
+
+        public int Length
+        {
+            get { return _length; }
+            internal set { _length = value; }
+        }
+        private int _length;
+    }
+
+    internal class ImagePrivateDataDct : ImagePrivateData
+    {
+        public ImagePrivateDataDct(byte[] data, int length)
+        {
+            _data = data;
+            _length = length;
+        }
+
+        public byte[] Data
+        {
+            get { return _data; }
+        }
+        private readonly byte[] _data;
+
+        public int Length
+        {
+            get { return _length; }
+        }
+        private readonly int _length;
+    }
+
+    public enum XParagraphAlignment
+    {
+        Default,
+
+        Left,
+
+        Center,
+
+        Right,
+
+        Justify,
+    }
+    public class XTextFormatter
+    {
+        public XTextFormatter(XGraphics gfx)
+        {
+            if (gfx == null)
+                throw new ArgumentNullException("gfx");
+            _gfx = gfx;
+        }
+        readonly XGraphics _gfx;
+
+        public string Text
+        {
+            get { return _text; }
+            set { _text = value; }
+        }
+        string _text;
+
+        public XFont Font
+        {
+            get { return _font; }
+            set
+            {
+                if (value == null)
+                    throw new ArgumentNullException("Font");
+                _font = value;
+
+                _lineSpace = _font.GetHeight();
+                _cyAscent = _lineSpace * _font.CellAscent / _font.CellSpace;
+                _cyDescent = _lineSpace * _font.CellDescent / _font.CellSpace;
+
+                _spaceWidth = _gfx.MeasureString("x x", value).Width;
+                _spaceWidth -= _gfx.MeasureString("xx", value).Width;
+            }
+        }
+        XFont _font;
+        double _lineSpace;
+        double _cyAscent;
+        double _cyDescent;
+        double _spaceWidth;
+
+        public XRect LayoutRectangle
+        {
+            get { return _layoutRectangle; }
+            set { _layoutRectangle = value; }
+        }
+        XRect _layoutRectangle;
+
+        public XParagraphAlignment Alignment
+        {
+            get { return _alignment; }
+            set { _alignment = value; }
+        }
+        XParagraphAlignment _alignment = XParagraphAlignment.Left;
+
+        public void DrawString(string text, XFont font, XBrush brush, XRect layoutRectangle)
+        {
+            DrawString(text, font, brush, layoutRectangle, XStringFormats.TopLeft);
+        }
+
+        public void DrawString(string text, XFont font, XBrush brush, XRect layoutRectangle, XStringFormat format)
+        {
+            if (text == null)
+                throw new ArgumentNullException("text");
+            if (font == null)
+                throw new ArgumentNullException("font");
+            if (brush == null)
+                throw new ArgumentNullException("brush");
+            if (format.Alignment != XStringAlignment.Near || format.LineAlignment != XLineAlignment.Near)
+                throw new ArgumentException("Only TopLeft alignment is currently implemented.");
+
+            Text = text;
+            Font = font;
+            LayoutRectangle = layoutRectangle;
+
+            if (text.Length == 0)
+                return;
+
+            CreateBlocks();
+
+            CreateLayout();
+
+            double dx = layoutRectangle.Location.X;
+            double dy = layoutRectangle.Location.Y + _cyAscent;
+            int count = _blocks.Count;
+            for (int idx = 0; idx < count; idx++)
+            {
+                Block block = _blocks[idx];
+                if (block.Stop)
+                    break;
+                if (block.Type == BlockType.LineBreak)
+                    continue;
+                _gfx.DrawString(block.Text, font, brush, dx + block.Location.X, dy + block.Location.Y);
+            }
+        }
+
+        void CreateBlocks()
+        {
+            _blocks.Clear();
+            int length = _text.Length;
+            bool inNonWhiteSpace = false;
+            int startIndex = 0, blockLength = 0;
+            for (int idx = 0; idx < length; idx++)
+            {
+                char ch = _text[idx];
+
+                if (ch == Chars.CR)
+                {
+                    if (idx < length - 1 && _text[idx + 1] == Chars.LF)
+                        idx++;
+                    ch = Chars.LF;
+                }
+                if (ch == Chars.LF)
+                {
+                    if (blockLength != 0)
+                    {
+                        string token = _text.Substring(startIndex, blockLength);
+                        _blocks.Add(new Block(token, BlockType.Text,
+                          _gfx.MeasureString(token, _font).Width));
+                    }
+                    startIndex = idx + 1;
+                    blockLength = 0;
+                    _blocks.Add(new Block(BlockType.LineBreak));
+                }
+                else if (ch != Chars.NonBreakableSpace && char.IsWhiteSpace(ch))
+                {
+                    if (inNonWhiteSpace)
+                    {
+                        string token = _text.Substring(startIndex, blockLength);
+                        _blocks.Add(new Block(token, BlockType.Text,
+                          _gfx.MeasureString(token, _font).Width));
+                        startIndex = idx + 1;
+                        blockLength = 0;
+                    }
+                    else
+                    {
+                        blockLength++;
+                    }
+                }
+                else
+                {
+                    inNonWhiteSpace = true;
+                    blockLength++;
+                }
+            }
+            if (blockLength != 0)
+            {
+                string token = _text.Substring(startIndex, blockLength);
+                _blocks.Add(new Block(token, BlockType.Text,
+                  _gfx.MeasureString(token, _font).Width));
+            }
+        }
+
+        void CreateLayout()
+        {
+            double rectWidth = _layoutRectangle.Width;
+            double rectHeight = _layoutRectangle.Height - _cyAscent - _cyDescent;
+            int firstIndex = 0;
+            double x = 0, y = 0;
+            int count = _blocks.Count;
+            for (int idx = 0; idx < count; idx++)
+            {
+                Block block = _blocks[idx];
+                if (block.Type == BlockType.LineBreak)
+                {
+                    if (Alignment == XParagraphAlignment.Justify)
+                        _blocks[firstIndex].Alignment = XParagraphAlignment.Left;
+                    AlignLine(firstIndex, idx - 1, rectWidth);
+                    firstIndex = idx + 1;
+                    x = 0;
+                    y += _lineSpace;
+                    if (y > rectHeight)
+                    {
+                        block.Stop = true;
+                        break;
+                    }
+                }
+                else
+                {
+                    double width = block.Width;
+                    if ((x + width <= rectWidth || x == 0) && block.Type != BlockType.LineBreak)
+                    {
+                        block.Location = new XPoint(x, y);
+                        x += width + _spaceWidth;
+                    }
+                    else
+                    {
+                        AlignLine(firstIndex, idx - 1, rectWidth);
+                        firstIndex = idx;
+                        y += _lineSpace;
+                        if (y > rectHeight)
+                        {
+                            block.Stop = true;
+                            break;
+                        }
+                        block.Location = new XPoint(0, y);
+                        x = width + _spaceWidth;
+                    }
+                }
+            }
+            if (firstIndex < count && Alignment != XParagraphAlignment.Justify)
+                AlignLine(firstIndex, count - 1, rectWidth);
+        }
+
+        void AlignLine(int firstIndex, int lastIndex, double layoutWidth)
+        {
+            XParagraphAlignment blockAlignment = _blocks[firstIndex].Alignment;
+            if (_alignment == XParagraphAlignment.Left || blockAlignment == XParagraphAlignment.Left)
+                return;
+
+            int count = lastIndex - firstIndex + 1;
+            if (count == 0)
+                return;
+
+            double totalWidth = -_spaceWidth;
+            for (int idx = firstIndex; idx <= lastIndex; idx++)
+                totalWidth += _blocks[idx].Width + _spaceWidth;
+
+            double dx = Math.Max(layoutWidth - totalWidth, 0);
+            if (_alignment != XParagraphAlignment.Justify)
+            {
+                if (_alignment == XParagraphAlignment.Center)
+                    dx /= 2;
+                for (int idx = firstIndex; idx <= lastIndex; idx++)
+                {
+                    Block block = _blocks[idx];
+                    block.Location += new XSize(dx, 0);
+                }
+            }
+            else if (count > 1)
+            {
+                dx /= count - 1;
+                for (int idx = firstIndex + 1, i = 1; idx <= lastIndex; idx++, i++)
+                {
+                    Block block = _blocks[idx];
+                    block.Location += new XSize(dx * i, 0);
+                }
+            }
+        }
+
+        readonly List<Block> _blocks = new List<Block>();
+
+        enum BlockType
+        {
+            Text, Space, Hyphen, LineBreak,
+        }
+
+        class Block
+        {
+            public Block(string text, BlockType type, double width)
+            {
+                Text = text;
+                Type = type;
+                Width = width;
+            }
+
+            public Block(BlockType type)
+            {
+                Type = type;
+            }
+
+            public readonly string Text;
+
+            public readonly BlockType Type;
+
+            public readonly double Width;
+
+            public XPoint Location;
+
+            public XParagraphAlignment Alignment;
+
+            public bool Stop;
+        }
+    }
+    enum DirtyFlags
+    {
+        Ctm = 0x00000001,
+        ClipPath = 0x00000002,
+        LineWidth = 0x00000010,
+        LineJoin = 0x00000020,
+        MiterLimit = 0x00000040,
+        StrokeFill = 0x00000070,
+    }
+    enum StreamMode
+    {
+        Graphic,
+
+        Text,
+    }
+    internal sealed class PdfGraphicsState : ICloneable
+    {
+        public PdfGraphicsState(XGraphicsPdfRenderer renderer)
+        {
+            _renderer = renderer;
+        }
+        readonly XGraphicsPdfRenderer _renderer;
+
+        public PdfGraphicsState Clone()
+        {
+            PdfGraphicsState state = (PdfGraphicsState)MemberwiseClone();
+            return state;
+        }
+
+        object ICloneable.Clone()
+        {
+            return Clone();
+        }
+
+        internal int Level;
+
+        internal InternalGraphicsState InternalState;
+
+        public void PushState()
+        {
+            _renderer.Append("q/n");
+        }
+
+        public void PopState()
+        {
+            _renderer.Append("Q/n");
+        }
+
+        double _realizedLineWith = -1;
+        int _realizedLineCap = -1;
+        int _realizedLineJoin = -1;
+        double _realizedMiterLimit = -1;
+        XDashStyle _realizedDashStyle = (XDashStyle)(-1);
+        string _realizedDashPattern;
+        XColor _realizedStrokeColor = XColor.Empty;
+        bool _realizedStrokeOverPrint;
+
+        public void RealizePen(XPen pen, PdfColorMode colorMode)
+        {
+            const string frmt2 = Config.SignificantFigures2;
+            const string format = Config.SignificantFigures3;
+            XColor color = pen.Color;
+            bool overPrint = pen.Overprint;
+            color = ColorSpaceHelper.EnsureColorMode(colorMode, color);
+
+            if (_realizedLineWith != pen._width)
+            {
+                _renderer.AppendFormatArgs("{0:" + format + "} w\n", pen._width);
+                _realizedLineWith = pen._width;
+            }
+
+            if (_realizedLineCap != (int)pen._lineCap)
+            {
+                _renderer.AppendFormatArgs("{0} J\n", (int)pen._lineCap);
+                _realizedLineCap = (int)pen._lineCap;
+            }
+
+            if (_realizedLineJoin != (int)pen._lineJoin)
+            {
+                _renderer.AppendFormatArgs("{0} j\n", (int)pen._lineJoin);
+                _realizedLineJoin = (int)pen._lineJoin;
+            }
+
+            if (_realizedLineCap == (int)XLineJoin.Miter)
+            {
+                if (_realizedMiterLimit != (int)pen._miterLimit && (int)pen._miterLimit != 0)
+                {
+                    _renderer.AppendFormatInt("{0} M\n", (int)pen._miterLimit);
+                    _realizedMiterLimit = (int)pen._miterLimit;
+                }
+            }
+
+            if (_realizedDashStyle != pen._dashStyle || pen._dashStyle == XDashStyle.Custom)
+            {
+                double dot = pen.Width;
+                double dash = 3 * dot;
+
+                XDashStyle dashStyle = pen.DashStyle;
+                if (dot == 0)
+                    dashStyle = XDashStyle.Solid;
+
+                switch (dashStyle)
+                {
+                    case XDashStyle.Solid:
+                        _renderer.Append("[]0 d\n");
+                        break;
+
+                    case XDashStyle.Dash:
+                        _renderer.AppendFormatArgs("[{0:" + frmt2 + "} {1:" + frmt2 + "}]0 d\n", dash, dot);
+                        break;
+
+                    case XDashStyle.Dot:
+                        _renderer.AppendFormatArgs("[{0:" + frmt2 + "}]0 d\n", dot);
+                        break;
+
+                    case XDashStyle.DashDot:
+                        _renderer.AppendFormatArgs("[{0:" + frmt2 + "} {1:" + frmt2 + "} {1:" + frmt2 + "} {1:" + frmt2 + "}]0 d\n", dash, dot);
+                        break;
+
+                    case XDashStyle.DashDotDot:
+                        _renderer.AppendFormatArgs("[{0:" + frmt2 + "} {1:" + frmt2 + "} {1:" + frmt2 + "} {1:" + frmt2 + "} {1:" + frmt2 + "} {1:" + frmt2 + "}]0 d\n", dash, dot);
+                        break;
+
+                    case XDashStyle.Custom:
+                        {
+                            StringBuilder pdf = new StringBuilder("[", 256);
+                            int len = pen._dashPattern == null ? 0 : pen._dashPattern.Length;
+                            for (int idx = 0; idx < len; idx++)
+                            {
+                                if (idx > 0)
+                                    pdf.Append(' ');
+                                pdf.Append(PdfEncoders.ToString(pen._dashPattern[idx] * pen._width));
+                            }
+                            if (len > 0 && len % 2 == 1)
+                            {
+                                pdf.Append(' ');
+                                pdf.Append(PdfEncoders.ToString(0.2 * pen._width));
+                            }
+                            pdf.AppendFormat(CultureInfo.InvariantCulture, "]{0:" + format + "} d\n", pen._dashOffset * pen._width);
+                            string pattern = pdf.ToString();
+
+                            {
+                                _realizedDashPattern = pattern;
+                                _renderer.Append(pattern);
+                            }
+                        }
+                        break;
+                }
+                _realizedDashStyle = dashStyle;
+            }
+
+            if (colorMode != PdfColorMode.Cmyk)
+            {
+                if (_realizedStrokeColor.Rgb != color.Rgb)
+                {
+                    _renderer.Append(PdfEncoders.ToString(color, PdfColorMode.Rgb));
+                    _renderer.Append(" RG\n");
+                }
+            }
+            else
+            {
+                if (!ColorSpaceHelper.IsEqualCmyk(_realizedStrokeColor, color))
+                {
+                    _renderer.Append(PdfEncoders.ToString(color, PdfColorMode.Cmyk));
+                    _renderer.Append(" K\n");
+                }
+            }
+
+            if (_renderer.Owner.Version >= 14 && (_realizedStrokeColor.A != color.A || _realizedStrokeOverPrint != overPrint))
+            {
+                PdfExtGState extGState = _renderer.Owner.ExtGStateTable.GetExtGStateStroke(color.A, overPrint);
+                string gs = _renderer.Resources.AddExtGState(extGState);
+                _renderer.AppendFormatString("{0} gs\n", gs);
+
+                if (_renderer._page != null && color.A < 1)
+                    _renderer._page.TransparencyUsed = true;
+            }
+            _realizedStrokeColor = color;
+            _realizedStrokeOverPrint = overPrint;
+        }
+
+        XColor _realizedFillColor = XColor.Empty;
+        bool _realizedNonStrokeOverPrint;
+
+        public void RealizeBrush(XBrush brush, PdfColorMode colorMode, int renderingMode, double fontEmSize)
+        {
+            XSolidBrush solidBrush = brush as XSolidBrush;
+            if (solidBrush != null)
+            {
+                XColor color = solidBrush.Color;
+                bool overPrint = solidBrush.Overprint;
+
+                if (renderingMode == 0)
+                {
+                    RealizeFillColor(color, overPrint, colorMode);
+                }
+                else if (renderingMode == 2)
+                {
+                    RealizeFillColor(color, false, colorMode);
+                    RealizePen(new XPen(color, fontEmSize * Const.BoldEmphasis), colorMode);
+                }
+                else
+                    throw new InvalidOperationException("Only rendering modes 0 and 2 are currently supported.");
+            }
+            else
+            {
+                if (renderingMode != 0)
+                    throw new InvalidOperationException("Rendering modes other than 0 can only be used with solid color brushes.");
+
+                XLinearGradientBrush gradientBrush = brush as XLinearGradientBrush;
+                if (gradientBrush != null)
+                {
+                    Debug.Assert(UnrealizedCtm.IsIdentity, "Must realize ctm first.");
+                    XMatrix matrix = _renderer.DefaultViewMatrix;
+                    matrix.Prepend(EffectiveCtm);
+                    PdfShadingPattern pattern = new PdfShadingPattern(_renderer.Owner);
+                    pattern.SetupFromBrush(gradientBrush, matrix, _renderer);
+                    string name = _renderer.Resources.AddPattern(pattern);
+                    _renderer.AppendFormatString("/Pattern cs\n", name);
+                    _renderer.AppendFormatString("{0} scn\n", name);
+
+                    _realizedFillColor = XColor.Empty;
+                }
+            }
+        }
+
+        private void RealizeFillColor(XColor color, bool overPrint, PdfColorMode colorMode)
+        {
+            color = ColorSpaceHelper.EnsureColorMode(colorMode, color);
+
+            if (colorMode != PdfColorMode.Cmyk)
+            {
+                if (_realizedFillColor.IsEmpty || _realizedFillColor.Rgb != color.Rgb)
+                {
+                    _renderer.Append(PdfEncoders.ToString(color, PdfColorMode.Rgb));
+                    _renderer.Append(" rg\n");
+                }
+            }
+            else
+            {
+                Debug.Assert(colorMode == PdfColorMode.Cmyk);
+
+                if (_realizedFillColor.IsEmpty || !ColorSpaceHelper.IsEqualCmyk(_realizedFillColor, color))
+                {
+                    _renderer.Append(PdfEncoders.ToString(color, PdfColorMode.Cmyk));
+                    _renderer.Append(" k\n");
+                }
+            }
+
+            if (_renderer.Owner.Version >= 14 && (_realizedFillColor.A != color.A || _realizedNonStrokeOverPrint != overPrint))
+            {
+
+                PdfExtGState extGState = _renderer.Owner.ExtGStateTable.GetExtGStateNonStroke(color.A, overPrint);
+                string gs = _renderer.Resources.AddExtGState(extGState);
+                _renderer.AppendFormatString("{0} gs\n", gs);
+
+                if (_renderer._page != null && color.A < 1)
+                    _renderer._page.TransparencyUsed = true;
+            }
+            _realizedFillColor = color;
+            _realizedNonStrokeOverPrint = overPrint;
+        }
+
+        internal void RealizeNonStrokeTransparency(double transparency, PdfColorMode colorMode)
+        {
+            XColor color = _realizedFillColor;
+            color.A = transparency;
+            RealizeFillColor(color, _realizedNonStrokeOverPrint, colorMode);
+        }
+
+        internal PdfFont _realizedFont;
+        string _realizedFontName = String.Empty;
+        double _realizedFontSize;
+        int _realizedRenderingMode;
+        double _realizedCharSpace;
+
+        public void RealizeFont(XFont font, XBrush brush, int renderingMode)
+        {
+            const string format = Config.SignificantFigures3;
+
+            RealizeBrush(brush, _renderer._colorMode, renderingMode, font.Size);
+
+            if (_realizedRenderingMode != renderingMode)
+            {
+                _renderer.AppendFormatInt("{0} Tr\n", renderingMode);
+                _realizedRenderingMode = renderingMode;
+            }
+
+            if (_realizedRenderingMode == 0)
+            {
+                if (_realizedCharSpace != 0)
+                {
+                    _renderer.Append("0 Tc\n");
+                    _realizedCharSpace = 0;
+                }
+            }
+            else
+            {
+                double charSpace = font.Size * Const.BoldEmphasis;
+                if (_realizedCharSpace != charSpace)
+                {
+                    _renderer.AppendFormatDouble("{0:" + format + "} Tc\n", charSpace);
+                    _realizedCharSpace = charSpace;
+                }
+            }
+
+            _realizedFont = null;
+            string fontName = _renderer.GetFontName(font, out _realizedFont);
+            if (fontName != _realizedFontName || _realizedFontSize != font.Size)
+            {
+                if (_renderer.Gfx.PageDirection == XPageDirection.Downwards)
+                    _renderer.AppendFormatFont("{0} {1:" + format + "} Tf\n", fontName, font.Size);
+                else
+                    _renderer.AppendFormatFont("{0} {1:" + format + "} Tf\n", fontName, font.Size);
+                _realizedFontName = fontName;
+                _realizedFontSize = font.Size;
+            }
+        }
+
+        public XPoint RealizedTextPosition;
+
+        public bool ItalicSimulationOn;
+
+        public XMatrix RealizedCtm;
+
+        public XMatrix UnrealizedCtm;
+
+        public XMatrix EffectiveCtm;
+
+        public XMatrix InverseEffectiveCtm;
+
+        public XMatrix WorldTransform;
+
+        public void AddTransform(XMatrix value, XMatrixOrder matrixOrder)
+        {
+            XMatrix transform = value;
+            if (_renderer.Gfx.PageDirection == XPageDirection.Downwards)
+            {
+                transform.M12 = -value.M12;
+                transform.M21 = -value.M21;
+            }
+            UnrealizedCtm.Prepend(transform);
+
+            WorldTransform.Prepend(value);
+        }
+
+        public void RealizeCtm()
+        {
+            if (!UnrealizedCtm.IsIdentity)
+            {
+                Debug.Assert(!UnrealizedCtm.IsIdentity, "mrCtm is unnecessarily set.");
+
+                const string format = Config.SignificantFigures7;
+
+                double[] matrix = UnrealizedCtm.GetElements();
+                _renderer.AppendFormatArgs("{0:" + format + "} {1:" + format + "} {2:" + format + "} {3:" + format + "} {4:" + format + "} {5:" + format + "} cm\n",
+                    matrix[0], matrix[1], matrix[2], matrix[3], matrix[4], matrix[5]);
+
+                RealizedCtm.Prepend(UnrealizedCtm);
+                UnrealizedCtm = new XMatrix();
+                EffectiveCtm = RealizedCtm;
+                InverseEffectiveCtm = EffectiveCtm;
+                InverseEffectiveCtm.Invert();
+            }
+        }
+        public void SetAndRealizeClipRect(XRect clipRect)
+        {
+            XGraphicsPath clipPath = new XGraphicsPath();
+            clipPath.AddRectangle(clipRect);
+            RealizeClipPath(clipPath);
+        }
+
+        public void SetAndRealizeClipPath(XGraphicsPath clipPath)
+        {
+            RealizeClipPath(clipPath);
+        }
+
+        void RealizeClipPath(XGraphicsPath clipPath)
+        {
+#if CORE
+            DiagnosticsHelper.HandleNotImplemented("RealizeClipPath");
+#endif
+            _renderer.BeginGraphicMode();
+            RealizeCtm();
+#if CORE
+            _renderer.AppendPath(clipPath._corePath);
+#endif
+            _renderer.Append(clipPath.FillMode == XFillMode.Winding ? "W n\n" : "W* n\n");
+        }
+
+    }
+    internal class XGraphicsPdfRenderer : IXGraphicsRenderer
+    {
+        public XGraphicsPdfRenderer(PdfPage page, XGraphics gfx, XGraphicsPdfPageOptions options)
+        {
+            _page = page;
+            _colorMode = page._document.Options.ColorMode;
+            _options = options;
+            _gfx = gfx;
+            _content = new StringBuilder();
+            page.RenderContent._pdfRenderer = this;
+            _gfxState = new PdfGraphicsState(this);
+        }
+
+        public XGraphicsPdfRenderer(XForm form, XGraphics gfx)
+        {
+            _form = form;
+            _colorMode = form.Owner.Options.ColorMode;
+            _gfx = gfx;
+            _content = new StringBuilder();
+            form.PdfRenderer = this;
+            _gfxState = new PdfGraphicsState(this);
+        }
+
+        string GetContent()
+        {
+            EndPage();
+            return _content.ToString();
+        }
+
+        public XGraphicsPdfPageOptions PageOptions
+        {
+            get { return _options; }
+        }
+
+        public void Close()
+        {
+            if (_page != null)
+            {
+                PdfContent content2 = _page.RenderContent;
+                content2.CreateStream(PdfEncoders.RawEncoding.GetBytes(GetContent()));
+
+                _gfx = null;
+                _page.RenderContent._pdfRenderer = null;
+                _page.RenderContent = null;
+                _page = null;
+            }
+            else if (_form != null)
+            {
+                _form._pdfForm.CreateStream(PdfEncoders.RawEncoding.GetBytes(GetContent()));
+                _gfx = null;
+                _form.PdfRenderer = null;
+                _form = null;
+            }
+        }
+
+        public void DrawLine(XPen pen, double x1, double y1, double x2, double y2)
+        {
+            DrawLines(pen, new XPoint[] { new XPoint(x1, y1), new XPoint(x2, y2) });
+        }
+
+        public void DrawLines(XPen pen, XPoint[] points)
+        {
+            if (pen == null)
+                throw new ArgumentNullException("pen");
+            if (points == null)
+                throw new ArgumentNullException("points");
+
+            int count = points.Length;
+            if (count == 0)
+                return;
+
+            Realize(pen);
+
+            const string format = Config.SignificantFigures4;
+            AppendFormatPoint("{0:" + format + "} {1:" + format + "} m\n", points[0].X, points[0].Y);
+            for (int idx = 1; idx < count; idx++)
+                AppendFormatPoint("{0:" + format + "} {1:" + format + "} l\n", points[idx].X, points[idx].Y);
+            _content.Append("S\n");
+        }
+
+        public void DrawBezier(XPen pen, double x1, double y1, double x2, double y2, double x3, double y3, double x4, double y4)
+        {
+            DrawBeziers(pen, new XPoint[] { new XPoint(x1, y1), new XPoint(x2, y2), new XPoint(x3, y3), new XPoint(x4, y4) });
+        }
+
+        public void DrawBeziers(XPen pen, XPoint[] points)
+        {
+            if (pen == null)
+                throw new ArgumentNullException("pen");
+            if (points == null)
+                throw new ArgumentNullException("points");
+
+            int count = points.Length;
+            if (count == 0)
+                return;
+
+            if ((count - 1) % 3 != 0)
+                throw new ArgumentException("Invalid number of points for bezier curves. Number must fulfil 4+3n.", "points");
+
+            Realize(pen);
+
+            const string format = Config.SignificantFigures4;
+            AppendFormatPoint("{0:" + format + "} {1:" + format + "} m\n", points[0].X, points[0].Y);
+            for (int idx = 1; idx < count; idx += 3)
+                AppendFormat3Points("{0:" + format + "} {1:" + format + "} {2:" + format + "} {3:" + format + "} {4:" + format + "} {5:" + format + "} c\n",
+                    points[idx].X, points[idx].Y,
+                    points[idx + 1].X, points[idx + 1].Y,
+                    points[idx + 2].X, points[idx + 2].Y);
+
+            AppendStrokeFill(pen, null, XFillMode.Alternate, false);
+        }
+
+        public void DrawCurve(XPen pen, XPoint[] points, double tension)
+        {
+            if (pen == null)
+                throw new ArgumentNullException("pen");
+            if (points == null)
+                throw new ArgumentNullException("points");
+
+            int count = points.Length;
+            if (count == 0)
+                return;
+            if (count < 2)
+                throw new ArgumentException("Not enough points", "points");
+
+            tension /= 3;
+
+            Realize(pen);
+
+            const string format = Config.SignificantFigures4;
+            AppendFormatPoint("{0:" + format + "} {1:" + format + "} m\n", points[0].X, points[0].Y);
+            if (count == 2)
+            {
+                AppendCurveSegment(points[0], points[0], points[1], points[1], tension);
+            }
+            else
+            {
+                AppendCurveSegment(points[0], points[0], points[1], points[2], tension);
+                for (int idx = 1; idx < count - 2; idx++)
+                    AppendCurveSegment(points[idx - 1], points[idx], points[idx + 1], points[idx + 2], tension);
+                AppendCurveSegment(points[count - 3], points[count - 2], points[count - 1], points[count - 1], tension);
+            }
+            AppendStrokeFill(pen, null, XFillMode.Alternate, false);
+        }
+
+        public void DrawArc(XPen pen, double x, double y, double width, double height, double startAngle, double sweepAngle)
+        {
+            if (pen == null)
+                throw new ArgumentNullException("pen");
+
+            Realize(pen);
+
+            AppendPartialArc(x, y, width, height, startAngle, sweepAngle, PathStart.MoveTo1st, new XMatrix());
+            AppendStrokeFill(pen, null, XFillMode.Alternate, false);
+        }
+
+        public void DrawRectangle(XPen pen, XBrush brush, double x, double y, double width, double height)
+        {
+            if (pen == null && brush == null)
+                throw new ArgumentNullException("pen and brush");
+
+            const string format = Config.SignificantFigures3;
+
+            Realize(pen, brush);
+            AppendFormatRect("{0:" + format + "} {1:" + format + "} {2:" + format + "} {3:" + format + "} re\n", x, y + height, width, height);
+
+            if (pen != null && brush != null)
+                _content.Append("B\n");
+            else if (pen != null)
+                _content.Append("S\n");
+            else
+                _content.Append("f\n");
+        }
+
+        public void DrawRectangles(XPen pen, XBrush brush, XRect[] rects)
+        {
+            int count = rects.Length;
+            for (int idx = 0; idx < count; idx++)
+            {
+                XRect rect = rects[idx];
+                DrawRectangle(pen, brush, rect.X, rect.Y, rect.Width, rect.Height);
+            }
+        }
+
+        public void DrawRoundedRectangle(XPen pen, XBrush brush, double x, double y, double width, double height, double ellipseWidth, double ellipseHeight)
+        {
+            XGraphicsPath path = new XGraphicsPath();
+            path.AddRoundedRectangle(x, y, width, height, ellipseWidth, ellipseHeight);
+            DrawPath(pen, brush, path);
+        }
+
+        public void DrawEllipse(XPen pen, XBrush brush, double x, double y, double width, double height)
+        {
+            Realize(pen, brush);
+
+            XRect rect = new XRect(x, y, width, height);
+            double δx = rect.Width / 2;
+            double δy = rect.Height / 2;
+            double fx = δx * Const.κ;
+            double fy = δy * Const.κ;
+            double x0 = rect.X + δx;
+            double y0 = rect.Y + δy;
+
+            const string format = Config.SignificantFigures4;
+            AppendFormatPoint("{0:" + format + "} {1:" + format + "} m\n", x0 + δx, y0);
+            AppendFormat3Points("{0:" + format + "} {1:" + format + "} {2:" + format + "} {3:" + format + "} {4:" + format + "} {5:" + format + "} c\n",
+              x0 + δx, y0 + fy, x0 + fx, y0 + δy, x0, y0 + δy);
+            AppendFormat3Points("{0:" + format + "} {1:" + format + "} {2:" + format + "} {3:" + format + "} {4:" + format + "} {5:" + format + "} c\n",
+              x0 - fx, y0 + δy, x0 - δx, y0 + fy, x0 - δx, y0);
+            AppendFormat3Points("{0:" + format + "} {1:" + format + "} {2:" + format + "} {3:" + format + "} {4:" + format + "} {5:" + format + "} c\n",
+              x0 - δx, y0 - fy, x0 - fx, y0 - δy, x0, y0 - δy);
+            AppendFormat3Points("{0:" + format + "} {1:" + format + "} {2:" + format + "} {3:" + format + "} {4:" + format + "} {5:" + format + "} c\n",
+              x0 + fx, y0 - δy, x0 + δx, y0 - fy, x0 + δx, y0);
+            AppendStrokeFill(pen, brush, XFillMode.Winding, true);
+        }
+
+        public void DrawPolygon(XPen pen, XBrush brush, XPoint[] points, XFillMode fillmode)
+        {
+            Realize(pen, brush);
+
+            int count = points.Length;
+            if (points.Length < 2)
+                throw new ArgumentException(PSSR.PointArrayAtLeast(2), "points");
+
+            const string format = Config.SignificantFigures4;
+            AppendFormatPoint("{0:" + format + "} {1:" + format + "} m\n", points[0].X, points[0].Y);
+            for (int idx = 1; idx < count; idx++)
+                AppendFormatPoint("{0:" + format + "} {1:" + format + "} l\n", points[idx].X, points[idx].Y);
+
+            AppendStrokeFill(pen, brush, fillmode, true);
+        }
+
+        public void DrawPie(XPen pen, XBrush brush, double x, double y, double width, double height,
+          double startAngle, double sweepAngle)
+        {
+            Realize(pen, brush);
+
+            const string format = Config.SignificantFigures4;
+            AppendFormatPoint("{0:" + format + "} {1:" + format + "} m\n", x + width / 2, y + height / 2);
+            AppendPartialArc(x, y, width, height, startAngle, sweepAngle, PathStart.LineTo1st, new XMatrix());
+            AppendStrokeFill(pen, brush, XFillMode.Alternate, true);
+        }
+
+        public void DrawClosedCurve(XPen pen, XBrush brush, XPoint[] points, double tension, XFillMode fillmode)
+        {
+            int count = points.Length;
+            if (count == 0)
+                return;
+            if (count < 2)
+                throw new ArgumentException("Not enough points.", "points");
+
+            tension /= 3;
+
+            Realize(pen, brush);
+
+            const string format = Config.SignificantFigures4;
+            AppendFormatPoint("{0:" + format + "} {1:" + format + "} m\n", points[0].X, points[0].Y);
+            if (count == 2)
+            {
+                AppendCurveSegment(points[0], points[0], points[1], points[1], tension);
+            }
+            else
+            {
+                AppendCurveSegment(points[count - 1], points[0], points[1], points[2], tension);
+                for (int idx = 1; idx < count - 2; idx++)
+                    AppendCurveSegment(points[idx - 1], points[idx], points[idx + 1], points[idx + 2], tension);
+                AppendCurveSegment(points[count - 3], points[count - 2], points[count - 1], points[0], tension);
+                AppendCurveSegment(points[count - 2], points[count - 1], points[0], points[1], tension);
+            }
+            AppendStrokeFill(pen, brush, fillmode, true);
+        }
+
+        public void DrawPath(XPen pen, XBrush brush, XGraphicsPath path)
+        {
+            if (pen == null && brush == null)
+                throw new ArgumentNullException("pen");
+
+#if CORE
+            Realize(pen, brush);
+            AppendPath(path._corePath);
+            AppendStrokeFill(pen, brush, path.FillMode, false);
+#endif
+        }
+
+        public void DrawString(string s, XFont font, XBrush brush, XRect rect, XStringFormat format)
+        {
+            double x = rect.X;
+            double y = rect.Y;
+
+            double lineSpace = font.GetHeight();
+            double cyAscent = lineSpace * font.CellAscent / font.CellSpace;
+            double cyDescent = lineSpace * font.CellDescent / font.CellSpace;
+            double width = _gfx.MeasureString(s, font).Width;
+
+            bool italicSimulation = (font.GlyphTypeface.StyleSimulations & XStyleSimulations.ItalicSimulation) != 0;
+            bool boldSimulation = (font.GlyphTypeface.StyleSimulations & XStyleSimulations.BoldSimulation) != 0;
+            bool strikeout = (font.Style & XFontStyle.Strikeout) != 0;
+            bool underline = (font.Style & XFontStyle.Underline) != 0;
+
+            Realize(font, brush, boldSimulation ? 2 : 0);
+
+            switch (format.Alignment)
+            {
+                case XStringAlignment.Near:
+                    break;
+
+                case XStringAlignment.Center:
+                    x += (rect.Width - width) / 2;
+                    break;
+
+                case XStringAlignment.Far:
+                    x += rect.Width - width;
+                    break;
+            }
+            if (Gfx.PageDirection == XPageDirection.Downwards)
+            {
+                switch (format.LineAlignment)
+                {
+                    case XLineAlignment.Near:
+                        y += cyAscent;
+                        break;
+
+                    case XLineAlignment.Center:
+                        y += (cyAscent * 3 / 4) / 2 + rect.Height / 2;
+                        break;
+
+                    case XLineAlignment.Far:
+                        y += -cyDescent + rect.Height;
+                        break;
+
+                    case XLineAlignment.BaseLine:
+                        break;
+                }
+            }
+            else
+            {
+                switch (format.LineAlignment)
+                {
+                    case XLineAlignment.Near:
+                        y += cyDescent;
+                        break;
+
+                    case XLineAlignment.Center:
+                        y += -(cyAscent * 3 / 4) / 2 + rect.Height / 2;
+                        break;
+
+                    case XLineAlignment.Far:
+                        y += -cyAscent + rect.Height;
+                        break;
+
+                    case XLineAlignment.BaseLine:
+                        break;
+                }
+            }
+
+            PdfFont realizedFont = _gfxState._realizedFont;
+            Debug.Assert(realizedFont != null);
+            realizedFont.AddChars(s);
+
+            const string format2 = Config.SignificantFigures4;
+            OpenTypeDescriptor descriptor = realizedFont.FontDescriptor._descriptor;
+
+            string text = null;
+            if (font.Unicode)
+            {
+                StringBuilder sb = new StringBuilder();
+                bool isSymbolFont = descriptor.FontFace.cmap.symbol;
+                for (int idx = 0; idx < s.Length; idx++)
+                {
+                    char ch = s[idx];
+                    if (isSymbolFont)
+                    {
+                        ch = (char)(ch | (descriptor.FontFace.os2.usFirstCharIndex & 0xFF00));
+                    }
+                    int glyphID = descriptor.CharCodeToGlyphIndex(ch);
+                    sb.Append((char)glyphID);
+                }
+                s = sb.ToString();
+
+                byte[] bytes = PdfEncoders.RawUnicodeEncoding.GetBytes(s);
+                bytes = PdfEncoders.FormatStringLiteral(bytes, true, false, true, null);
+                text = PdfEncoders.RawEncoding.GetString(bytes, 0, bytes.Length);
+            }
+            else
+            {
+                byte[] bytes = PdfEncoders.WinAnsiEncoding.GetBytes(s);
+                text = PdfEncoders.ToStringLiteral(bytes, false, null);
+            }
+
+            XPoint pos = new XPoint(x, y);
+            pos = WorldToView(pos);
+
+            double verticalOffset = 0;
+            if (boldSimulation)
+            {
+            }
+
+#if ITALIC_SIMULATION
+            if (italicSimulation)
+            {
+                if (_gfxState.ItalicSimulationOn)
+                {
+                    AdjustTdOffset(ref pos, verticalOffset, true);
+                    AppendFormatArgs("{0:" + format2 + "} {1:" + format2 + "} Td\n{2} Tj\n", pos.X, pos.Y, text);
+                }
+                else
+                {
+                    XMatrix m = new XMatrix(1, 0, Const.ItalicSkewAngleSinus, 1, pos.X, pos.Y);
+                    AppendFormatArgs("{0:" + format2 + "} {1:" + format2 + "} {2:" + format2 + "} {3:" + format2 + "} {4:" + format2 + "} {5:" + format2 + "} Tm\n{6} Tj\n",
+                        m.M11, m.M12, m.M21, m.M22, m.OffsetX, m.OffsetY, text);
+                    _gfxState.ItalicSimulationOn = true;
+                    AdjustTdOffset(ref pos, verticalOffset, false);
+                }
+            }
+            else
+            {
+                if (_gfxState.ItalicSimulationOn)
+                {
+                    XMatrix m = new XMatrix(1, 0, 0, 1, pos.X, pos.Y);
+                    AppendFormatArgs("{0:" + format2 + "} {1:" + format2 + "} {2:" + format2 + "} {3:" + format2 + "} {4:" + format2 + "} {5:" + format2 + "} Tm\n{6} Tj\n",
+                        m.M11, m.M12, m.M21, m.M22, m.OffsetX, m.OffsetY, text);
+                    _gfxState.ItalicSimulationOn = false;
+                    AdjustTdOffset(ref pos, verticalOffset, false);
+                }
+                else
+                {
+                    AdjustTdOffset(ref pos, verticalOffset, false);
+                    AppendFormatArgs("{0:" + format2 + "} {1:" + format2 + "} Td {2} Tj\n", pos.X, pos.Y, text);
+                }
+            }
+#endif
+            if (underline)
+            {
+                double underlinePosition = lineSpace * realizedFont.FontDescriptor._descriptor.UnderlinePosition / font.CellSpace;
+                double underlineThickness = lineSpace * realizedFont.FontDescriptor._descriptor.UnderlineThickness / font.CellSpace;
+                double underlineRectY = Gfx.PageDirection == XPageDirection.Downwards
+                    ? y - underlinePosition
+                    : y + underlinePosition - underlineThickness;
+                DrawRectangle(null, brush, x, underlineRectY, width, underlineThickness);
+            }
+
+            if (strikeout)
+            {
+                double strikeoutPosition = lineSpace * realizedFont.FontDescriptor._descriptor.StrikeoutPosition / font.CellSpace;
+                double strikeoutSize = lineSpace * realizedFont.FontDescriptor._descriptor.StrikeoutSize / font.CellSpace;
+                double strikeoutRectY = Gfx.PageDirection == XPageDirection.Downwards
+                    ? y - strikeoutPosition
+                    : y + strikeoutPosition - strikeoutSize;
+                DrawRectangle(null, brush, x, strikeoutRectY, width, strikeoutSize);
+            }
+        }
+
+        public void DrawImage(XImage image, double x, double y, double width, double height)
+        {
+            const string format = Config.SignificantFigures4;
+
+            string name = Realize(image);
+            if (!(image is XForm))
+            {
+                if (_gfx.PageDirection == XPageDirection.Downwards)
+                {
+                    AppendFormatImage("q {2:" + format + "} 0 0 {3:" + format + "} {0:" + format + "} {1:" + format + "} cm {4} Do Q\n",
+                        x, y + height, width, height, name);
+                }
+                else
+                {
+                    AppendFormatImage("q {2:" + format + "} 0 0 {3:" + format + "} {0:" + format + "} {1:" + format + "} cm {4} Do Q\n",
+                        x, y, width, height, name);
+                }
+            }
+            else
+            {
+                BeginPage();
+
+                XForm form = (XForm)image;
+                form.Finish();
+
+                PdfFormXObject pdfForm = Owner.FormTable.GetForm(form);
+
+                double cx = width / image.PointWidth;
+                double cy = height / image.PointHeight;
+
+                if (cx != 0 && cy != 0)
+                {
+                    XPdfForm xForm = image as XPdfForm;
+                    if (_gfx.PageDirection == XPageDirection.Downwards)
+                    {
+                        double xDraw = x;
+                        double yDraw = y;
+                        if (xForm != null)
+                        {
+                            xDraw -= xForm.Page.MediaBox.X1;
+                            yDraw += xForm.Page.MediaBox.Y1;
+                        }
+                        AppendFormatImage("q {2:" + format + "} 0 0 {3:" + format + "} {0:" + format + "} {1:" + format + "} cm 100 Tz {4} Do Q\n",
+                            xDraw, yDraw + height, cx, cy, name);
+                    }
+                    else
+                    {
+                        AppendFormatImage("q {2:" + format + "} 0 0 {3:" + format + "} {0:" + format + "} {1:" + format + "} cm {4} Do Q\n",
+                            x, y, cx, cy, name);
+                    }
+                }
+            }
+        }
+
+        public void DrawImage(XImage image, XRect destRect, XRect srcRect, XGraphicsUnit srcUnit)
+        {
+            const string format = Config.SignificantFigures4;
+
+            double x = destRect.X;
+            double y = destRect.Y;
+            double width = destRect.Width;
+            double height = destRect.Height;
+
+            string name = Realize(image);
+            if (!(image is XForm))
+            {
+                if (_gfx.PageDirection == XPageDirection.Downwards)
+                {
+                    AppendFormatImage("q {2:" + format + "} 0 0 {3:" + format + "} {0:" + format + "} {1:" + format + "} cm {4} Do\nQ\n",
+                        x, y + height, width, height, name);
+                }
+                else
+                {
+                    AppendFormatImage("q {2:" + format + "} 0 0 {3:" + format + "} {0:" + format + "} {1:" + format + "} cm {4} Do Q\n",
+                        x, y, width, height, name);
+                }
+            }
+            else
+            {
+                BeginPage();
+
+                XForm form = (XForm)image;
+                form.Finish();
+
+                PdfFormXObject pdfForm = Owner.FormTable.GetForm(form);
+
+                double cx = width / image.PointWidth;
+                double cy = height / image.PointHeight;
+
+                if (cx != 0 && cy != 0)
+                {
+                    XPdfForm xForm = image as XPdfForm;
+                    if (_gfx.PageDirection == XPageDirection.Downwards)
+                    {
+                        double xDraw = x;
+                        double yDraw = y;
+                        if (xForm != null)
+                        {
+                            xDraw -= xForm.Page.MediaBox.X1;
+                            yDraw += xForm.Page.MediaBox.Y1;
+                        }
+                        AppendFormatImage("q {2:" + format + "} 0 0 {3:" + format + "} {0:" + format + "} {1:" + format + "} cm {4} Do Q\n",
+                            xDraw, yDraw + height, cx, cy, name);
+                    }
+                    else
+                    {
+                        AppendFormatImage("q {2:" + format + "} 0 0 {3:" + format + "} {0:" + format + "} {1:" + format + "} cm {4} Do Q\n",
+                            x, y, cx, cy, name);
+                    }
+                }
+            }
+        }
+
+        public void Save(XGraphicsState state)
+        {
+            BeginGraphicMode();
+            RealizeTransform();
+            _gfxState.InternalState = state.InternalState;
+            SaveState();
+        }
+
+        public void Restore(XGraphicsState state)
+        {
+            BeginGraphicMode();
+            RestoreState(state.InternalState);
+        }
+
+        public void BeginContainer(XGraphicsContainer container, XRect dstrect, XRect srcrect, XGraphicsUnit unit)
+        {
+            BeginGraphicMode();
+            RealizeTransform();
+            _gfxState.InternalState = container.InternalState;
+            SaveState();
+        }
+
+        public void EndContainer(XGraphicsContainer container)
+        {
+            BeginGraphicMode();
+            RestoreState(container.InternalState);
+        }
+
+        public XMatrix Transform
+        {
+            get
+            {
+                if (_gfxState.UnrealizedCtm.IsIdentity)
+                    return _gfxState.EffectiveCtm;
+                return _gfxState.UnrealizedCtm * _gfxState.RealizedCtm;
+            }
+        }
+
+        public void AddTransform(XMatrix value, XMatrixOrder matrixOrder)
+        {
+            _gfxState.AddTransform(value, matrixOrder);
+        }
+
+        public void SetClip(XGraphicsPath path, XCombineMode combineMode)
+        {
+            if (path == null)
+                throw new NotImplementedException("SetClip with no path.");
+
+            if (_gfxState.Level < GraphicsStackLevelWorldSpace)
+                RealizeTransform();
+
+            if (combineMode == XCombineMode.Replace)
+            {
+                if (_clipLevel != 0)
+                {
+                    if (_clipLevel != _gfxState.Level)
+                        throw new NotImplementedException("Cannot set new clip region in an inner graphic state level.");
+                    else
+                        ResetClip();
+                }
+                _clipLevel = _gfxState.Level;
+            }
+            else if (combineMode == XCombineMode.Intersect)
+            {
+                if (_clipLevel == 0)
+                    _clipLevel = _gfxState.Level;
+            }
+            else
+            {
+                Debug.Assert(false, "Invalid XCombineMode in internal function.");
+            }
+            _gfxState.SetAndRealizeClipPath(path);
+        }
+
+        public void ResetClip()
+        {
+            if (_clipLevel == 0)
+                return;
+
+            if (_clipLevel != _gfxState.Level)
+                throw new NotImplementedException("Cannot reset clip region in an inner graphic state level.");
+
+            BeginGraphicMode();
+
+            InternalGraphicsState state = _gfxState.InternalState;
+            XMatrix ctm = _gfxState.EffectiveCtm;
+            RestoreState();
+            SaveState();
+            _gfxState.InternalState = state;
+        }
+
+        int _clipLevel;
+
+        public void WriteComment(string comment)
+        {
+            comment = comment.Replace("\n", "\n% ");
+            Append("% " + comment + "\n");
+        }
+
+        void AppendPartialArc(double x, double y, double width, double height, double startAngle, double sweepAngle, PathStart pathStart, XMatrix matrix)
+        {
+            double α = startAngle;
+            if (α < 0)
+                α = α + (1 + Math.Floor((Math.Abs(α) / 360))) * 360;
+            else if (α > 360)
+                α = α - Math.Floor(α / 360) * 360;
+            Debug.Assert(α >= 0 && α <= 360);
+
+            double β = sweepAngle;
+            if (β < -360)
+                β = -360;
+            else if (β > 360)
+                β = 360;
+
+            if (α == 0 && β < 0)
+                α = 360;
+            else if (α == 360 && β > 0)
+                α = 0;
+
+            bool smallAngle = Math.Abs(β) <= 90;
+
+            β = α + β;
+            if (β < 0)
+                β = β + (1 + Math.Floor((Math.Abs(β) / 360))) * 360;
+
+            bool clockwise = sweepAngle > 0;
+            int startQuadrant = Quadrant(α, true, clockwise);
+            int endQuadrant = Quadrant(β, false, clockwise);
+
+            if (startQuadrant == endQuadrant && smallAngle)
+                AppendPartialArcQuadrant(x, y, width, height, α, β, pathStart, matrix);
+            else
+            {
+                int currentQuadrant = startQuadrant;
+                bool firstLoop = true;
+                do
+                {
+                    if (currentQuadrant == startQuadrant && firstLoop)
+                    {
+                        double ξ = currentQuadrant * 90 + (clockwise ? 90 : 0);
+                        AppendPartialArcQuadrant(x, y, width, height, α, ξ, pathStart, matrix);
+                    }
+                    else if (currentQuadrant == endQuadrant)
+                    {
+                        double ξ = currentQuadrant * 90 + (clockwise ? 0 : 90);
+                        AppendPartialArcQuadrant(x, y, width, height, ξ, β, PathStart.Ignore1st, matrix);
+                    }
+                    else
+                    {
+                        double ξ1 = currentQuadrant * 90 + (clockwise ? 0 : 90);
+                        double ξ2 = currentQuadrant * 90 + (clockwise ? 90 : 0);
+                        AppendPartialArcQuadrant(x, y, width, height, ξ1, ξ2, PathStart.Ignore1st, matrix);
+                    }
+
+                    if (currentQuadrant == endQuadrant && smallAngle)
+                        break;
+
+                    smallAngle = true;
+
+                    if (clockwise)
+                        currentQuadrant = currentQuadrant == 3 ? 0 : currentQuadrant + 1;
+                    else
+                        currentQuadrant = currentQuadrant == 0 ? 3 : currentQuadrant - 1;
+
+                    firstLoop = false;
+                } while (true);
+            }
+        }
+
+        int Quadrant(double φ, bool start, bool clockwise)
+        {
+            Debug.Assert(φ >= 0);
+            if (φ > 360)
+                φ = φ - Math.Floor(φ / 360) * 360;
+
+            int quadrant = (int)(φ / 90);
+            if (quadrant * 90 == φ)
+            {
+                if ((start && !clockwise) || (!start && clockwise))
+                    quadrant = quadrant == 0 ? 3 : quadrant - 1;
+            }
+            else
+                quadrant = clockwise ? ((int)Math.Floor(φ / 90)) % 4 : (int)Math.Floor(φ / 90);
+            return quadrant;
+        }
+
+        void AppendPartialArcQuadrant(double x, double y, double width, double height, double α, double β, PathStart pathStart, XMatrix matrix)
+        {
+            Debug.Assert(α >= 0 && α <= 360);
+            Debug.Assert(β >= 0);
+            if (β > 360)
+                β = β - Math.Floor(β / 360) * 360;
+            Debug.Assert(Math.Abs(α - β) <= 90);
+
+            double δx = width / 2;
+            double δy = height / 2;
+
+            double x0 = x + δx;
+            double y0 = y + δy;
+
+            bool reflect = false;
+            if (α >= 180 && β >= 180)
+            {
+                α -= 180;
+                β -= 180;
+                reflect = true;
+            }
+
+            double sinα, sinβ;
+            if (width == height)
+            {
+                α = α * Calc.Deg2Rad;
+                β = β * Calc.Deg2Rad;
+            }
+            else
+            {
+                α = α * Calc.Deg2Rad;
+                sinα = Math.Sin(α);
+                if (Math.Abs(sinα) > 1E-10)
+                    α = Math.PI / 2 - Math.Atan(δy * Math.Cos(α) / (δx * sinα));
+                β = β * Calc.Deg2Rad;
+                sinβ = Math.Sin(β);
+                if (Math.Abs(sinβ) > 1E-10)
+                    β = Math.PI / 2 - Math.Atan(δy * Math.Cos(β) / (δx * sinβ));
+            }
+
+            double κ = 4 * (1 - Math.Cos((α - β) / 2)) / (3 * Math.Sin((β - α) / 2));
+            sinα = Math.Sin(α);
+            double cosα = Math.Cos(α);
+            sinβ = Math.Sin(β);
+            double cosβ = Math.Cos(β);
+
+            const string format = Config.SignificantFigures3;
+            XPoint pt1, pt2, pt3;
+            if (!reflect)
+            {
+                switch (pathStart)
+                {
+                    case PathStart.MoveTo1st:
+                        pt1 = matrix.Transform(new XPoint(x0 + δx * cosα, y0 + δy * sinα));
+                        AppendFormatPoint("{0:" + format + "} {1:" + format + "} m\n", pt1.X, pt1.Y);
+                        break;
+
+                    case PathStart.LineTo1st:
+                        pt1 = matrix.Transform(new XPoint(x0 + δx * cosα, y0 + δy * sinα));
+                        AppendFormatPoint("{0:" + format + "} {1:" + format + "} l\n", pt1.X, pt1.Y);
+                        break;
+
+                    case PathStart.Ignore1st:
+                        break;
+                }
+                pt1 = matrix.Transform(new XPoint(x0 + δx * (cosα - κ * sinα), y0 + δy * (sinα + κ * cosα)));
+                pt2 = matrix.Transform(new XPoint(x0 + δx * (cosβ + κ * sinβ), y0 + δy * (sinβ - κ * cosβ)));
+                pt3 = matrix.Transform(new XPoint(x0 + δx * cosβ, y0 + δy * sinβ));
+                AppendFormat3Points("{0:" + format + "} {1:" + format + "} {2:" + format + "} {3:" + format + "} {4:" + format + "} {5:" + format + "} c\n",
+                  pt1.X, pt1.Y, pt2.X, pt2.Y, pt3.X, pt3.Y);
+            }
+            else
+            {
+                switch (pathStart)
+                {
+                    case PathStart.MoveTo1st:
+                        pt1 = matrix.Transform(new XPoint(x0 - δx * cosα, y0 - δy * sinα));
+                        AppendFormatPoint("{0:" + format + "} {1:" + format + "} m\n", pt1.X, pt1.Y);
+                        break;
+
+                    case PathStart.LineTo1st:
+                        pt1 = matrix.Transform(new XPoint(x0 - δx * cosα, y0 - δy * sinα));
+                        AppendFormatPoint("{0:" + format + "} {1:" + format + "} l\n", pt1.X, pt1.Y);
+                        break;
+
+                    case PathStart.Ignore1st:
+                        break;
+                }
+                pt1 = matrix.Transform(new XPoint(x0 - δx * (cosα - κ * sinα), y0 - δy * (sinα + κ * cosα)));
+                pt2 = matrix.Transform(new XPoint(x0 - δx * (cosβ + κ * sinβ), y0 - δy * (sinβ - κ * cosβ)));
+                pt3 = matrix.Transform(new XPoint(x0 - δx * cosβ, y0 - δy * sinβ));
+                AppendFormat3Points("{0:" + format + "} {1:" + format + "} {2:" + format + "} {3:" + format + "} {4:" + format + "} {5:" + format + "} c\n",
+                    pt1.X, pt1.Y, pt2.X, pt2.Y, pt3.X, pt3.Y);
+            }
+        }
+
+        void AppendCurveSegment(XPoint pt0, XPoint pt1, XPoint pt2, XPoint pt3, double tension3)
+        {
+            const string format = Config.SignificantFigures4;
+            AppendFormat3Points("{0:" + format + "} {1:" + format + "} {2:" + format + "} {3:" + format + "} {4:" + format + "} {5:" + format + "} c\n",
+                pt1.X + tension3 * (pt2.X - pt0.X), pt1.Y + tension3 * (pt2.Y - pt0.Y),
+                pt2.X - tension3 * (pt3.X - pt1.X), pt2.Y - tension3 * (pt3.Y - pt1.Y),
+                pt2.X, pt2.Y);
+        }
+
+
+
+#if CORE
+        internal void AppendPath(CoreGraphicsPath path)
+        {
+            AppendPath(path.PathPoints, path.PathTypes);
+        }
+#endif
+
+#if CORE || GDI
+        void AppendPath(XPoint[] points, Byte[] types)
+        {
+            const string format = Config.SignificantFigures4;
+            int count = points.Length;
+            if (count == 0)
+                return;
+
+            for (int idx = 0; idx < count; idx++)
+            {
+                const byte PathPointTypeStart = 0;  
+                const byte PathPointTypeLine = 1;  
+                const byte PathPointTypeBezier = 3;      
+                const byte PathPointTypePathTypeMask = 0x07;      
+                const byte PathPointTypeCloseSubpath = 0x80;   
+                byte type = types[idx];
+                switch (type & PathPointTypePathTypeMask)
+                {
+                    case PathPointTypeStart:
+                        AppendFormatPoint("{0:" + format + "} {1:" + format + "} m\n", points[idx].X, points[idx].Y);
+                        break;
+
+                    case PathPointTypeLine:
+                        AppendFormatPoint("{0:" + format + "} {1:" + format + "} l\n", points[idx].X, points[idx].Y);
+                        if ((type & PathPointTypeCloseSubpath) != 0)
+                            Append("h\n");
+                        break;
+
+                    case PathPointTypeBezier:
+                        Debug.Assert(idx + 2 < count);
+                        AppendFormat3Points("{0:" + format + "} {1:" + format + "} {2:" + format + "} {3:" + format + "} {4:" + format + "} {5:" + format + "} c\n", points[idx].X, points[idx].Y,
+                            points[++idx].X, points[idx].Y, points[++idx].X, points[idx].Y);
+                        if ((types[idx] & PathPointTypeCloseSubpath) != 0)
+                            Append("h\n");
+                        break;
+                }
+            }
+        }
+#endif
+        internal void Append(string value)
+        {
+            _content.Append(value);
+        }
+
+        internal void AppendFormatArgs(string format, params object[] args)
+        {
+            _content.AppendFormat(CultureInfo.InvariantCulture, format, args);
+        }
+
+        internal void AppendFormatString(string format, string s)
+        {
+            _content.AppendFormat(CultureInfo.InvariantCulture, format, s);
+        }
+
+        internal void AppendFormatFont(string format, string s, double d)
+        {
+            _content.AppendFormat(CultureInfo.InvariantCulture, format, s, d);
+        }
+
+        internal void AppendFormatInt(string format, int n)
+        {
+            _content.AppendFormat(CultureInfo.InvariantCulture, format, n);
+        }
+
+        internal void AppendFormatDouble(string format, double d)
+        {
+            _content.AppendFormat(CultureInfo.InvariantCulture, format, d);
+        }
+
+        internal void AppendFormatPoint(string format, double x, double y)
+        {
+            XPoint result = WorldToView(new XPoint(x, y));
+            _content.AppendFormat(CultureInfo.InvariantCulture, format, result.X, result.Y);
+        }
+
+        internal void AppendFormatRect(string format, double x, double y, double width, double height)
+        {
+            XPoint point1 = WorldToView(new XPoint(x, y));
+            _content.AppendFormat(CultureInfo.InvariantCulture, format, point1.X, point1.Y, width, height);
+        }
+
+        internal void AppendFormat3Points(string format, double x1, double y1, double x2, double y2, double x3, double y3)
+        {
+            XPoint point1 = WorldToView(new XPoint(x1, y1));
+            XPoint point2 = WorldToView(new XPoint(x2, y2));
+            XPoint point3 = WorldToView(new XPoint(x3, y3));
+            _content.AppendFormat(CultureInfo.InvariantCulture, format, point1.X, point1.Y, point2.X, point2.Y, point3.X, point3.Y);
+        }
+
+        internal void AppendFormat(string format, XPoint point)
+        {
+            XPoint result = WorldToView(point);
+            _content.AppendFormat(CultureInfo.InvariantCulture, format, result.X, result.Y);
+        }
+
+        internal void AppendFormat(string format, double x, double y, string s)
+        {
+            XPoint result = WorldToView(new XPoint(x, y));
+            _content.AppendFormat(CultureInfo.InvariantCulture, format, result.X, result.Y, s);
+        }
+
+        internal void AppendFormatImage(string format, double x, double y, double width, double height, string name)
+        {
+            XPoint result = WorldToView(new XPoint(x, y));
+            _content.AppendFormat(CultureInfo.InvariantCulture, format, result.X, result.Y, width, height, name);
+        }
+
+        void AppendStrokeFill(XPen pen, XBrush brush, XFillMode fillMode, bool closePath)
+        {
+            if (closePath)
+                _content.Append("h ");
+
+            if (fillMode == XFillMode.Winding)
+            {
+                if (pen != null && brush != null)
+                    _content.Append("B\n");
+                else if (pen != null)
+                    _content.Append("S\n");
+                else
+                    _content.Append("f\n");
+            }
+            else
+            {
+                if (pen != null && brush != null)
+                    _content.Append("B*\n");
+                else if (pen != null)
+                    _content.Append("S\n");
+                else
+                    _content.Append("f*\n");
+            }
+        }
+        void BeginPage()
+        {
+            if (_gfxState.Level == GraphicsStackLevelInitial)
+            {
+                DefaultViewMatrix = new XMatrix();
+                if (_gfx.PageDirection == XPageDirection.Downwards)
+                {
+                    PageHeightPt = Size.Height;
+                    XPoint trimOffset = new XPoint();
+                    if (_page != null && _page.TrimMargins.AreSet)
+                    {
+                        PageHeightPt += _page.TrimMargins.Top.Point + _page.TrimMargins.Bottom.Point;
+                        trimOffset = new XPoint(_page.TrimMargins.Left.Point, _page.TrimMargins.Top.Point);
+                    }
+
+                    switch (_gfx.PageUnit)
+                    {
+                        case XGraphicsUnit.Point:
+                            break;
+
+                        case XGraphicsUnit.Presentation:
+                            DefaultViewMatrix.ScalePrepend(XUnit.PresentationFactor);
+                            break;
+
+                        case XGraphicsUnit.Inch:
+                            DefaultViewMatrix.ScalePrepend(XUnit.InchFactor);
+                            break;
+
+                        case XGraphicsUnit.Millimeter:
+                            DefaultViewMatrix.ScalePrepend(XUnit.MillimeterFactor);
+                            break;
+
+                        case XGraphicsUnit.Centimeter:
+                            DefaultViewMatrix.ScalePrepend(XUnit.CentimeterFactor);
+                            break;
+                    }
+
+                    if (trimOffset != new XPoint())
+                    {
+                        Debug.Assert(_gfx.PageUnit == XGraphicsUnit.Point, "With TrimMargins set the page units must be Point. Ohter cases nyi.");
+                        DefaultViewMatrix.TranslatePrepend(trimOffset.X, -trimOffset.Y);
+                    }
+
+                    SaveState();
+
+                    if (!DefaultViewMatrix.IsIdentity)
+                    {
+                        Debug.Assert(_gfxState.RealizedCtm.IsIdentity);
+                        const string format = Config.SignificantFigures7;
+                        double[] cm = DefaultViewMatrix.GetElements();
+                        AppendFormatArgs("{0:" + format + "} {1:" + format + "} {2:" + format + "} {3:" + format + "} {4:" + format + "} {5:" + format + "} cm ",
+                                     cm[0], cm[1], cm[2], cm[3], cm[4], cm[5]);
+                    }
+
+                }
+                else
+                {
+                    switch (_gfx.PageUnit)
+                    {
+                        case XGraphicsUnit.Point:
+                            break;
+
+                        case XGraphicsUnit.Presentation:
+                            DefaultViewMatrix.ScalePrepend(XUnit.PresentationFactor);
+                            break;
+
+                        case XGraphicsUnit.Inch:
+                            DefaultViewMatrix.ScalePrepend(XUnit.InchFactor);
+                            break;
+
+                        case XGraphicsUnit.Millimeter:
+                            DefaultViewMatrix.ScalePrepend(XUnit.MillimeterFactor);
+                            break;
+
+                        case XGraphicsUnit.Centimeter:
+                            DefaultViewMatrix.ScalePrepend(XUnit.CentimeterFactor);
+                            break;
+                    }
+
+                    SaveState();
+                    const string format = Config.SignificantFigures7;
+                    double[] cm = DefaultViewMatrix.GetElements();
+                    AppendFormat3Points("{0:" + format + "} {1:" + format + "} {2:" + format + "} {3:" + format + "} {4:" + format + "} {5:" + format + "} cm ",
+                        cm[0], cm[1], cm[2], cm[3], cm[4], cm[5]);
+                }
+            }
+        }
+
+        void EndPage()
+        {
+            if (_streamMode == StreamMode.Text)
+            {
+                _content.Append("ET\n");
+                _streamMode = StreamMode.Graphic;
+            }
+
+            while (_gfxStateStack.Count != 0)
+                RestoreState();
+        }
+
+        internal void BeginGraphicMode()
+        {
+            if (_streamMode != StreamMode.Graphic)
+            {
+                if (_streamMode == StreamMode.Text)
+                    _content.Append("ET\n");
+
+                _streamMode = StreamMode.Graphic;
+            }
+        }
+
+        internal void BeginTextMode()
+        {
+            if (_streamMode != StreamMode.Text)
+            {
+                _streamMode = StreamMode.Text;
+                _content.Append("BT\n");
+                _gfxState.RealizedTextPosition = new XPoint();
+                _gfxState.ItalicSimulationOn = false;
+            }
+        }
+
+        StreamMode _streamMode;
+
+        private void Realize(XPen pen, XBrush brush)
+        {
+            BeginPage();
+            BeginGraphicMode();
+            RealizeTransform();
+
+            if (pen != null)
+                _gfxState.RealizePen(pen, _colorMode);
+
+            if (brush != null)
+            {
+                _gfxState.RealizeBrush(brush, _colorMode, 0, 0);
+            }
+        }
+
+        void Realize(XPen pen)
+        {
+            Realize(pen, null);
+        }
+
+        void Realize(XBrush brush)
+        {
+            Realize(null, brush);
+        }
+
+        void Realize(XFont font, XBrush brush, int renderingMode)
+        {
+            BeginPage();
+            RealizeTransform();
+            BeginTextMode();
+            _gfxState.RealizeFont(font, brush, renderingMode);
+        }
+
+        void AdjustTdOffset(ref XPoint pos, double dy, bool adjustSkew)
+        {
+            pos.Y += dy;
+            XPoint posSave = pos;
+            pos = pos - new XVector(_gfxState.RealizedTextPosition.X, _gfxState.RealizedTextPosition.Y);
+            if (adjustSkew)
+            {
+                pos.X -= Const.ItalicSkewAngleSinus * pos.Y;
+            }
+            _gfxState.RealizedTextPosition = posSave;
+        }
+
+        string Realize(XImage image)
+        {
+            BeginPage();
+            BeginGraphicMode();
+            RealizeTransform();
+
+            _gfxState.RealizeNonStrokeTransparency(1, _colorMode);
+
+            XForm form = image as XForm;
+            return form != null ? GetFormName(form) : GetImageName(image);
+        }
+
+        void RealizeTransform()
+        {
+            BeginPage();
+
+            if (_gfxState.Level == GraphicsStackLevelPageSpace)
+            {
+                BeginGraphicMode();
+                SaveState();
+            }
+
+            if (!_gfxState.UnrealizedCtm.IsIdentity)
+            {
+                BeginGraphicMode();
+                _gfxState.RealizeCtm();
+            }
+        }
+
+        internal XPoint WorldToView(XPoint point)
+        {
+            Debug.Assert(_gfxState.UnrealizedCtm.IsIdentity, "Somewhere a RealizeTransform is missing.");
+#if true
+            XPoint pt = _gfxState.WorldTransform.Transform(point);
+            return _gfxState.InverseEffectiveCtm.Transform(new XPoint(pt.X, PageHeightPt / DefaultViewMatrix.M22 - pt.Y));
+#endif
+        }
+
+#if CORE || GDI
+        [Conditional("DEBUG")]
+        void DumpPathData(XPoint[] points, byte[] types)
+        {
+            int count = points.Length;
+            for (int idx = 0; idx < count; idx++)
+            {
+                string info = PdfEncoders.Format("{0:X}   {1:####0.000} {2:####0.000}", types[idx], points[idx].X, points[idx].Y);
+                Debug.WriteLine(info, "PathData");
+            }
+        }
+#endif
+
+        internal PdfDocument Owner
+        {
+            get
+            {
+                if (_page != null)
+                    return _page.Owner;
+                return _form.Owner;
+            }
+        }
+
+        internal XGraphics Gfx
+        {
+            get { return _gfx; }
+        }
+
+        internal PdfResources Resources
+        {
+            get
+            {
+                if (_page != null)
+                    return _page.Resources;
+                return _form.Resources;
+            }
+        }
+
+        internal XSize Size
+        {
+            get
+            {
+                if (_page != null)
+                    return new XSize(_page.Width, _page.Height);
+                return _form.Size;
+            }
+        }
+
+        internal string GetFontName(XFont font, out PdfFont pdfFont)
+        {
+            if (_page != null)
+                return _page.GetFontName(font, out pdfFont);
+            return _form.GetFontName(font, out pdfFont);
+        }
+
+        internal string GetImageName(XImage image)
+        {
+            if (_page != null)
+                return _page.GetImageName(image);
+            return _form.GetImageName(image);
+        }
+
+        internal string GetFormName(XForm form)
+        {
+            if (_page != null)
+                return _page.GetFormName(form);
+            return _form.GetFormName(form);
+        }
+
+        internal PdfPage _page;
+        internal XForm _form;
+        internal PdfColorMode _colorMode;
+        XGraphicsPdfPageOptions _options;
+        XGraphics _gfx;
+        readonly StringBuilder _content;
+
+        const int GraphicsStackLevelInitial = 0;
+
+        const int GraphicsStackLevelPageSpace = 1;
+
+        const int GraphicsStackLevelWorldSpace = 2;
+
+        void SaveState()
+        {
+            Debug.Assert(_streamMode == StreamMode.Graphic, "Cannot save state in text mode.");
+
+            _gfxStateStack.Push(_gfxState);
+            _gfxState = _gfxState.Clone();
+            _gfxState.Level = _gfxStateStack.Count;
+            Append("q\n");
+        }
+
+        void RestoreState()
+        {
+            Debug.Assert(_streamMode == StreamMode.Graphic, "Cannot restore state in text mode.");
+
+            _gfxState = _gfxStateStack.Pop();
+            Append("Q\n");
+        }
+
+        PdfGraphicsState RestoreState(InternalGraphicsState state)
+        {
+            int count = 1;
+            PdfGraphicsState top = _gfxStateStack.Pop();
+            while (top.InternalState != state)
+            {
+                Append("Q\n");
+                count++;
+                top = _gfxStateStack.Pop();
+            }
+            Append("Q\n");
+            _gfxState = top;
+            return top;
+        }
+
+        PdfGraphicsState _gfxState;
+
+        readonly Stack<PdfGraphicsState> _gfxStateStack = new Stack<PdfGraphicsState>();
+
+        public double PageHeightPt;
+
+        public XMatrix DefaultViewMatrix;
+    }
+    internal class CMapInfo
+    {
+        public CMapInfo(OpenTypeDescriptor descriptor)
+        {
+            Debug.Assert(descriptor != null);
+            _descriptor = descriptor;
+        }
+        internal OpenTypeDescriptor _descriptor;
+
+        public void AddChars(string text)
+        {
+            if (text != null)
+            {
+                bool symbol = _descriptor.FontFace.cmap.symbol;
+                int length = text.Length;
+                for (int idx = 0; idx < length; idx++)
+                {
+                    char ch = text[idx];
+                    if (!CharacterToGlyphIndex.ContainsKey(ch))
+                    {
+                        char ch2 = ch;
+                        if (symbol)
+                        {
+                            ch2 = (char)(ch | (_descriptor.FontFace.os2.usFirstCharIndex & 0xFF00));
+                        }
+                        int glyphIndex = _descriptor.CharCodeToGlyphIndex(ch2);
+                        CharacterToGlyphIndex.Add(ch, glyphIndex);
+                        GlyphIndices[glyphIndex] = null;
+                        MinChar = (char)Math.Min(MinChar, ch);
+                        MaxChar = (char)Math.Max(MaxChar, ch);
+                    }
+                }
+            }
+        }
+
+        public void AddGlyphIndices(string glyphIndices)
+        {
+            if (glyphIndices != null)
+            {
+                int length = glyphIndices.Length;
+                for (int idx = 0; idx < length; idx++)
+                {
+                    int glyphIndex = glyphIndices[idx];
+                    GlyphIndices[glyphIndex] = null;
+                }
+            }
+        }
+
+        internal void AddAnsiChars()
+        {
+            byte[] ansi = new byte[256 - 32];
+            for (int idx = 0; idx < 256 - 32; idx++)
+                ansi[idx] = (byte)(idx + 32);
+#if EDF_CORE
+            string text = null; // PdfEncoders.WinAnsiEncoding.GetString(ansi, 0, ansi.Length);
+#else
+            string text = PdfEncoders.WinAnsiEncoding.GetString(ansi, 0, ansi.Length);
+#endif
+            AddChars(text);
+        }
+
+        internal bool Contains(char ch)
+        {
+            return CharacterToGlyphIndex.ContainsKey(ch);
+        }
+
+        public char[] Chars
+        {
+            get
+            {
+                char[] chars = new char[CharacterToGlyphIndex.Count];
+                CharacterToGlyphIndex.Keys.CopyTo(chars, 0);
+                Array.Sort(chars);
+                return chars;
+            }
+        }
+
+        public int[] GetGlyphIndices()
+        {
+            int[] indices = new int[GlyphIndices.Count];
+            GlyphIndices.Keys.CopyTo(indices, 0);
+            Array.Sort(indices);
+            return indices;
+        }
+
+        public char MinChar = char.MaxValue;
+        public char MaxChar = char.MinValue;
+        public Dictionary<char, int> CharacterToGlyphIndex = new Dictionary<char, int>();
+        public Dictionary<int, object> GlyphIndices = new Dictionary<int, object>();
+    }
+    internal sealed class FontDescriptorCache
+    {
+        FontDescriptorCache()
+        {
+            _cache = new Dictionary<string, FontDescriptor>();
+        }
+
+        public static FontDescriptor GetOrCreateDescriptorFor(XFont font)
+        {
+            if (font == null)
+                throw new ArgumentNullException("font");
+
+            string fontDescriptorKey = FontDescriptor.ComputeKey(font);
+            try
+            {
+                Lock.EnterFontFactory();
+                FontDescriptor descriptor;
+                if (!Singleton._cache.TryGetValue(fontDescriptorKey, out descriptor))
+                {
+                    descriptor = new OpenTypeDescriptor(fontDescriptorKey, font);
+                    Singleton._cache.Add(fontDescriptorKey, descriptor);
+                }
+                return descriptor;
+            }
+            finally { Lock.ExitFontFactory(); }
+        }
+
+        public static FontDescriptor GetOrCreateDescriptor(string fontFamilyName, XFontStyle style)
+        {
+            if (string.IsNullOrEmpty(fontFamilyName))
+                throw new ArgumentNullException("fontFamilyName");
+
+            string fontDescriptorKey = FontDescriptor.ComputeKey(fontFamilyName, style);
+            try
+            {
+                Lock.EnterFontFactory();
+                FontDescriptor descriptor;
+                if (!Singleton._cache.TryGetValue(fontDescriptorKey, out descriptor))
+                {
+                    XFont font = new XFont(fontFamilyName, 10, style);
+                    descriptor = GetOrCreateDescriptorFor(font);
+                    if (Singleton._cache.ContainsKey(fontDescriptorKey))
+                        Singleton.GetType();
+                    else
+                        Singleton._cache.Add(fontDescriptorKey, descriptor);
+                }
+                return descriptor;
+            }
+            finally { Lock.ExitFontFactory(); }
+        }
+
+        public static FontDescriptor GetOrCreateDescriptor(string idName, byte[] fontData)
+        {
+            string fontDescriptorKey = FontDescriptor.ComputeKey(idName);
+            try
+            {
+                Lock.EnterFontFactory();
+                FontDescriptor descriptor;
+                if (!Singleton._cache.TryGetValue(fontDescriptorKey, out descriptor))
+                {
+                    descriptor = GetOrCreateOpenTypeDescriptor(fontDescriptorKey, idName, fontData);
+                    Singleton._cache.Add(fontDescriptorKey, descriptor);
+                }
+                return descriptor;
+            }
+            finally { Lock.ExitFontFactory(); }
+        }
+
+        static OpenTypeDescriptor GetOrCreateOpenTypeDescriptor(string fontDescriptorKey, string idName, byte[] fontData)
+        {
+            return new OpenTypeDescriptor(fontDescriptorKey, idName, fontData);
+        }
+
+        static FontDescriptorCache Singleton
+        {
+            get
+            {
+                if (_singleton == null)
+                {
+                    try
+                    {
+                        Lock.EnterFontFactory();
+                        if (_singleton == null)
+                            _singleton = new FontDescriptorCache();
+                    }
+                    finally { Lock.ExitFontFactory(); }
+                }
+                return _singleton;
+            }
+        }
+        static volatile FontDescriptorCache _singleton;
+
+        readonly Dictionary<string, FontDescriptor> _cache;
+    }
+    internal static class FontFactory
+    {
+        public static FontResolverInfo ResolveTypeface(string familyName, FontResolvingOptions fontResolvingOptions, string typefaceKey)
+        {
+            if (string.IsNullOrEmpty(typefaceKey))
+                typefaceKey = XGlyphTypeface.ComputeKey(familyName, fontResolvingOptions);
+
+            try
+            {
+                Lock.EnterFontFactory();
+                FontResolverInfo fontResolverInfo;
+                if (FontResolverInfosByName.TryGetValue(typefaceKey, out fontResolverInfo))
+                    return fontResolverInfo;
+
+                IFontResolver customFontResolver = GlobalFontSettings.FontResolver;
+                if (customFontResolver != null)
+                {
+                    fontResolverInfo = customFontResolver.ResolveTypeface(familyName, fontResolvingOptions.IsBold, fontResolvingOptions.IsItalic);
+
+                    if (fontResolverInfo != null && !(fontResolverInfo is PlatformFontResolverInfo))
+                    {
+                        if (fontResolvingOptions.OverrideStyleSimulations)
+                        {
+                            fontResolverInfo = new FontResolverInfo(fontResolverInfo.FaceName, fontResolvingOptions.MustSimulateBold, fontResolvingOptions.MustSimulateItalic, fontResolverInfo.CollectionNumber);
+                        }
+
+                        string resolverInfoKey = fontResolverInfo.Key;
+                        FontResolverInfo existingFontResolverInfo;
+                        if (FontResolverInfosByName.TryGetValue(resolverInfoKey, out existingFontResolverInfo))
+                        {
+                            fontResolverInfo = existingFontResolverInfo;
+                            FontResolverInfosByName.Add(typefaceKey, fontResolverInfo);
+                        }
+                        else
+                        {
+                            FontResolverInfosByName.Add(typefaceKey, fontResolverInfo);
+                            Debug.Assert(resolverInfoKey == fontResolverInfo.Key);
+                            FontResolverInfosByName.Add(resolverInfoKey, fontResolverInfo);
+
+                            XFontSource previousFontSource;
+                            if (FontSourcesByName.TryGetValue(fontResolverInfo.FaceName, out previousFontSource))
+                            {
+                            }
+                            else
+                            {
+                                byte[] bytes = customFontResolver.GetFont(fontResolverInfo.FaceName);
+                                XFontSource fontSource = XFontSource.GetOrCreateFrom(bytes);
+
+                                if (string.Compare(fontResolverInfo.FaceName, fontSource.FontName, StringComparison.OrdinalIgnoreCase) != 0)
+                                    FontSourcesByName.Add(fontResolverInfo.FaceName, fontSource);
+                            }
+                        }
+                    }
+                }
+                else
+                {
+                    fontResolverInfo = PlatformFontResolver.ResolveTypeface(familyName, fontResolvingOptions, typefaceKey);
+                }
+
+                return fontResolverInfo;
+            }
+            finally { Lock.ExitFontFactory(); }
+        }
+
+
+        public static XFontSource GetFontSourceByFontName(string fontName)
+        {
+            XFontSource fontSource;
+            if (FontSourcesByName.TryGetValue(fontName, out fontSource))
+                return fontSource;
+
+            Debug.Assert(false, string.Format("An XFontSource with the name '{0}' does not exists.", fontName));
+            return null;
+        }
+
+        public static XFontSource GetFontSourceByTypefaceKey(string typefaceKey)
+        {
+            XFontSource fontSource;
+            if (FontSourcesByName.TryGetValue(typefaceKey, out fontSource))
+                return fontSource;
+
+            Debug.Assert(false, string.Format("An XFontSource with the typeface key '{0}' does not exists.", typefaceKey));
+            return null;
+        }
+
+        public static bool TryGetFontSourceByKey(ulong key, out XFontSource fontSource)
+        {
+            return FontSourcesByKey.TryGetValue(key, out fontSource);
+        }
+
+        public static bool HasFontSources
+        {
+            get { return FontSourcesByName.Count > 0; }
+        }
+
+        public static bool TryGetFontResolverInfoByTypefaceKey(string typeFaceKey, out FontResolverInfo info)
+        {
+            return FontResolverInfosByName.TryGetValue(typeFaceKey, out info);
+        }
+
+        public static bool TryGetFontSourceByTypefaceKey(string typefaceKey, out XFontSource source)
+        {
+            return FontSourcesByName.TryGetValue(typefaceKey, out source);
+        }
+
+        internal static void CacheFontResolverInfo(string typefaceKey, FontResolverInfo fontResolverInfo)
+        {
+            FontResolverInfo existingfFontResolverInfo;
+            if (FontResolverInfosByName.TryGetValue(typefaceKey, out existingfFontResolverInfo))
+            {
+                throw new InvalidOperationException(string.Format("A font file with different content already exists with the specified face name '{0}'.", typefaceKey));
+            }
+            if (FontResolverInfosByName.TryGetValue(fontResolverInfo.Key, out existingfFontResolverInfo))
+            {
+                throw new InvalidOperationException(string.Format("A font resolver already exists with the specified key '{0}'.", fontResolverInfo.Key));
+            }
+            FontResolverInfosByName.Add(typefaceKey, fontResolverInfo);
+            FontResolverInfosByName.Add(fontResolverInfo.Key, fontResolverInfo);
+        }
+
+        public static XFontSource CacheFontSource(XFontSource fontSource)
+        {
+            try
+            {
+                Lock.EnterFontFactory();
+                XFontSource existingFontSource;
+                if (FontSourcesByKey.TryGetValue(fontSource.Key, out existingFontSource))
+                {
+                    return existingFontSource;
+
+                }
+
+                OpenTypeFontface fontface = fontSource.Fontface;
+                if (fontface == null)
+                {
+                    fontSource.Fontface = new OpenTypeFontface(fontSource);
+                }
+                FontSourcesByKey.Add(fontSource.Key, fontSource);
+                FontSourcesByName.Add(fontSource.FontName, fontSource);
+                return fontSource;
+            }
+            finally { Lock.ExitFontFactory(); }
+        }
+
+        public static XFontSource CacheNewFontSource(string typefaceKey, XFontSource fontSource)
+        {
+            XFontSource existingFontSource;
+            if (FontSourcesByKey.TryGetValue(fontSource.Key, out existingFontSource))
+            {
+                return existingFontSource;
+
+            }
+
+            OpenTypeFontface fontface = fontSource.Fontface;
+            if (fontface == null)
+            {
+                fontface = new OpenTypeFontface(fontSource);
+                fontSource.Fontface = fontface;
+            }
+
+            FontSourcesByName.Add(typefaceKey, fontSource);
+            FontSourcesByName.Add(fontSource.FontName, fontSource);
+            FontSourcesByKey.Add(fontSource.Key, fontSource);
+
+            return fontSource;
+        }
+
+        public static void CacheExistingFontSourceWithNewTypefaceKey(string typefaceKey, XFontSource fontSource)
+        {
+            try
+            {
+                Lock.EnterFontFactory();
+                FontSourcesByName.Add(typefaceKey, fontSource);
+            }
+            finally { Lock.ExitFontFactory(); }
+        }
+
+        internal static string GetFontCachesState()
+        {
+            StringBuilder state = new StringBuilder();
+            string[] keys;
+            int count;
+
+            state.Append("====================\n");
+            state.Append("Font resolver info by name\n");
+            Dictionary<string, FontResolverInfo>.KeyCollection keyCollection = FontResolverInfosByName.Keys;
+            count = keyCollection.Count;
+            keys = new string[count];
+            keyCollection.CopyTo(keys, 0);
+            Array.Sort(keys, StringComparer.OrdinalIgnoreCase);
+            foreach (string key in keys)
+                state.AppendFormat("  {0}: {1}\n", key, FontResolverInfosByName[key].DebuggerDisplay);
+            state.Append("\n");
+
+            state.Append("Font source by key and name\n");
+            Dictionary<ulong, XFontSource>.KeyCollection fontSourceKeys = FontSourcesByKey.Keys;
+            count = fontSourceKeys.Count;
+            ulong[] ulKeys = new ulong[count];
+            fontSourceKeys.CopyTo(ulKeys, 0);
+            Array.Sort(ulKeys, delegate (ulong x, ulong y) { return x == y ? 0 : (x > y ? 1 : -1); });
+            foreach (ulong ul in ulKeys)
+                state.AppendFormat("  {0}: {1}\n", ul, FontSourcesByKey[ul].DebuggerDisplay);
+            Dictionary<string, XFontSource>.KeyCollection fontSourceNames = FontSourcesByName.Keys;
+            count = fontSourceNames.Count;
+            keys = new string[count];
+            fontSourceNames.CopyTo(keys, 0);
+            Array.Sort(keys, StringComparer.OrdinalIgnoreCase);
+            foreach (string key in keys)
+                state.AppendFormat("  {0}: {1}\n", key, FontSourcesByName[key].DebuggerDisplay);
+            state.Append("--------------------\n\n");
+
+            state.Append(FontFamilyCache.GetCacheState());
+            state.Append(GlyphTypefaceCache.GetCacheState());
+            state.Append(OpenTypeFontfaceCache.GetCacheState());
+            return state.ToString();
+        }
+
+        static readonly Dictionary<string, FontResolverInfo> FontResolverInfosByName = new Dictionary<string, FontResolverInfo>(StringComparer.OrdinalIgnoreCase);
+
+        static readonly Dictionary<string, XFontSource> FontSourcesByName = new Dictionary<string, XFontSource>(StringComparer.OrdinalIgnoreCase);
+
+        static readonly Dictionary<ulong, XFontSource> FontSourcesByKey = new Dictionary<ulong, XFontSource>();
+    }
+    public class FontResolverInfo
+    {
+        private const string KeyPrefix = "frik:";
+
+        public FontResolverInfo(string faceName) :
+            this(faceName, false, false, 0)
+        { }
+
+        internal FontResolverInfo(string faceName, bool mustSimulateBold, bool mustSimulateItalic, int collectionNumber)
+        {
+            if (String.IsNullOrEmpty(faceName))
+                throw new ArgumentNullException("faceName");
+            if (collectionNumber != 0)
+                throw new NotImplementedException("collectionNumber is not yet implemented and must be 0.");
+
+            _faceName = faceName;
+            _mustSimulateBold = mustSimulateBold;
+            _mustSimulateItalic = mustSimulateItalic;
+            _collectionNumber = collectionNumber;
+        }
+
+        public FontResolverInfo(string faceName, bool mustSimulateBold, bool mustSimulateItalic)
+            : this(faceName, mustSimulateBold, mustSimulateItalic, 0)
+        { }
+
+        public FontResolverInfo(string faceName, XStyleSimulations styleSimulations)
+            : this(faceName,
+                  (styleSimulations & XStyleSimulations.BoldSimulation) == XStyleSimulations.BoldSimulation,
+                  (styleSimulations & XStyleSimulations.ItalicSimulation) == XStyleSimulations.ItalicSimulation, 0)
+        { }
+
+        internal string Key
+        {
+            get
+            {
+                return _key ?? (_key = KeyPrefix + _faceName.ToLowerInvariant()
+                                       + '/' + (_mustSimulateBold ? "b+" : "b-") + (_mustSimulateItalic ? "i+" : "i-"));
+            }
+        }
+        string _key;
+
+        public string FaceName
+        {
+            get { return _faceName; }
+        }
+        readonly string _faceName;
+
+        public bool MustSimulateBold
+        {
+            get { return _mustSimulateBold; }
+        }
+        readonly bool _mustSimulateBold;
+
+        public bool MustSimulateItalic
+        {
+            get { return _mustSimulateItalic; }
+        }
+        readonly bool _mustSimulateItalic;
+
+        public XStyleSimulations StyleSimulations
+        {
+            get { return (_mustSimulateBold ? XStyleSimulations.BoldSimulation : 0) | (_mustSimulateItalic ? XStyleSimulations.ItalicSimulation : 0); }
+        }
+
+        internal int CollectionNumber
+        {
+            get { return _collectionNumber; }
+        }
+        readonly int _collectionNumber;
+
+        internal string DebuggerDisplay
+        {
+            get
+            {
+                return string.Format(CultureInfo.InvariantCulture, "FontResolverInfo: '{0}',{1}{2}", FaceName,
+                    MustSimulateBold ? " simulate Bold" : "",
+                    MustSimulateItalic ? " simulate Italic" : "");
+            }
+        }
+    }
+    class FontResolvingOptions
+    {
+        public FontResolvingOptions(XFontStyle fontStyle)
+        {
+            FontStyle = fontStyle;
+        }
+
+        public FontResolvingOptions(XFontStyle fontStyle, XStyleSimulations styleSimulations)
+        {
+            FontStyle = fontStyle;
+            OverrideStyleSimulations = true;
+            StyleSimulations = styleSimulations;
+        }
+
+        public bool IsBold
+        {
+            get { return (FontStyle & XFontStyle.Bold) == XFontStyle.Bold; }
+        }
+
+        public bool IsItalic
+        {
+            get { return (FontStyle & XFontStyle.Italic) == XFontStyle.Italic; }
+        }
+
+        public bool IsBoldItalic
+        {
+            get { return (FontStyle & XFontStyle.BoldItalic) == XFontStyle.BoldItalic; }
+        }
+
+        public bool MustSimulateBold
+        {
+            get { return (StyleSimulations & XStyleSimulations.BoldSimulation) == XStyleSimulations.BoldSimulation; }
+        }
+
+        public bool MustSimulateItalic
+        {
+            get { return (StyleSimulations & XStyleSimulations.ItalicSimulation) == XStyleSimulations.ItalicSimulation; }
+        }
+
+        public XFontStyle FontStyle;
+
+        public bool OverrideStyleSimulations;
+
+        public XStyleSimulations StyleSimulations;
+    }
+    internal class FontWriter
+    {
+        public FontWriter(Stream stream)
+        {
+            _stream = stream;
+        }
+
+        public void Close(bool closeUnderlyingStream)
+        {
+            if (_stream != null && closeUnderlyingStream)
+            {
+#if !UWP
+                _stream.Close();
+#endif
+                _stream.Dispose();
+            }
+            _stream = null;
+        }
+
+        public void Close()
+        {
+            Close(true);
+        }
+
+        public int Position
+        {
+            get { return (int)_stream.Position; }
+            set { _stream.Position = value; }
+        }
+
+        public void WriteByte(byte value)
+        {
+            _stream.WriteByte(value);
+        }
+
+        public void WriteByte(int value)
+        {
+            _stream.WriteByte((byte)value);
+        }
+
+        public void WriteShort(short value)
+        {
+            _stream.WriteByte((byte)(value >> 8));
+            _stream.WriteByte((byte)value);
+        }
+
+        public void WriteShort(int value)
+        {
+            WriteShort((short)value);
+        }
+
+        public void WriteUShort(ushort value)
+        {
+            _stream.WriteByte((byte)(value >> 8));
+            _stream.WriteByte((byte)value);
+        }
+
+        public void WriteUShort(int value)
+        {
+            WriteUShort((ushort)value);
+        }
+
+        public void WriteInt(int value)
+        {
+            _stream.WriteByte((byte)(value >> 24));
+            _stream.WriteByte((byte)(value >> 16));
+            _stream.WriteByte((byte)(value >> 8));
+            _stream.WriteByte((byte)value);
+        }
+
+        public void WriteUInt(uint value)
+        {
+            _stream.WriteByte((byte)(value >> 24));
+            _stream.WriteByte((byte)(value >> 16));
+            _stream.WriteByte((byte)(value >> 8));
+            _stream.WriteByte((byte)value);
+        }
+
+        public void Write(byte[] buffer)
+        {
+            _stream.Write(buffer, 0, buffer.Length);
+        }
+
+        public void Write(byte[] buffer, int offset, int count)
+        {
+            _stream.Write(buffer, offset, count);
+        }
+
+        internal Stream Stream
+        {
+            get { return _stream; }
+        }
+        Stream _stream;
+    }
+    public static class GlobalFontSettings
+    {
+        public const string DefaultFontName = "PlatformDefault";
+
+        public static IFontResolver FontResolver
+        {
+            get { return _fontResolver; }
+            set
+            {
+                if (value == null)
+                    throw new ArgumentNullException();
+
+                try
+                {
+                    Lock.EnterFontFactory();
+                    if (ReferenceEquals(_fontResolver, value))
+                        return;
+
+                    if (FontFactory.HasFontSources)
+                        throw new InvalidOperationException("Must not change font resolver after is was once used.");
+
+                    _fontResolver = value;
+                }
+                finally { Lock.ExitFontFactory(); }
+            }
+        }
+        static IFontResolver _fontResolver;
+
+        public static PdfFontEncoding DefaultFontEncoding
+        {
+            get
+            {
+                if (!_fontEncodingInitialized)
+                    DefaultFontEncoding = PdfFontEncoding.Unicode;
+                return _fontEncoding;
+            }
+            set
+            {
+                try
+                {
+                    Lock.EnterFontFactory();
+                    if (_fontEncodingInitialized)
+                    {
+                        if (_fontEncoding == value)
+                            return;
+                        throw new InvalidOperationException("Must not change DefaultFontEncoding after is was set once.");
+                    }
+
+                    _fontEncoding = value;
+                    _fontEncodingInitialized = true;
+                }
+                finally { Lock.ExitFontFactory(); }
+            }
+        }
+        static PdfFontEncoding _fontEncoding;
+        static bool _fontEncodingInitialized;
+    }
+    public interface IFontResolver
+    {
+        FontResolverInfo ResolveTypeface(string familyName, bool isBold, bool isItalic);
+
+        byte[] GetFont(string faceName);
+    }
+    public static class PlatformFontResolver
+    {
+        public static FontResolverInfo ResolveTypeface(string familyName, bool isBold, bool isItalic)
+        {
+            FontResolvingOptions fontResolvingOptions = new FontResolvingOptions(FontHelper.CreateStyle(isBold, isItalic));
+            return ResolveTypeface(familyName, fontResolvingOptions, XGlyphTypeface.ComputeKey(familyName, fontResolvingOptions));
+        }
+
+        internal static FontResolverInfo ResolveTypeface(string familyName, FontResolvingOptions fontResolvingOptions, string typefaceKey)
+        {
+            if (string.IsNullOrEmpty(typefaceKey))
+                typefaceKey = XGlyphTypeface.ComputeKey(familyName, fontResolvingOptions);
+
+            FontResolverInfo fontResolverInfo;
+            if (FontFactory.TryGetFontResolverInfoByTypefaceKey(typefaceKey, out fontResolverInfo))
+                return fontResolverInfo;
+
+#if (CORE || GDI) && !WPF
+            GdiFont gdiFont;
+            XFontSource fontSource = CreateFontSource(familyName, fontResolvingOptions, out gdiFont, typefaceKey);
+#endif
+
+            if (fontSource == null)
+                return null;
+
+            if (fontResolvingOptions.OverrideStyleSimulations)
+            {
+#if (CORE || GDI) && !WPF
+                fontResolverInfo = new PlatformFontResolverInfo(typefaceKey, fontResolvingOptions.MustSimulateBold, fontResolvingOptions.MustSimulateItalic, gdiFont);
+#endif
+            }
+            else
+            {
+#if (CORE || GDI) && !WPF
+                bool mustSimulateBold = gdiFont.Bold && !fontSource.Fontface.os2.IsBold;
+                bool mustSimulateItalic = gdiFont.Italic && !fontSource.Fontface.os2.IsItalic;
+                fontResolverInfo = new PlatformFontResolverInfo(typefaceKey, mustSimulateBold, mustSimulateItalic, gdiFont);
+#endif
+            }
+
+            FontFactory.CacheFontResolverInfo(typefaceKey, fontResolverInfo);
+
+            return fontResolverInfo;
+        }
+
+#if (CORE_WITH_GDI || GDI) && !WPF
+        internal static XFontSource CreateFontSource(string familyName, FontResolvingOptions fontResolvingOptions, out GdiFont font, string typefaceKey)
+        {
+            if (string.IsNullOrEmpty(typefaceKey))
+                typefaceKey = XGlyphTypeface.ComputeKey(familyName, fontResolvingOptions);
+            GdiFontStyle gdiStyle = (GdiFontStyle)(fontResolvingOptions.FontStyle & XFontStyle.BoldItalic);
+
+            XFontSource fontSource;
+            font = FontHelper.CreateFont(familyName, 10, gdiStyle, out fontSource);
+
+            if (fontSource != null)
+            {
+                Debug.Assert(font != null);
+            }
+            else
+            {
+                fontSource = XFontSource.GetOrCreateFromGdi(typefaceKey, font);
+            }
+            return fontSource;
+        }
+#endif
+
+    }
+    internal class PlatformFontResolverInfo : FontResolverInfo
+    {
+#if CORE || GDI
+        public PlatformFontResolverInfo(string faceName, bool mustSimulateBold, bool mustSimulateItalic, GdiFont gdiFont)
+            : base(faceName, mustSimulateBold, mustSimulateItalic)
+        {
+            _gdiFont = gdiFont;
+        }
+#endif
+
+#if CORE || GDI
+        public Font GdiFont
+        {
+            get { return _gdiFont; }
+        }
+        readonly Font _gdiFont;
+#endif
+    }
+
+
+
+
 
 
 
