@@ -427,9 +427,37 @@ using System.IO;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-
-
-
+using System;
+using System;
+using System;
+using System.Collections.Generic;
+using System.Diagnostics;
+using System;
+using System;
+using System;
+using System.Diagnostics;
+using System.Resources;
+using System.Reflection;
+using System;
+using System;
+using System;
+using System.IO;
+using System;
+using System.IO;
+using System;
+using System;
+using System;
+using System;
+using System;
+using System;
+using System;
+using System;
+using System;
+using System;
+using System.Globalization;
+using System.Text;
+using System;
+using System;
 
 
 
@@ -40194,19 +40222,5675 @@ namespace pdf_guru
 
         readonly List<PdfItem> _items;
     }
+    public enum PdfDocumentSecurityLevel
+    {
+        None,
+
+        Encrypted40Bit,
+
+        Encrypted128Bit,
+    }
+    internal enum PdfUserAccessPermission
+    {
+        PermitAll = -3,
+
+        PermitPrint = 0x00000004,
+
+        PermitModifyDocument = 0x00000008,
+
+        PermitExtractContent = 0x00000010,
+
+        PermitAnnotations = 0x00000020,
+
+        PermitFormsFill = 0x00000100,
+
+        PermitAccessibilityExtractContent = 0x00000200,
+
+        PermitAssembleDocument = 0x00000400,
+
+        PermitFullQualityPrint = 0x00000800,
+
+    }
+    public abstract class PdfSecurityHandler : PdfDictionary
+    {
+        internal PdfSecurityHandler(PdfDocument document)
+            : base(document)
+        { }
+
+        internal PdfSecurityHandler(PdfDictionary dict)
+            : base(dict)
+        { }
+
+        internal class Keys : KeysBase
+        {
+            [KeyInfo(KeyType.Name | KeyType.Required)]
+            public const string Filter = "/Filter";
+
+            [KeyInfo("1.3", KeyType.Name | KeyType.Optional)]
+            public const string SubFilter = "/SubFilter";
+
+            [KeyInfo(KeyType.Integer | KeyType.Optional)]
+            public const string V = "/V";
+
+            [KeyInfo("1.4", KeyType.Integer | KeyType.Optional)]
+            public const string Length = "/Length";
+
+            [KeyInfo(KeyType.Dictionary | KeyType.Optional)]
+            public const string CF = "/CF";
+
+            [KeyInfo("1.5", KeyType.Name | KeyType.Optional)]
+            public const string StmF = "/StmF";
+
+            [KeyInfo("1.5", KeyType.Name | KeyType.Optional)]
+            public const string StrF = "/StrF";
+
+            [KeyInfo("1.6", KeyType.Name | KeyType.Optional)]
+            public const string EFF = "/EFF";
+        }
+    }
+    public sealed class PdfSecuritySettings
+    {
+        internal PdfSecuritySettings(PdfDocument document)
+        {
+            _document = document;
+        }
+        readonly PdfDocument _document;
+
+        public bool HasOwnerPermissions
+        {
+            get { return _hasOwnerPermissions; }
+        }
+        internal bool _hasOwnerPermissions = true;
+
+        public PdfDocumentSecurityLevel DocumentSecurityLevel
+        {
+            get { return _documentSecurityLevel; }
+            set { _documentSecurityLevel = value; }
+        }
+        PdfDocumentSecurityLevel _documentSecurityLevel;
+
+        public string UserPassword
+        {
+            set { SecurityHandler.UserPassword = value; }
+        }
+
+        public string OwnerPassword
+        {
+            set { SecurityHandler.OwnerPassword = value; }
+        }
+
+        internal bool CanSave(ref string message)
+        {
+            if (_documentSecurityLevel != PdfDocumentSecurityLevel.None)
+            {
+                if (String.IsNullOrEmpty(SecurityHandler._userPassword) && String.IsNullOrEmpty(SecurityHandler._ownerPassword))
+                {
+                    message = PSSR.UserOrOwnerPasswordRequired;
+                    return false;
+                }
+            }
+            return true;
+        }
+
+        public bool PermitPrint
+        {
+            get { return (SecurityHandler.Permission & PdfUserAccessPermission.PermitPrint) != 0; }
+            set
+            {
+                PdfUserAccessPermission permission = SecurityHandler.Permission;
+                if (value)
+                    permission |= PdfUserAccessPermission.PermitPrint;
+                else
+                    permission &= ~PdfUserAccessPermission.PermitPrint;
+                SecurityHandler.Permission = permission;
+            }
+        }
+
+        public bool PermitModifyDocument
+        {
+            get { return (SecurityHandler.Permission & PdfUserAccessPermission.PermitModifyDocument) != 0; }
+            set
+            {
+                PdfUserAccessPermission permission = SecurityHandler.Permission;
+                if (value)
+                    permission |= PdfUserAccessPermission.PermitModifyDocument;
+                else
+                    permission &= ~PdfUserAccessPermission.PermitModifyDocument;
+                SecurityHandler.Permission = permission;
+            }
+        }
+
+        public bool PermitExtractContent
+        {
+            get { return (SecurityHandler.Permission & PdfUserAccessPermission.PermitExtractContent) != 0; }
+            set
+            {
+                PdfUserAccessPermission permission = SecurityHandler.Permission;
+                if (value)
+                    permission |= PdfUserAccessPermission.PermitExtractContent;
+                else
+                    permission &= ~PdfUserAccessPermission.PermitExtractContent;
+                SecurityHandler.Permission = permission;
+            }
+        }
+
+        public bool PermitAnnotations
+        {
+            get { return (SecurityHandler.Permission & PdfUserAccessPermission.PermitAnnotations) != 0; }
+            set
+            {
+                PdfUserAccessPermission permission = SecurityHandler.Permission;
+                if (value)
+                    permission |= PdfUserAccessPermission.PermitAnnotations;
+                else
+                    permission &= ~PdfUserAccessPermission.PermitAnnotations;
+                SecurityHandler.Permission = permission;
+            }
+        }
+
+        public bool PermitFormsFill
+        {
+            get { return (SecurityHandler.Permission & PdfUserAccessPermission.PermitFormsFill) != 0; }
+            set
+            {
+                PdfUserAccessPermission permission = SecurityHandler.Permission;
+                if (value)
+                    permission |= PdfUserAccessPermission.PermitFormsFill;
+                else
+                    permission &= ~PdfUserAccessPermission.PermitFormsFill;
+                SecurityHandler.Permission = permission;
+            }
+        }
+
+        public bool PermitAccessibilityExtractContent
+        {
+            get { return (SecurityHandler.Permission & PdfUserAccessPermission.PermitAccessibilityExtractContent) != 0; }
+            set
+            {
+                PdfUserAccessPermission permission = SecurityHandler.Permission;
+                if (value)
+                    permission |= PdfUserAccessPermission.PermitAccessibilityExtractContent;
+                else
+                    permission &= ~PdfUserAccessPermission.PermitAccessibilityExtractContent;
+                SecurityHandler.Permission = permission;
+            }
+        }
+
+        public bool PermitAssembleDocument
+        {
+            get { return (SecurityHandler.Permission & PdfUserAccessPermission.PermitAssembleDocument) != 0; }
+            set
+            {
+                PdfUserAccessPermission permission = SecurityHandler.Permission;
+                if (value)
+                    permission |= PdfUserAccessPermission.PermitAssembleDocument;
+                else
+                    permission &= ~PdfUserAccessPermission.PermitAssembleDocument;
+                SecurityHandler.Permission = permission;
+            }
+        }
+
+        public bool PermitFullQualityPrint
+        {
+            get { return (SecurityHandler.Permission & PdfUserAccessPermission.PermitFullQualityPrint) != 0; }
+            set
+            {
+                PdfUserAccessPermission permission = SecurityHandler.Permission;
+                if (value)
+                    permission |= PdfUserAccessPermission.PermitFullQualityPrint;
+                else
+                    permission &= ~PdfUserAccessPermission.PermitFullQualityPrint;
+                SecurityHandler.Permission = permission;
+            }
+        }
+        internal PdfStandardSecurityHandler SecurityHandler
+        {
+            get { return _document._trailer.SecurityHandler; }
+        }
+    }
+    public sealed class PdfStandardSecurityHandler : PdfSecurityHandler
+    {
+        internal PdfStandardSecurityHandler(PdfDocument document)
+            : base(document)
+        { }
+
+        internal PdfStandardSecurityHandler(PdfDictionary dict)
+            : base(dict)
+        { }
+
+        public string UserPassword
+        {
+            set
+            {
+                if (_document._securitySettings.DocumentSecurityLevel == PdfDocumentSecurityLevel.None)
+                    _document._securitySettings.DocumentSecurityLevel = PdfDocumentSecurityLevel.Encrypted128Bit;
+                _userPassword = value;
+            }
+        }
+        internal string _userPassword;
+
+        public string OwnerPassword
+        {
+            set
+            {
+                if (_document._securitySettings.DocumentSecurityLevel == PdfDocumentSecurityLevel.None)
+                    _document._securitySettings.DocumentSecurityLevel = PdfDocumentSecurityLevel.Encrypted128Bit;
+                _ownerPassword = value;
+            }
+        }
+        internal string _ownerPassword;
+
+        internal PdfUserAccessPermission Permission
+        {
+            get
+            {
+                PdfUserAccessPermission permission = (PdfUserAccessPermission)Elements.GetInteger(Keys.P);
+                if ((int)permission == 0)
+                    permission = PdfUserAccessPermission.PermitAll;
+                return permission;
+            }
+            set { Elements.SetInteger(Keys.P, (int)value); }
+        }
+
+        public void EncryptDocument()
+        {
+            foreach (PdfReference iref in _document._irefTable.AllReferences)
+            {
+                if (!ReferenceEquals(iref.Value, this))
+                    EncryptObject(iref.Value);
+            }
+        }
+
+        internal void EncryptObject(PdfObject value)
+        {
+            Debug.Assert(value.Reference != null);
+
+            SetHashKey(value.ObjectID);
 
 
+            PdfDictionary dict;
+            PdfArray array;
+            PdfStringObject str;
+            if ((dict = value as PdfDictionary) != null)
+                EncryptDictionary(dict);
+            else if ((array = value as PdfArray) != null)
+                EncryptArray(array);
+            else if ((str = value as PdfStringObject) != null)
+            {
+                if (str.Length != 0)
+                {
+                    byte[] bytes = str.EncryptionValue;
+                    PrepareKey();
+                    EncryptRC4(bytes);
+                    str.EncryptionValue = bytes;
+                }
+            }
+        }
+
+        void EncryptDictionary(PdfDictionary dict)
+        {
+            PdfName[] names = dict.Elements.KeyNames;
+            foreach (KeyValuePair<string, PdfItem> item in dict.Elements)
+            {
+                PdfString value1;
+                PdfDictionary value2;
+                PdfArray value3;
+                if ((value1 = item.Value as PdfString) != null)
+                    EncryptString(value1);
+                else if ((value2 = item.Value as PdfDictionary) != null)
+                    EncryptDictionary(value2);
+                else if ((value3 = item.Value as PdfArray) != null)
+                    EncryptArray(value3);
+            }
+            if (dict.Stream != null)
+            {
+                byte[] bytes = dict.Stream.Value;
+                if (bytes.Length != 0)
+                {
+                    PrepareKey();
+                    EncryptRC4(bytes);
+                    dict.Stream.Value = bytes;
+                }
+            }
+        }
+
+        void EncryptArray(PdfArray array)
+        {
+            int count = array.Elements.Count;
+            for (int idx = 0; idx < count; idx++)
+            {
+                PdfItem item = array.Elements[idx];
+                PdfString value1;
+                PdfDictionary value2;
+                PdfArray value3;
+                if ((value1 = item as PdfString) != null)
+                    EncryptString(value1);
+                else if ((value2 = item as PdfDictionary) != null)
+                    EncryptDictionary(value2);
+                else if ((value3 = item as PdfArray) != null)
+                    EncryptArray(value3);
+            }
+        }
+
+        void EncryptString(PdfString value)
+        {
+            if (value.Length != 0)
+            {
+                byte[] bytes = value.EncryptionValue;
+                PrepareKey();
+                EncryptRC4(bytes);
+                value.EncryptionValue = bytes;
+            }
+        }
+
+        internal byte[] EncryptBytes(byte[] bytes)
+        {
+            if (bytes != null && bytes.Length != 0)
+            {
+                PrepareKey();
+                EncryptRC4(bytes);
+            }
+            return bytes;
+        }
+
+        public PasswordValidity ValidatePassword(string inputPassword)
+        {
+            string filter = Elements.GetName(PdfSecurityHandler.Keys.Filter);
+            int v = Elements.GetInteger(PdfSecurityHandler.Keys.V);
+            if (filter != "/Standard" || !(v >= 1 && v <= 3))
+                throw new PdfReaderException(PSSR.UnknownEncryption);
+
+            byte[] documentID = PdfEncoders.RawEncoding.GetBytes(Owner.Internals.FirstDocumentID);
+            byte[] oValue = PdfEncoders.RawEncoding.GetBytes(Elements.GetString(Keys.O));
+            byte[] uValue = PdfEncoders.RawEncoding.GetBytes(Elements.GetString(Keys.U));
+            int pValue = Elements.GetInteger(Keys.P);
+            int rValue = Elements.GetInteger(Keys.R);
+
+            if (inputPassword == null)
+                inputPassword = "";
+
+            bool strongEncryption = rValue == 3;
+            int keyLength = strongEncryption ? 16 : 32;
+
+            InitWithOwnerPassword(documentID, inputPassword, oValue, pValue, strongEncryption);
+            if (EqualsKey(uValue, keyLength))
+            {
+                _document.SecuritySettings._hasOwnerPermissions = true;
+                return PasswordValidity.OwnerPassword;
+            }
+            _document.SecuritySettings._hasOwnerPermissions = false;
+
+            InitWithUserPassword(documentID, inputPassword, oValue, pValue, strongEncryption);
+            if (EqualsKey(uValue, keyLength))
+                return PasswordValidity.UserPassword;
+            return PasswordValidity.Invalid;
+        }
+
+        [Conditional("DEBUG")]
+        static void DumpBytes(string tag, byte[] bytes)
+        {
+            string dump = tag + ": ";
+            for (int idx = 0; idx < bytes.Length; idx++)
+                dump += String.Format("{0:X2}", bytes[idx]);
+            Debug.WriteLine(dump);
+        }
+
+        static byte[] PadPassword(string password)
+        {
+            byte[] padded = new byte[32];
+            if (password == null)
+                Array.Copy(PasswordPadding, 0, padded, 0, 32);
+            else
+            {
+                int length = password.Length;
+                Array.Copy(PdfEncoders.RawEncoding.GetBytes(password), 0, padded, 0, Math.Min(length, 32));
+                if (length < 32)
+                    Array.Copy(PasswordPadding, 0, padded, length, 32 - length);
+            }
+            return padded;
+        }
+        static readonly byte[] PasswordPadding =
+            {
+              0x28, 0xBF, 0x4E, 0x5E, 0x4E, 0x75, 0x8A, 0x41, 0x64, 0x00, 0x4E, 0x56, 0xFF, 0xFA, 0x01, 0x08,
+              0x2E, 0x2E, 0x00, 0xB6, 0xD0, 0x68, 0x3E, 0x80, 0x2F, 0x0C, 0xA9, 0xFE, 0x64, 0x53, 0x69, 0x7A,
+            };
+
+        void InitWithUserPassword(byte[] documentID, string userPassword, byte[] ownerKey, int permissions, bool strongEncryption)
+        {
+            InitEncryptionKey(documentID, PadPassword(userPassword), ownerKey, permissions, strongEncryption);
+            SetupUserKey(documentID);
+        }
+
+        void InitWithOwnerPassword(byte[] documentID, string ownerPassword, byte[] ownerKey, int permissions, bool strongEncryption)
+        {
+            byte[] userPad = ComputeOwnerKey(ownerKey, PadPassword(ownerPassword), strongEncryption);
+            InitEncryptionKey(documentID, userPad, ownerKey, permissions, strongEncryption);
+            SetupUserKey(documentID);
+        }
+
+        byte[] ComputeOwnerKey(byte[] userPad, byte[] ownerPad, bool strongEncryption)
+        {
+            byte[] ownerKey = new byte[32];
+            byte[] digest = _md5.ComputeHash(ownerPad);
+            if (strongEncryption)
+            {
+                byte[] mkey = new byte[16];
+                for (int idx = 0; idx < 50; idx++)
+                    digest = _md5.ComputeHash(digest);
+                Array.Copy(userPad, 0, ownerKey, 0, 32);
+                for (int i = 0; i < 20; i++)
+                {
+                    for (int j = 0; j < mkey.Length; ++j)
+                        mkey[j] = (byte)(digest[j] ^ i);
+                    PrepareRC4Key(mkey);
+                    EncryptRC4(ownerKey);
+                }
+            }
+            else
+            {
+                PrepareRC4Key(digest, 0, 5);
+                EncryptRC4(userPad, ownerKey);
+            }
+            return ownerKey;
+        }
+
+        void InitEncryptionKey(byte[] documentID, byte[] userPad, byte[] ownerKey, int permissions, bool strongEncryption)
+        {
+            _ownerKey = ownerKey;
+            _encryptionKey = new byte[strongEncryption ? 16 : 5];
+
+#if !NETFX_CORE
+            _md5.Initialize();
+            _md5.TransformBlock(userPad, 0, userPad.Length, userPad, 0);
+            _md5.TransformBlock(ownerKey, 0, ownerKey.Length, ownerKey, 0);
+
+            byte[] permission = new byte[4];
+            permission[0] = (byte)permissions;
+            permission[1] = (byte)(permissions >> 8);
+            permission[2] = (byte)(permissions >> 16);
+            permission[3] = (byte)(permissions >> 24);
+            _md5.TransformBlock(permission, 0, 4, permission, 0);
+            _md5.TransformBlock(documentID, 0, documentID.Length, documentID, 0);
+            _md5.TransformFinalBlock(permission, 0, 0);
+            byte[] digest = _md5.Hash;
+            _md5.Initialize();
+            if (_encryptionKey.Length == 16)
+            {
+                for (int idx = 0; idx < 50; idx++)
+                {
+                    digest = _md5.ComputeHash(digest);
+                    _md5.Initialize();
+                }
+            }
+            Array.Copy(digest, 0, _encryptionKey, 0, _encryptionKey.Length);
+#endif
+        }
+
+        void SetupUserKey(byte[] documentID)
+        {
+#if !NETFX_CORE
+            if (_encryptionKey.Length == 16)
+            {
+                _md5.TransformBlock(PasswordPadding, 0, PasswordPadding.Length, PasswordPadding, 0);
+                _md5.TransformFinalBlock(documentID, 0, documentID.Length);
+                byte[] digest = _md5.Hash;
+                _md5.Initialize();
+                Array.Copy(digest, 0, _userKey, 0, 16);
+                for (int idx = 16; idx < 32; idx++)
+                    _userKey[idx] = 0;
+                for (int i = 0; i < 20; i++)
+                {
+                    for (int j = 0; j < _encryptionKey.Length; j++)
+                        digest[j] = (byte)(_encryptionKey[j] ^ i);
+                    PrepareRC4Key(digest, 0, _encryptionKey.Length);
+                    EncryptRC4(_userKey, 0, 16);
+                }
+            }
+            else
+            {
+                PrepareRC4Key(_encryptionKey);
+                EncryptRC4(PasswordPadding, _userKey);
+            }
+#endif
+        }
+
+        void PrepareKey()
+        {
+            if (_key != null && _keySize > 0)
+                PrepareRC4Key(_key, 0, _keySize);
+        }
+
+        void PrepareRC4Key(byte[] key)
+        {
+            PrepareRC4Key(key, 0, key.Length);
+        }
+
+        void PrepareRC4Key(byte[] key, int offset, int length)
+        {
+            int idx1 = 0;
+            int idx2 = 0;
+            for (int idx = 0; idx < 256; idx++)
+                _state[idx] = (byte)idx;
+            byte tmp;
+            for (int idx = 0; idx < 256; idx++)
+            {
+                idx2 = (key[idx1 + offset] + _state[idx] + idx2) & 255;
+                tmp = _state[idx];
+                _state[idx] = _state[idx2];
+                _state[idx2] = tmp;
+                idx1 = (idx1 + 1) % length;
+            }
+        }
+
+        void EncryptRC4(byte[] data)
+        {
+            EncryptRC4(data, 0, data.Length, data);
+        }
+
+        void EncryptRC4(byte[] data, int offset, int length)
+        {
+            EncryptRC4(data, offset, length, data);
+        }
+
+        void EncryptRC4(byte[] inputData, byte[] outputData)
+        {
+            EncryptRC4(inputData, 0, inputData.Length, outputData);
+        }
+
+        void EncryptRC4(byte[] inputData, int offset, int length, byte[] outputData)
+        {
+            length += offset;
+            int x = 0, y = 0;
+            byte b;
+            for (int idx = offset; idx < length; idx++)
+            {
+                x = (x + 1) & 255;
+                y = (_state[x] + y) & 255;
+                b = _state[x];
+                _state[x] = _state[y];
+                _state[y] = b;
+                outputData[idx] = (byte)(inputData[idx] ^ _state[(_state[x] + _state[y]) & 255]);
+            }
+        }
+
+        bool EqualsKey(byte[] value, int length)
+        {
+            for (int idx = 0; idx < length; idx++)
+            {
+                if (_userKey[idx] != value[idx])
+                    return false;
+            }
+            return true;
+        }
+
+        internal void SetHashKey(PdfObjectID id)
+        {
+#if !NETFX_CORE
+            byte[] objectId = new byte[5];
+            _md5.Initialize();
+            objectId[0] = (byte)id.ObjectNumber;
+            objectId[1] = (byte)(id.ObjectNumber >> 8);
+            objectId[2] = (byte)(id.ObjectNumber >> 16);
+            objectId[3] = (byte)id.GenerationNumber;
+            objectId[4] = (byte)(id.GenerationNumber >> 8);
+            _md5.TransformBlock(_encryptionKey, 0, _encryptionKey.Length, _encryptionKey, 0);
+            _md5.TransformFinalBlock(objectId, 0, objectId.Length);
+            _key = _md5.Hash;
+            _md5.Initialize();
+            _keySize = _encryptionKey.Length + 5;
+            if (_keySize > 16)
+                _keySize = 16;
+#endif
+        }
+
+        public void PrepareEncryption()
+        {
+            Debug.Assert(_document._securitySettings.DocumentSecurityLevel != PdfDocumentSecurityLevel.None);
+            int permissions = (int)Permission;
+            bool strongEncryption = _document._securitySettings.DocumentSecurityLevel == PdfDocumentSecurityLevel.Encrypted128Bit;
+
+            PdfInteger vValue;
+            PdfInteger length;
+            PdfInteger rValue;
+
+            if (strongEncryption)
+            {
+                vValue = new PdfInteger(2);
+                length = new PdfInteger(128);
+                rValue = new PdfInteger(3);
+            }
+            else
+            {
+                vValue = new PdfInteger(1);
+                length = new PdfInteger(40);
+                rValue = new PdfInteger(2);
+            }
+
+            if (String.IsNullOrEmpty(_userPassword))
+                _userPassword = "";
+            if (String.IsNullOrEmpty(_ownerPassword))
+                _ownerPassword = _userPassword;
+
+            permissions |= (int)(strongEncryption ? (uint)0xfffff0c0 : (uint)0xffffffc0);
+            permissions &= unchecked((int)0xfffffffc);
+
+            PdfInteger pValue = new PdfInteger(permissions);
+
+            Debug.Assert(_ownerPassword.Length > 0, "Empty owner password.");
+            byte[] userPad = PadPassword(_userPassword);
+            byte[] ownerPad = PadPassword(_ownerPassword);
+
+            _md5.Initialize();
+            _ownerKey = ComputeOwnerKey(userPad, ownerPad, strongEncryption);
+            byte[] documentID = PdfEncoders.RawEncoding.GetBytes(_document.Internals.FirstDocumentID);
+            InitWithUserPassword(documentID, _userPassword, _ownerKey, permissions, strongEncryption);
+
+            PdfString oValue = new PdfString(PdfEncoders.RawEncoding.GetString(_ownerKey, 0, _ownerKey.Length));
+            PdfString uValue = new PdfString(PdfEncoders.RawEncoding.GetString(_userKey, 0, _userKey.Length));
+
+            Elements[Keys.Filter] = new PdfName("/Standard");
+            Elements[Keys.V] = vValue;
+            Elements[Keys.Length] = length;
+            Elements[Keys.R] = rValue;
+            Elements[Keys.O] = oValue;
+            Elements[Keys.U] = uValue;
+            Elements[Keys.P] = pValue;
+        }
+
+        byte[] _encryptionKey;
+
+#if !SILVERLIGHT && !UWP
+        readonly MD5 _md5 = new MD5CryptoServiceProvider();
+
+#endif
+        readonly byte[] _state = new byte[256];
+
+        byte[] _ownerKey = new byte[32];
+
+        readonly byte[] _userKey = new byte[32];
+
+        byte[] _key;
+
+        int _keySize;
+
+        internal override void WriteObject(PdfWriter writer)
+        {
+            PdfStandardSecurityHandler securityHandler = writer.SecurityHandler;
+            writer.SecurityHandler = null;
+            base.WriteObject(writer);
+            writer.SecurityHandler = securityHandler;
+        }
+
+        internal sealed new class Keys : PdfSecurityHandler.Keys
+        {
+            [KeyInfo(KeyType.Integer | KeyType.Required)]
+            public const string R = "/R";
+
+            [KeyInfo(KeyType.String | KeyType.Required)]
+            public const string O = "/O";
+
+            [KeyInfo(KeyType.String | KeyType.Required)]
+            public const string U = "/U";
+
+            [KeyInfo(KeyType.Integer | KeyType.Required)]
+            public const string P = "/P";
+
+            [KeyInfo(KeyType.Boolean | KeyType.Optional)]
+            public const string EncryptMetadata = "/EncryptMetadata";
+
+            public static DictionaryMeta Meta
+            {
+                get { return _meta ?? (_meta = CreateMeta(typeof(Keys))); }
+            }
+            static DictionaryMeta _meta;
+        }
+
+        internal override DictionaryMeta Meta
+        {
+            get { return Keys.Meta; }
+        }
+    }
+    public enum PageOrientation
+    {
+        Portrait,
+
+        Landscape,
+    }
+    public enum PageSize
+    {
+        Undefined = 0,
+
+        A0 = 1,
+
+        A1 = 2,
+
+        A2 = 3,
+
+        A3 = 4,
+
+        A4 = 5,
+
+        A5 = 6,
+
+        RA0 = 7,
+
+        RA1 = 8,
+
+        RA2 = 9,
+
+        RA3 = 10,
+
+        RA4 = 11,
+
+        RA5 = 12,
+
+        B0 = 13,
+
+        B1 = 14,
+
+        B2 = 15,
+
+        B3 = 16,
+
+        B4 = 17,
+
+        B5 = 18,
 
 
+        Quarto = 100,
+
+        Foolscap = 101,
+
+        Executive = 102,
+
+        GovernmentLetter = 103,
+
+        Letter = 104,
+
+        Legal = 105,
+
+        Ledger = 106,
+
+        Tabloid = 107,
+
+        Post = 108,
+
+        Crown = 109,
+
+        LargePost = 110,
+
+        Demy = 111,
+
+        Medium = 112,
+
+        Royal = 113,
+
+        Elephant = 114,
+
+        DoubleDemy = 115,
+
+        QuadDemy = 116,
+
+        STMT = 117,
+
+        Folio = 120,
+
+        Statement = 121,
+
+        Size10x14 = 122,
+
+    }
+    enum PSMsgID
+    {
+        SampleMessage1,
+
+        SampleMessage2,
+
+        NameMustStartWithSlash,
+
+        UserOrOwnerPasswordRequired,
+
+        UnexpectedToken,
+
+        UnknownEncryption,
+    }
+    public static class PageSizeConverter
+    {
+        public static XSize ToSize(PageSize value)
+        {
+            switch (value)
+            {
+                case PageSize.A0:
+                    return new XSize(2384, 3370);
+
+                case PageSize.A1:
+                    return new XSize(1684, 2384);
+
+                case PageSize.A2:
+                    return new XSize(1191, 1684);
+
+                case PageSize.A3:
+                    return new XSize(842, 1191);
+
+                case PageSize.A4:
+                    return new XSize(595, 842);
+
+                case PageSize.A5:
+                    return new XSize(420, 595);
 
 
+                case PageSize.RA0:
+                    return new XSize(2438, 3458);
+
+                case PageSize.RA1:
+                    return new XSize(1729, 2438);
+
+                case PageSize.RA2:
+                    return new XSize(1219, 1729);
+
+                case PageSize.RA3:
+                    return new XSize(865, 1219);
+
+                case PageSize.RA4:
+                    return new XSize(609, 865);
+
+                case PageSize.RA5:
+                    return new XSize(433, 609);
 
 
+                case PageSize.B0:
+                    return new XSize(2835, 4008);
+
+                case PageSize.B1:
+                    return new XSize(2004, 2835);
+
+                case PageSize.B2:
+                    return new XSize(1417, 2004);
+
+                case PageSize.B3:
+                    return new XSize(1001, 1417);
+
+                case PageSize.B4:
+                    return new XSize(709, 1001);
+
+                case PageSize.B5:
+                    return new XSize(499, 709);
+
+                case PageSize.Quarto:
+                    return new XSize(576, 720);
+
+                case PageSize.Foolscap:
+                    return new XSize(576, 936);
+
+                case PageSize.Executive:
+                    return new XSize(540, 720);
+
+                case PageSize.GovernmentLetter:
+                    return new XSize(576, 756);
+
+                case PageSize.Letter:
+                    return new XSize(612, 792);
+
+                case PageSize.Legal:
+                    return new XSize(612, 1008);
+
+                case PageSize.Ledger:
+                    return new XSize(1224, 792);
+
+                case PageSize.Tabloid:
+                    return new XSize(792, 1224);
+
+                case PageSize.Post:
+                    return new XSize(1126, 1386);
+
+                case PageSize.Crown:
+                    return new XSize(1440, 1080);
+
+                case PageSize.LargePost:
+                    return new XSize(1188, 1512);
+
+                case PageSize.Demy:
+                    return new XSize(1260, 1584);
+
+                case PageSize.Medium:
+                    return new XSize(1296, 1656);
+
+                case PageSize.Royal:
+                    return new XSize(1440, 1800);
+
+                case PageSize.Elephant:
+                    return new XSize(1565, 2016);
+
+                case PageSize.DoubleDemy:
+                    return new XSize(1692, 2520);
+
+                case PageSize.QuadDemy:
+                    return new XSize(2520, 3240);
+
+                case PageSize.STMT:
+                    return new XSize(396, 612);
+
+                case PageSize.Folio:
+                    return new XSize(612, 936);
+
+                case PageSize.Statement:
+                    return new XSize(396, 612);
+
+                case PageSize.Size10x14:
+                    return new XSize(720, 1008);
+            }
+            throw new ArgumentException("Invalid PageSize.", "value");
+        }
+    }
+    public class PdfSharpException : Exception
+    {
+        public PdfSharpException()
+        { }
+
+        public PdfSharpException(string message)
+            : base(message)
+        { }
+
+        public PdfSharpException(string message, Exception innerException) :
+            base(message, innerException)
+        { }
+    }
+
+    public static class ProductVersionInfo
+    {
+        public const string Title = "PDFsharp";
+
+        public const string Description = "A .NET library for processing PDF.";
+
+        public const string Producer = Title + " " + VersionMajor + "." + VersionMinor + "." + VersionBuild + Technology + " (" + Url + ")";
+
+        public const string Producer2 = Title + " " + VersionMajor + "." + VersionMinor + "." + VersionBuild + "." + VersionPatch + Technology + " (" + Url + ")";
+
+        public const string Version = VersionMajor + "." + VersionMinor + "." + VersionBuild + "." + VersionPatch;
+
+        public const string Version2 = VersionMajor + "." + VersionMinor + "." + VersionBuild + "." + VersionPatch + Technology;
+
+        public const string Url = "www.pdfsharp.com";
+
+        public const string Configuration = "";
+
+        public const string Company = "empira Software GmbH, Cologne Area (Germany)";
+
+        public const string Product = "PDFsharp";
+
+        public const string Copyright = "Copyright © 2005-2019 empira Software GmbH.";
+
+        public const string Trademark = "PDFsharp";
+
+        public const string Culture = "";
+
+        public const string VersionMajor = "1";
+
+        public const string VersionMinor = "50";
+
+        public const string VersionBuild = "5147";
+
+        public const string VersionPatch = "0";
+
+        public const string VersionPrerelease = "";
+
+        public const string VersionReferenceDate = "2005-01-01";
+
+        public const string NuGetID = "PDFsharp";
+
+        public const string NuGetTitle = "PDFsharp";
+
+        public const string NuGetAuthors = "empira Software GmbH";
+
+        public const string NuGetOwners = "empira Software GmbH";
+
+        public const string NuGetDescription = "PDFsharp is the Open Source .NET library that easily creates and processes PDF documents on the fly from any .NET language. The same drawing routines can be used to create PDF documents, draw on the screen, or send output to any printer.";
+
+        public const string NuGetReleaseNotes = "";
+
+        public const string NuGetSummary = "A .NET library for processing PDF.";
+
+        public const string NuGetLanguage = "";
+
+        public const string NuGetProjectUrl = "www.pdfsharp.net";
+
+        public const string NuGetIconUrl = "http://www.pdfsharp.net/resources/PDFsharp-Logo-32x32.png";
+
+        public const string NuGetLicenseUrl = "http://www.pdfsharp.net/PDFsharp_License.ashx";
+
+        public const bool NuGetRequireLicenseAcceptance = false;
+
+        public const string NuGetTags = "PDFsharp PDF creation";
+
+#if CORE
+        public const string Technology = "";    
+#endif
+    }
+    static class PSSR
+    {
+        public static string Format(PSMsgID id, params object[] args)
+        {
+            string message;
+            try
+            {
+                message = GetString(id);
+                message = message != null ? Format(message, args) : "INTERNAL ERROR: Message not found in resources.";
+                return message;
+            }
+            catch (Exception ex)
+            {
+                message = String.Format("UNEXPECTED ERROR while formatting message with ID {0}: {1}", id.ToString(), ex.ToString());
+            }
+            return message;
+        }
+
+        public static string Format(string format, params object[] args)
+        {
+            if (format == null)
+                throw new ArgumentNullException("format");
+
+            string message;
+            try
+            {
+                message = String.Format(format, args);
+            }
+            catch (Exception ex)
+            {
+                message = String.Format("UNEXPECTED ERROR while formatting message '{0}': {1}", format, ex);
+            }
+            return message;
+        }
+
+        public static string GetString(PSMsgID id)
+        {
+            return ResMngr.GetString(id.ToString());
+        }
+
+        public static string IndexOutOfRange
+        {
+            get { return "The index is out of range."; }
+        }
+
+        public static string ListEnumCurrentOutOfRange
+        {
+            get { return "Enumeration out of range."; }
+        }
+
+        public static string PageIndexOutOfRange
+        {
+            get { return "The index of a page is out of range."; }
+        }
+
+        public static string OutlineIndexOutOfRange
+        {
+            get { return "The index of an outline is out of range."; }
+        }
+
+        public static string SetValueMustNotBeNull
+        {
+            get { return "The set value property must not be null."; }
+        }
+
+        public static string InvalidValue(int val, string name, int min, int max)
+        {
+            return Format("{0} is not a valid value for {1}. {1} should be greater than or equal to {2} and less than or equal to {3}.",
+              val, name, min, max);
+        }
+
+        public static string ObsoleteFunktionCalled
+        {
+            get { return "The function is obsolete and must not be called."; }
+        }
+
+        public static string OwningDocumentRequired
+        {
+            get { return "The PDF object must belong to a PdfDocument, but property Document is null."; }
+        }
+
+        public static string FileNotFound(string path)
+        {
+            return Format("The file '{0}' does not exist.", path);
+        }
+
+        public static string FontDataReadOnly
+        {
+            get { return "Font data is read-only."; }
+        }
+
+        public static string ErrorReadingFontData
+        {
+            get { return "Error while parsing an OpenType font."; }
+        }
+
+        public static string PointArrayEmpty
+        {
+            get { return "The PointF array must not be empty."; }
+        }
+
+        public static string PointArrayAtLeast(int count)
+        {
+            return Format("The point array must contain {0} or more points.", count);
+        }
+
+        public static string NeedPenOrBrush
+        {
+            get { return "XPen or XBrush or both must not be null."; }
+        }
+
+        public static string CannotChangeImmutableObject(string typename)
+        {
+            return String.Format("You cannot change this immutable {0} object.", typename);
+        }
+
+        public static string FontAlreadyAdded(string fontname)
+        {
+            return String.Format("Fontface with the name '{0}' already added to font collection.", fontname);
+        }
+
+        public static string NotImplementedForFontsRetrievedWithFontResolver(string name)
+        {
+            return String.Format("Not implemented for font '{0}', because it was retrieved with font resolver.", name);
+        }
+
+        public static string InvalidPdf
+        {
+            get { return "The file is not a valid PDF document."; }
+        }
+
+        public static string InvalidVersionNumber
+        {
+            get { return "Invalid version number. Valid values are 12, 13, and 14."; }
+        }
+
+        public static string CannotHandleXRefStreams
+        {
+            get { return "Cannot handle cross-reference streams. The current implementation of PDFsharp cannot handle this PDF feature introduced with Acrobat 6."; }
+        }
+
+        public static string PasswordRequired
+        {
+            get { return "A password is required to open the PDF document."; }
+        }
+
+        public static string InvalidPassword
+        {
+            get { return "The specified password is invalid."; }
+        }
+
+        public static string OwnerPasswordRequired
+        {
+            get { return "To modify the document the owner password is required"; }
+        }
+
+        public static string UserOrOwnerPasswordRequired
+        {
+            get { return GetString(PSMsgID.UserOrOwnerPasswordRequired); }
+        }
+
+        public static string CannotModify
+        {
+            get { return "The document cannot be modified."; }
+        }
+
+        public static string NameMustStartWithSlash
+        {
+            get { return "A PDF name must start with a slash (/)."; }
+        }
+
+        public static string ImportPageNumberOutOfRange(int pageNumber, int maxPage, string path)
+        {
+            return String.Format("The page cannot be imported from document '{2}', because the page number is out of range. " +
+              "The specified page number is {0}, but it must be in the range from 1 to {1}.", pageNumber, maxPage, path);
+        }
+
+        public static string MultiplePageInsert
+        {
+            get { return "The page cannot be added to this document because the document already owned this page."; }
+        }
+
+        public static string UnexpectedTokenInPdfFile
+        {
+            get { return "Unexpected token in PDF file. The PDF file may be corrupt. If it is not, please send us the file for service."; }
+        }
+
+        public static string InappropriateColorSpace(PdfColorMode colorMode, XColorSpace colorSpace)
+        {
+            string mode;
+            switch (colorMode)
+            {
+                case PdfColorMode.Rgb:
+                    mode = "RGB";
+                    break;
+
+                case PdfColorMode.Cmyk:
+                    mode = "CMYK";
+                    break;
+
+                default:
+                    mode = "(undefined)";
+                    break;
+            }
+
+            string space;
+            switch (colorSpace)
+            {
+                case XColorSpace.Rgb:
+                    space = "RGB";
+                    break;
+
+                case XColorSpace.Cmyk:
+                    space = "CMYK";
+                    break;
+
+                case XColorSpace.GrayScale:
+                    space = "grayscale";
+                    break;
+
+                default:
+                    space = "(undefined)";
+                    break;
+            }
+            return String.Format("The document requires color mode {0}, but a color is defined using {1}. " +
+              "Use only colors that match the color mode of the PDF document", mode, space);
+        }
+
+        public static string CannotGetGlyphTypeface(string fontName)
+        {
+            return Format("Cannot get a matching glyph typeface for font '{0}'.", fontName);
+        }
 
 
+        public static string UnexpectedToken(string token)
+        {
+            return Format(PSMsgID.UnexpectedToken, token);
+        }
+
+        public static string UnknownEncryption
+        {
+            get { return GetString(PSMsgID.UnknownEncryption); }
+        }
+
+        public static ResourceManager ResMngr
+        {
+            get
+            {
+                if (_resmngr == null)
+                {
+                    try
+                    {
+                        Lock.EnterFontFactory();
+                        if (_resmngr == null)
+                        {
+
+#if !NETFX_CORE && !UWP
+                            _resmngr = new ResourceManager("PdfSharp.Resources.Messages",
+                                Assembly.GetExecutingAssembly());
+#endif
+                        }
+                    }
+                    finally { Lock.ExitFontFactory(); }
+                }
+                return _resmngr;
+            }
+        }
+        static ResourceManager _resmngr;
+
+        [Conditional("DEBUG")]
+        public static void TestResourceMessages()
+        {
+#if !SILVERLIGHT
+            string[] names = Enum.GetNames(typeof(PSMsgID));
+            foreach (string name in names)
+            {
+                string message = String.Format("{0}: '{1}'", name, ResMngr.GetString(name));
+                Debug.Assert(message != null);
+                Debug.WriteLine(message);
+            }
+#endif
+        }
+
+        static PSSR()
+        {
+            TestResourceMessages();
+        }
+
+    }
+    static class VersionInfo
+    {
+        public const string Title = ProductVersionInfo.Title;
+        public const string Description = ProductVersionInfo.Description;
+        public const string Producer = ProductVersionInfo.Producer;
+        public const string Version = ProductVersionInfo.Version;
+        public const string Url = ProductVersionInfo.Url;
+        public const string Configuration = "";
+        public const string Company = ProductVersionInfo.Company;
+        public const string Product = ProductVersionInfo.Product;
+        public const string Copyright = ProductVersionInfo.Copyright;
+        public const string Trademark = ProductVersionInfo.Trademark;
+        public const string Culture = "";
+    }
+    internal sealed class Adler32 : IChecksum
+    {
+        const uint BASE = 65521;
+
+        public long Value
+        {
+            get
+            {
+                return checksum;
+            }
+        }
+
+        public Adler32()
+        {
+            Reset();
+        }
+
+        public void Reset()
+        {
+            checksum = 1;
+        }
+
+        public void Update(int value)
+        {
+            uint s1 = checksum & 0xFFFF;
+            uint s2 = checksum >> 16;
+
+            s1 = (s1 + ((uint)value & 0xFF)) % BASE;
+            s2 = (s1 + s2) % BASE;
+
+            checksum = (s2 << 16) + s1;
+        }
+
+        public void Update(byte[] buffer)
+        {
+            if (buffer == null)
+            {
+                throw new ArgumentNullException("buffer");
+            }
+
+            Update(buffer, 0, buffer.Length);
+        }
+
+        public void Update(byte[] buffer, int offset, int count)
+        {
+            if (buffer == null)
+            {
+                throw new ArgumentNullException("buffer");
+            }
+
+            if (offset < 0)
+            {
+#if NETCF_1_0
+
+#else
+                throw new ArgumentOutOfRangeException("offset", "cannot be negative");
+#endif
+            }
+
+            if (count < 0)
+            {
+#if NETCF_1_0
+
+#else
+                throw new ArgumentOutOfRangeException("count", "cannot be negative");
+#endif
+            }
+
+            if (offset >= buffer.Length)
+            {
+#if NETCF_1_0
+
+#else
+                throw new ArgumentOutOfRangeException("offset", "not a valid index into buffer");
+#endif
+            }
+
+            if (offset + count > buffer.Length)
+            {
+#if NETCF_1_0
+
+#else
+                throw new ArgumentOutOfRangeException("count", "exceeds buffer size");
+#endif
+            }
+
+            uint s1 = checksum & 0xFFFF;
+            uint s2 = checksum >> 16;
+
+            while (count > 0)
+            {
+                int n = 3800;
+                if (n > count)
+                {
+                    n = count;
+                }
+                count -= n;
+                while (--n >= 0)
+                {
+                    s1 = s1 + (uint)(buffer[offset++] & 0xff);
+                    s2 = s2 + s1;
+                }
+                s1 %= BASE;
+                s2 %= BASE;
+            }
+
+            checksum = (s2 << 16) | s1;
+        }
+
+        uint checksum;
+    }
+    internal sealed class Crc32 : IChecksum
+    {
+        const uint CrcSeed = 0xFFFFFFFF;
+
+        readonly static uint[] CrcTable = new uint[] {
+            0x00000000, 0x77073096, 0xEE0E612C, 0x990951BA, 0x076DC419,
+            0x706AF48F, 0xE963A535, 0x9E6495A3, 0x0EDB8832, 0x79DCB8A4,
+            0xE0D5E91E, 0x97D2D988, 0x09B64C2B, 0x7EB17CBD, 0xE7B82D07,
+            0x90BF1D91, 0x1DB71064, 0x6AB020F2, 0xF3B97148, 0x84BE41DE,
+            0x1ADAD47D, 0x6DDDE4EB, 0xF4D4B551, 0x83D385C7, 0x136C9856,
+            0x646BA8C0, 0xFD62F97A, 0x8A65C9EC, 0x14015C4F, 0x63066CD9,
+            0xFA0F3D63, 0x8D080DF5, 0x3B6E20C8, 0x4C69105E, 0xD56041E4,
+            0xA2677172, 0x3C03E4D1, 0x4B04D447, 0xD20D85FD, 0xA50AB56B,
+            0x35B5A8FA, 0x42B2986C, 0xDBBBC9D6, 0xACBCF940, 0x32D86CE3,
+            0x45DF5C75, 0xDCD60DCF, 0xABD13D59, 0x26D930AC, 0x51DE003A,
+            0xC8D75180, 0xBFD06116, 0x21B4F4B5, 0x56B3C423, 0xCFBA9599,
+            0xB8BDA50F, 0x2802B89E, 0x5F058808, 0xC60CD9B2, 0xB10BE924,
+            0x2F6F7C87, 0x58684C11, 0xC1611DAB, 0xB6662D3D, 0x76DC4190,
+            0x01DB7106, 0x98D220BC, 0xEFD5102A, 0x71B18589, 0x06B6B51F,
+            0x9FBFE4A5, 0xE8B8D433, 0x7807C9A2, 0x0F00F934, 0x9609A88E,
+            0xE10E9818, 0x7F6A0DBB, 0x086D3D2D, 0x91646C97, 0xE6635C01,
+            0x6B6B51F4, 0x1C6C6162, 0x856530D8, 0xF262004E, 0x6C0695ED,
+            0x1B01A57B, 0x8208F4C1, 0xF50FC457, 0x65B0D9C6, 0x12B7E950,
+            0x8BBEB8EA, 0xFCB9887C, 0x62DD1DDF, 0x15DA2D49, 0x8CD37CF3,
+            0xFBD44C65, 0x4DB26158, 0x3AB551CE, 0xA3BC0074, 0xD4BB30E2,
+            0x4ADFA541, 0x3DD895D7, 0xA4D1C46D, 0xD3D6F4FB, 0x4369E96A,
+            0x346ED9FC, 0xAD678846, 0xDA60B8D0, 0x44042D73, 0x33031DE5,
+            0xAA0A4C5F, 0xDD0D7CC9, 0x5005713C, 0x270241AA, 0xBE0B1010,
+            0xC90C2086, 0x5768B525, 0x206F85B3, 0xB966D409, 0xCE61E49F,
+            0x5EDEF90E, 0x29D9C998, 0xB0D09822, 0xC7D7A8B4, 0x59B33D17,
+            0x2EB40D81, 0xB7BD5C3B, 0xC0BA6CAD, 0xEDB88320, 0x9ABFB3B6,
+            0x03B6E20C, 0x74B1D29A, 0xEAD54739, 0x9DD277AF, 0x04DB2615,
+            0x73DC1683, 0xE3630B12, 0x94643B84, 0x0D6D6A3E, 0x7A6A5AA8,
+            0xE40ECF0B, 0x9309FF9D, 0x0A00AE27, 0x7D079EB1, 0xF00F9344,
+            0x8708A3D2, 0x1E01F268, 0x6906C2FE, 0xF762575D, 0x806567CB,
+            0x196C3671, 0x6E6B06E7, 0xFED41B76, 0x89D32BE0, 0x10DA7A5A,
+            0x67DD4ACC, 0xF9B9DF6F, 0x8EBEEFF9, 0x17B7BE43, 0x60B08ED5,
+            0xD6D6A3E8, 0xA1D1937E, 0x38D8C2C4, 0x4FDFF252, 0xD1BB67F1,
+            0xA6BC5767, 0x3FB506DD, 0x48B2364B, 0xD80D2BDA, 0xAF0A1B4C,
+            0x36034AF6, 0x41047A60, 0xDF60EFC3, 0xA867DF55, 0x316E8EEF,
+            0x4669BE79, 0xCB61B38C, 0xBC66831A, 0x256FD2A0, 0x5268E236,
+            0xCC0C7795, 0xBB0B4703, 0x220216B9, 0x5505262F, 0xC5BA3BBE,
+            0xB2BD0B28, 0x2BB45A92, 0x5CB36A04, 0xC2D7FFA7, 0xB5D0CF31,
+            0x2CD99E8B, 0x5BDEAE1D, 0x9B64C2B0, 0xEC63F226, 0x756AA39C,
+            0x026D930A, 0x9C0906A9, 0xEB0E363F, 0x72076785, 0x05005713,
+            0x95BF4A82, 0xE2B87A14, 0x7BB12BAE, 0x0CB61B38, 0x92D28E9B,
+            0xE5D5BE0D, 0x7CDCEFB7, 0x0BDBDF21, 0x86D3D2D4, 0xF1D4E242,
+            0x68DDB3F8, 0x1FDA836E, 0x81BE16CD, 0xF6B9265B, 0x6FB077E1,
+            0x18B74777, 0x88085AE6, 0xFF0F6A70, 0x66063BCA, 0x11010B5C,
+            0x8F659EFF, 0xF862AE69, 0x616BFFD3, 0x166CCF45, 0xA00AE278,
+            0xD70DD2EE, 0x4E048354, 0x3903B3C2, 0xA7672661, 0xD06016F7,
+            0x4969474D, 0x3E6E77DB, 0xAED16A4A, 0xD9D65ADC, 0x40DF0B66,
+            0x37D83BF0, 0xA9BCAE53, 0xDEBB9EC5, 0x47B2CF7F, 0x30B5FFE9,
+            0xBDBDF21C, 0xCABAC28A, 0x53B39330, 0x24B4A3A6, 0xBAD03605,
+            0xCDD70693, 0x54DE5729, 0x23D967BF, 0xB3667A2E, 0xC4614AB8,
+            0x5D681B02, 0x2A6F2B94, 0xB40BBE37, 0xC30C8EA1, 0x5A05DF1B,
+            0x2D02EF8D
+        };
+
+        internal static uint ComputeCrc32(uint oldCrc, byte value)
+        {
+            return (uint)(Crc32.CrcTable[(oldCrc ^ value) & 0xFF] ^ (oldCrc >> 8));
+        }
+
+        uint crc;
+
+        public long Value
+        {
+            get
+            {
+                return (long)crc;
+            }
+            set
+            {
+                crc = (uint)value;
+            }
+        }
+
+        public void Reset()
+        {
+            crc = 0;
+        }
+
+        public void Update(int value)
+        {
+            crc ^= CrcSeed;
+            crc = CrcTable[(crc ^ value) & 0xFF] ^ (crc >> 8);
+            crc ^= CrcSeed;
+        }
+
+        public void Update(byte[] buffer)
+        {
+            if (buffer == null)
+            {
+                throw new ArgumentNullException("buffer");
+            }
+
+            Update(buffer, 0, buffer.Length);
+        }
+
+        public void Update(byte[] buffer, int offset, int count)
+        {
+            if (buffer == null)
+            {
+                throw new ArgumentNullException("buffer");
+            }
+
+            if (count < 0)
+            {
+#if NETCF_1_0
+
+#else
+                throw new ArgumentOutOfRangeException("count", "Count cannot be less than zero");
+#endif
+            }
+
+            if (offset < 0 || offset + count > buffer.Length)
+            {
+                throw new ArgumentOutOfRangeException("offset");
+            }
+
+            crc ^= CrcSeed;
+
+            while (--count >= 0)
+            {
+                crc = CrcTable[(crc ^ buffer[offset++]) & 0xFF] ^ (crc >> 8);
+            }
+
+            crc ^= CrcSeed;
+        }
+    }
+    internal interface IChecksum
+    {
+        long Value
+        {
+            get;
+        }
+
+        void Reset();
+
+        void Update(int value);
+
+        void Update(byte[] buffer);
+
+        void Update(byte[] buffer, int offset, int count);
+    }
+    internal class DeflaterOutputStream : Stream
+    {
+        public DeflaterOutputStream(Stream baseOutputStream)
+            : this(baseOutputStream, new Deflater(), 512)
+        {
+        }
+
+        public DeflaterOutputStream(Stream baseOutputStream, Deflater deflater)
+            : this(baseOutputStream, deflater, 512)
+        {
+        }
+
+        public DeflaterOutputStream(Stream baseOutputStream, Deflater deflater, int bufferSize)
+        {
+            if (baseOutputStream == null)
+            {
+                throw new ArgumentNullException("baseOutputStream");
+            }
+
+            if (baseOutputStream.CanWrite == false)
+            {
+                throw new ArgumentException("Must support writing", "baseOutputStream");
+            }
+
+            if (deflater == null)
+            {
+                throw new ArgumentNullException("deflater");
+            }
+
+            if (bufferSize < 512)
+            {
+                throw new ArgumentOutOfRangeException("bufferSize");
+            }
+
+            baseOutputStream_ = baseOutputStream;
+            buffer_ = new byte[bufferSize];
+            deflater_ = deflater;
+        }
+        public virtual void Finish()
+        {
+            deflater_.Finish();
+            while (!deflater_.IsFinished)
+            {
+                int len = deflater_.Deflate(buffer_, 0, buffer_.Length);
+                if (len <= 0)
+                {
+                    break;
+                }
+
+#if true
+                if (keys != null)
+                {
+#endif
+                    EncryptBlock(buffer_, 0, len);
+                }
+
+                baseOutputStream_.Write(buffer_, 0, len);
+            }
+
+            if (!deflater_.IsFinished)
+            {
+                throw new SharpZipBaseException("Can't deflate all input?");
+            }
+
+            baseOutputStream_.Flush();
+
+#if true
+            if (keys != null)
+            {
+                keys = null;
+            }
+#endif
+        }
+
+        public bool IsStreamOwner
+        {
+            get { return isStreamOwner_; }
+            set { isStreamOwner_ = value; }
+        }
+
+        public bool CanPatchEntries
+        {
+            get
+            {
+                return baseOutputStream_.CanSeek;
+            }
+        }
+
+        string password;
+
+#if true
+        uint[] keys;
+
+#endif
+
+        public string Password
+        {
+            get
+            {
+                return password;
+            }
+            set
+            {
+                if ((value != null) && (value.Length == 0))
+                {
+                    password = null;
+                }
+                else
+                {
+                    password = value;
+                }
+            }
+        }
+
+        protected void EncryptBlock(byte[] buffer, int offset, int length)
+        {
+#if true
+            for (int i = offset; i < offset + length; ++i)
+            {
+                byte oldbyte = buffer[i];
+                buffer[i] ^= EncryptByte();
+                UpdateKeys(oldbyte);
+            }
+#endif
+        }
+
+        protected void InitializePassword(string password)
+        {
+#if true
+            keys = new uint[] {
+                0x12345678,
+                0x23456789,
+                0x34567890
+            };
+
+            byte[] rawPassword = ZipConstants.ConvertToArray(password);
+
+            for (int i = 0; i < rawPassword.Length; ++i)
+            {
+                UpdateKeys((byte)rawPassword[i]);
+            }
+
+#endif
+        }
 
 
+#if true
 
+        protected byte EncryptByte()
+        {
+            uint temp = ((keys[2] & 0xFFFF) | 2);
+            return (byte)((temp * (temp ^ 1)) >> 8);
+        }
+
+        protected void UpdateKeys(byte ch)
+        {
+            keys[0] = Crc32.ComputeCrc32(keys[0], ch);
+            keys[1] = keys[1] + (byte)keys[0];
+            keys[1] = keys[1] * 134775813 + 1;
+            keys[2] = Crc32.ComputeCrc32(keys[2], (byte)(keys[1] >> 24));
+        }
+#endif
+
+        protected void Deflate()
+        {
+            while (!deflater_.IsNeedingInput)
+            {
+                int deflateCount = deflater_.Deflate(buffer_, 0, buffer_.Length);
+
+                if (deflateCount <= 0)
+                {
+                    break;
+                }
+#if true
+                if (keys != null)
+#endif
+                {
+                    EncryptBlock(buffer_, 0, deflateCount);
+                }
+
+                baseOutputStream_.Write(buffer_, 0, deflateCount);
+            }
+
+            if (!deflater_.IsNeedingInput)
+            {
+                throw new SharpZipBaseException("DeflaterOutputStream can't deflate all input?");
+            }
+        }
+        public override bool CanRead
+        {
+            get
+            {
+                return false;
+            }
+        }
+
+        public override bool CanSeek
+        {
+            get
+            {
+                return false;
+            }
+        }
+
+        public override bool CanWrite
+        {
+            get
+            {
+                return baseOutputStream_.CanWrite;
+            }
+        }
+
+        public override long Length
+        {
+            get
+            {
+                return baseOutputStream_.Length;
+            }
+        }
+
+        public override long Position
+        {
+            get
+            {
+                return baseOutputStream_.Position;
+            }
+            set
+            {
+                throw new NotSupportedException("Position property not supported");
+            }
+        }
+
+        public override long Seek(long offset, SeekOrigin origin)
+        {
+            throw new NotSupportedException("DeflaterOutputStream Seek not supported");
+        }
+
+        public override void SetLength(long value)
+        {
+            throw new NotSupportedException("DeflaterOutputStream SetLength not supported");
+        }
+
+        public override int ReadByte()
+        {
+            throw new NotSupportedException("DeflaterOutputStream ReadByte not supported");
+        }
+
+        public override int Read(byte[] buffer, int offset, int count)
+        {
+            throw new NotSupportedException("DeflaterOutputStream Read not supported");
+        }
+
+#if !NETFX_CORE && !UWP
+        public override IAsyncResult BeginRead(byte[] buffer, int offset, int count, AsyncCallback callback, object state)
+        {
+            throw new NotSupportedException("DeflaterOutputStream BeginRead not currently supported");
+        }
+#endif
+
+#if !NETFX_CORE && !UWP
+        public override IAsyncResult BeginWrite(byte[] buffer, int offset, int count, AsyncCallback callback, object state)
+        {
+            throw new NotSupportedException("BeginWrite is not supported");
+        }
+#endif
+
+        public override void Flush()
+        {
+            deflater_.Flush();
+            Deflate();
+            baseOutputStream_.Flush();
+        }
+
+#if !NETFX_CORE && !UWP
+        public override void Close()
+        {
+            if (!isClosed_)
+            {
+                isClosed_ = true;
+
+                try
+                {
+                    Finish();
+#if true
+                    keys = null;
+#endif
+                }
+                finally
+                {
+                    if (isStreamOwner_)
+                    {
+                        baseOutputStream_.Close();
+                    }
+                }
+            }
+        }
+#endif
+
+
+        private void GetAuthCodeIfAES()
+        {
+
+        }
+
+        public override void WriteByte(byte value)
+        {
+            byte[] b = new byte[1];
+            b[0] = value;
+            Write(b, 0, 1);
+        }
+
+        public override void Write(byte[] buffer, int offset, int count)
+        {
+            deflater_.SetInput(buffer, offset, count);
+            Deflate();
+        }
+        byte[] buffer_;
+
+        protected Deflater deflater_;
+
+        protected Stream baseOutputStream_;
+
+#if true || !NETFX_CORE && !UWP
+        bool isClosed_;
+#endif
+
+        bool isStreamOwner_ = true;
+    }
+    internal class InflaterInputBuffer
+    {
+        public InflaterInputBuffer(Stream stream)
+            : this(stream, 4096)
+        {
+        }
+
+        public InflaterInputBuffer(Stream stream, int bufferSize)
+        {
+            inputStream = stream;
+            if (bufferSize < 1024)
+            {
+                bufferSize = 1024;
+            }
+            rawData = new byte[bufferSize];
+            clearText = rawData;
+        }
+        public int RawLength
+        {
+            get
+            {
+                return rawLength;
+            }
+        }
+
+        public byte[] RawData
+        {
+            get
+            {
+                return rawData;
+            }
+        }
+
+        public int ClearTextLength
+        {
+            get
+            {
+                return clearTextLength;
+            }
+        }
+
+        public byte[] ClearText
+        {
+            get
+            {
+                return clearText;
+            }
+        }
+
+        public int Available
+        {
+            get { return available; }
+            set { available = value; }
+        }
+
+        public void SetInflaterInput(Inflater inflater)
+        {
+            if (available > 0)
+            {
+                inflater.SetInput(clearText, clearTextLength - available, available);
+                available = 0;
+            }
+        }
+
+        public void Fill()
+        {
+            rawLength = 0;
+            int toRead = rawData.Length;
+
+            while (toRead > 0)
+            {
+                int count = inputStream.Read(rawData, rawLength, toRead);
+                if (count <= 0)
+                {
+                    break;
+                }
+                rawLength += count;
+                toRead -= count;
+            }
+
+            {
+                clearTextLength = rawLength;
+            }
+
+            available = clearTextLength;
+        }
+
+        public int ReadRawBuffer(byte[] buffer)
+        {
+            return ReadRawBuffer(buffer, 0, buffer.Length);
+        }
+
+        public int ReadRawBuffer(byte[] outBuffer, int offset, int length)
+        {
+            if (length < 0)
+            {
+                throw new ArgumentOutOfRangeException("length");
+            }
+
+            int currentOffset = offset;
+            int currentLength = length;
+
+            while (currentLength > 0)
+            {
+                if (available <= 0)
+                {
+                    Fill();
+                    if (available <= 0)
+                    {
+                        return 0;
+                    }
+                }
+                int toCopy = Math.Min(currentLength, available);
+                System.Array.Copy(rawData, rawLength - (int)available, outBuffer, currentOffset, toCopy);
+                currentOffset += toCopy;
+                currentLength -= toCopy;
+                available -= toCopy;
+            }
+            return length;
+        }
+
+        public int ReadClearTextBuffer(byte[] outBuffer, int offset, int length)
+        {
+            if (length < 0)
+            {
+                throw new ArgumentOutOfRangeException("length");
+            }
+
+            int currentOffset = offset;
+            int currentLength = length;
+
+            while (currentLength > 0)
+            {
+                if (available <= 0)
+                {
+                    Fill();
+                    if (available <= 0)
+                    {
+                        return 0;
+                    }
+                }
+
+                int toCopy = Math.Min(currentLength, available);
+                Array.Copy(clearText, clearTextLength - (int)available, outBuffer, currentOffset, toCopy);
+                currentOffset += toCopy;
+                currentLength -= toCopy;
+                available -= toCopy;
+            }
+            return length;
+        }
+
+        public int ReadLeByte()
+        {
+            if (available <= 0)
+            {
+                Fill();
+                if (available <= 0)
+                {
+                    throw new ZipException("EOF in header");
+                }
+            }
+            byte result = rawData[rawLength - available];
+            available -= 1;
+            return result;
+        }
+
+        public int ReadLeShort()
+        {
+            return ReadLeByte() | (ReadLeByte() << 8);
+        }
+
+        public int ReadLeInt()
+        {
+            return ReadLeShort() | (ReadLeShort() << 16);
+        }
+
+        public long ReadLeLong()
+        {
+            return (uint)ReadLeInt() | ((long)ReadLeInt() << 32);
+        }
+
+
+        int rawLength;
+        byte[] rawData;
+
+        int clearTextLength;
+        byte[] clearText;
+
+        int available;
+
+        Stream inputStream;
+    }
+
+    internal class InflaterInputStream : Stream
+    {
+        public InflaterInputStream(Stream baseInputStream)
+            : this(baseInputStream, new Inflater(), 4096)
+        {
+        }
+
+        public InflaterInputStream(Stream baseInputStream, Inflater inf)
+            : this(baseInputStream, inf, 4096)
+        {
+        }
+
+        public InflaterInputStream(Stream baseInputStream, Inflater inflater, int bufferSize)
+        {
+            if (baseInputStream == null)
+            {
+                throw new ArgumentNullException("baseInputStream");
+            }
+
+            if (inflater == null)
+            {
+                throw new ArgumentNullException("inflater");
+            }
+
+            if (bufferSize <= 0)
+            {
+                throw new ArgumentOutOfRangeException("bufferSize");
+            }
+
+            this.baseInputStream = baseInputStream;
+            this.inf = inflater;
+
+            inputBuffer = new InflaterInputBuffer(baseInputStream, bufferSize);
+        }
+
+        public bool IsStreamOwner
+        {
+            get { return isStreamOwner; }
+            set { isStreamOwner = value; }
+        }
+
+        public long Skip(long count)
+        {
+            if (count <= 0)
+            {
+                throw new ArgumentOutOfRangeException("count");
+            }
+
+            if (baseInputStream.CanSeek)
+            {
+                baseInputStream.Seek(count, SeekOrigin.Current);
+                return count;
+            }
+            else
+            {
+                int length = 2048;
+                if (count < length)
+                {
+                    length = (int)count;
+                }
+
+                byte[] tmp = new byte[length];
+                int readCount = 1;
+                long toSkip = count;
+
+                while ((toSkip > 0) && (readCount > 0))
+                {
+                    if (toSkip < length)
+                    {
+                        length = (int)toSkip;
+                    }
+
+                    readCount = baseInputStream.Read(tmp, 0, length);
+                    toSkip -= readCount;
+                }
+
+                return count - toSkip;
+            }
+        }
+
+        protected void StopDecrypting()
+        {
+
+        }
+
+        public virtual int Available
+        {
+            get
+            {
+                return inf.IsFinished ? 0 : 1;
+            }
+        }
+
+        protected void Fill()
+        {
+            if (inputBuffer.Available <= 0)
+            {
+                inputBuffer.Fill();
+                if (inputBuffer.Available <= 0)
+                {
+                    throw new SharpZipBaseException("Unexpected EOF");
+                }
+            }
+            inputBuffer.SetInflaterInput(inf);
+        }
+
+        public override bool CanRead
+        {
+            get
+            {
+                return baseInputStream.CanRead;
+            }
+        }
+
+        public override bool CanSeek
+        {
+            get
+            {
+                return false;
+            }
+        }
+
+        public override bool CanWrite
+        {
+            get
+            {
+                return false;
+            }
+        }
+
+        public override long Length
+        {
+            get
+            {
+                return inputBuffer.RawLength;
+            }
+        }
+
+        public override long Position
+        {
+            get
+            {
+                return baseInputStream.Position;
+            }
+            set
+            {
+                throw new NotSupportedException("InflaterInputStream Position not supported");
+            }
+        }
+
+        public override void Flush()
+        {
+            baseInputStream.Flush();
+        }
+
+        public override long Seek(long offset, SeekOrigin origin)
+        {
+            throw new NotSupportedException("Seek not supported");
+        }
+
+        public override void SetLength(long value)
+        {
+            throw new NotSupportedException("InflaterInputStream SetLength not supported");
+        }
+
+        public override void Write(byte[] buffer, int offset, int count)
+        {
+            throw new NotSupportedException("InflaterInputStream Write not supported");
+        }
+
+        public override void WriteByte(byte value)
+        {
+            throw new NotSupportedException("InflaterInputStream WriteByte not supported");
+        }
+
+#if !NETFX_CORE && !UWP
+        public override IAsyncResult BeginWrite(byte[] buffer, int offset, int count, AsyncCallback callback, object state)
+        {
+            throw new NotSupportedException("InflaterInputStream BeginWrite not supported");
+        }
+#endif
+
+#if !NETFX_CORE && !UWP
+        public override void Close()
+        {
+            if (!isClosed)
+            {
+                isClosed = true;
+                if (isStreamOwner)
+                {
+                    baseInputStream.Close();
+                }
+            }
+        }
+#endif
+
+        public override int Read(byte[] buffer, int offset, int count)
+        {
+            if (inf.IsNeedingDictionary)
+            {
+                throw new SharpZipBaseException("Need a dictionary");
+            }
+
+            int remainingBytes = count;
+            while (true)
+            {
+                int bytesRead = inf.Inflate(buffer, offset, remainingBytes);
+                offset += bytesRead;
+                remainingBytes -= bytesRead;
+
+                if (remainingBytes == 0 || inf.IsFinished)
+                {
+                    break;
+                }
+
+                if (inf.IsNeedingInput)
+                {
+                    try
+                    {
+                        Fill();
+                    }
+                    catch (SharpZipBaseException ex)
+                    {
+                        if (ex.Message != "Unexpected EOF")
+                            throw;
+                        break;
+                    }
+                }
+                else if (bytesRead == 0)
+                {
+                    throw new ZipException("Don't know what to do");
+                }
+            }
+            return count - remainingBytes;
+        }
+        protected Inflater inf;
+
+        protected InflaterInputBuffer inputBuffer;
+
+        private Stream baseInputStream;
+
+#if true || !NETFX_CORE
+        bool isClosed;
+#endif
+
+        bool isStreamOwner = true;
+    }
+    internal class OutputWindow
+    {
+        const int WindowSize = 1 << 15;
+        const int WindowMask = WindowSize - 1;
+        byte[] window = new byte[WindowSize];
+        int windowEnd;
+        int windowFilled;
+        public void Write(int value)
+        {
+            if (windowFilled++ == WindowSize)
+            {
+                throw new InvalidOperationException("Window full");
+            }
+            window[windowEnd++] = (byte)value;
+            windowEnd &= WindowMask;
+        }
+
+
+        private void SlowRepeat(int repStart, int length, int distance)
+        {
+            while (length-- > 0)
+            {
+                window[windowEnd++] = window[repStart++];
+                windowEnd &= WindowMask;
+                repStart &= WindowMask;
+            }
+        }
+
+        public void Repeat(int length, int distance)
+        {
+            if ((windowFilled += length) > WindowSize)
+            {
+                throw new InvalidOperationException("Window full");
+            }
+
+            int repStart = (windowEnd - distance) & WindowMask;
+            int border = WindowSize - length;
+            if ((repStart <= border) && (windowEnd < border))
+            {
+                if (length <= distance)
+                {
+                    System.Array.Copy(window, repStart, window, windowEnd, length);
+                    windowEnd += length;
+                }
+                else
+                {
+                    while (length-- > 0)
+                    {
+                        window[windowEnd++] = window[repStart++];
+                    }
+                }
+            }
+            else
+            {
+                SlowRepeat(repStart, length, distance);
+            }
+        }
+
+        public int CopyStored(StreamManipulator input, int length)
+        {
+            length = Math.Min(Math.Min(length, WindowSize - windowFilled), input.AvailableBytes);
+            int copied;
+
+            int tailLen = WindowSize - windowEnd;
+            if (length > tailLen)
+            {
+                copied = input.CopyBytes(window, windowEnd, tailLen);
+                if (copied == tailLen)
+                {
+                    copied += input.CopyBytes(window, 0, length - tailLen);
+                }
+            }
+            else
+            {
+                copied = input.CopyBytes(window, windowEnd, length);
+            }
+
+            windowEnd = (windowEnd + copied) & WindowMask;
+            windowFilled += copied;
+            return copied;
+        }
+
+        public void CopyDict(byte[] dictionary, int offset, int length)
+        {
+            if (dictionary == null)
+            {
+                throw new ArgumentNullException("dictionary");
+            }
+
+            if (windowFilled > 0)
+            {
+                throw new InvalidOperationException();
+            }
+
+            if (length > WindowSize)
+            {
+                offset += length - WindowSize;
+                length = WindowSize;
+            }
+            System.Array.Copy(dictionary, offset, window, 0, length);
+            windowEnd = length & WindowMask;
+        }
+
+        public int GetFreeSpace()
+        {
+            return WindowSize - windowFilled;
+        }
+
+        public int GetAvailable()
+        {
+            return windowFilled;
+        }
+
+        public int CopyOutput(byte[] output, int offset, int len)
+        {
+            int copyEnd = windowEnd;
+            if (len > windowFilled)
+            {
+                len = windowFilled;
+            }
+            else
+            {
+                copyEnd = (windowEnd - windowFilled + len) & WindowMask;
+            }
+
+            int copied = len;
+            int tailLen = len - copyEnd;
+
+            if (tailLen > 0)
+            {
+                System.Array.Copy(window, WindowSize - tailLen, output, offset, tailLen);
+                offset += tailLen;
+                len = copyEnd;
+            }
+            System.Array.Copy(window, copyEnd - len, output, offset, len);
+            windowFilled -= copied;
+            if (windowFilled < 0)
+            {
+                throw new InvalidOperationException();
+            }
+            return copied;
+        }
+
+        public void Reset()
+        {
+            windowFilled = windowEnd = 0;
+        }
+    }
+    internal class StreamManipulator
+    {
+        #region Constructors
+        public StreamManipulator()
+        {
+        }
+        #endregion
+
+        public int PeekBits(int bitCount)
+        {
+            if (bitsInBuffer_ < bitCount)
+            {
+                if (windowStart_ == windowEnd_)
+                {
+                    return -1;
+                }
+                buffer_ |= (uint)((window_[windowStart_++] & 0xff |
+                                 (window_[windowStart_++] & 0xff) << 8) << bitsInBuffer_);
+                bitsInBuffer_ += 16;
+            }
+            return (int)(buffer_ & ((1 << bitCount) - 1));
+        }
+
+        public void DropBits(int bitCount)
+        {
+            buffer_ >>= bitCount;
+            bitsInBuffer_ -= bitCount;
+        }
+
+        public int GetBits(int bitCount)
+        {
+            int bits = PeekBits(bitCount);
+            if (bits >= 0)
+            {
+                DropBits(bitCount);
+            }
+            return bits;
+        }
+
+        public int AvailableBits
+        {
+            get
+            {
+                return bitsInBuffer_;
+            }
+        }
+
+        public int AvailableBytes
+        {
+            get
+            {
+                return windowEnd_ - windowStart_ + (bitsInBuffer_ >> 3);
+            }
+        }
+
+        public void SkipToByteBoundary()
+        {
+            buffer_ >>= (bitsInBuffer_ & 7);
+            bitsInBuffer_ &= ~7;
+        }
+
+        public bool IsNeedingInput
+        {
+            get
+            {
+                return windowStart_ == windowEnd_;
+            }
+        }
+
+        public int CopyBytes(byte[] output, int offset, int length)
+        {
+            if (length < 0)
+            {
+                throw new ArgumentOutOfRangeException("length");
+            }
+
+            if ((bitsInBuffer_ & 7) != 0)
+            {
+                throw new InvalidOperationException("Bit buffer is not byte aligned!");
+            }
+
+            int count = 0;
+            while ((bitsInBuffer_ > 0) && (length > 0))
+            {
+                output[offset++] = (byte)buffer_;
+                buffer_ >>= 8;
+                bitsInBuffer_ -= 8;
+                length--;
+                count++;
+            }
+
+            if (length == 0)
+            {
+                return count;
+            }
+
+            int avail = windowEnd_ - windowStart_;
+            if (length > avail)
+            {
+                length = avail;
+            }
+            System.Array.Copy(window_, windowStart_, output, offset, length);
+            windowStart_ += length;
+
+            if (((windowStart_ - windowEnd_) & 1) != 0)
+            {
+                buffer_ = (uint)(window_[windowStart_++] & 0xff);
+                bitsInBuffer_ = 8;
+            }
+            return count + length;
+        }
+
+        public void Reset()
+        {
+            buffer_ = 0;
+            windowStart_ = windowEnd_ = bitsInBuffer_ = 0;
+        }
+
+        public void SetInput(byte[] buffer, int offset, int count)
+        {
+            if (buffer == null)
+            {
+                throw new ArgumentNullException("buffer");
+            }
+
+            if (offset < 0)
+            {
+#if NETCF_1_0
+#else
+                throw new ArgumentOutOfRangeException("offset", "Cannot be negative");
+#endif
+            }
+
+            if (count < 0)
+            {
+#if NETCF_1_0
+#else
+                throw new ArgumentOutOfRangeException("count", "Cannot be negative");
+#endif
+            }
+
+            if (windowStart_ < windowEnd_)
+            {
+                throw new InvalidOperationException("Old input was not completely processed");
+            }
+
+            int end = offset + count;
+
+            if ((offset > end) || (end > buffer.Length))
+            {
+                throw new ArgumentOutOfRangeException("count");
+            }
+
+            if ((count & 1) != 0)
+            {
+                buffer_ |= (uint)((buffer[offset++] & 0xff) << bitsInBuffer_);
+                bitsInBuffer_ += 8;
+            }
+
+            window_ = buffer;
+            windowStart_ = offset;
+            windowEnd_ = end;
+        }
+
+        #region Instance Fields
+        private byte[] window_;
+        private int windowStart_;
+        private int windowEnd_;
+
+        private uint buffer_;
+        private int bitsInBuffer_;
+        #endregion
+    }
+    internal class Deflater
+    {
+        public const int BEST_COMPRESSION = 9;
+
+        public const int BEST_SPEED = 1;
+
+        public const int DEFAULT_COMPRESSION = -1;
+
+        public const int NO_COMPRESSION = 0;
+
+        public const int DEFLATED = 8;
+        private const int IS_SETDICT = 0x01;
+        private const int IS_FLUSHING = 0x04;
+        private const int IS_FINISHING = 0x08;
+
+        private const int INIT_STATE = 0x00;
+        private const int SETDICT_STATE = 0x01;
+        private const int BUSY_STATE = 0x10;
+        private const int FLUSHING_STATE = 0x14;
+        private const int FINISHING_STATE = 0x1c;
+        private const int FINISHED_STATE = 0x1e;
+        private const int CLOSED_STATE = 0x7f;
+        public Deflater()
+            : this(DEFAULT_COMPRESSION, false)
+        {
+
+        }
+
+        public Deflater(int level)
+            : this(level, false)
+        {
+
+        }
+
+        public Deflater(int level, bool noZlibHeaderOrFooter)
+        {
+            if (level == DEFAULT_COMPRESSION)
+            {
+                level = 6;
+            }
+            else if (level < NO_COMPRESSION || level > BEST_COMPRESSION)
+            {
+                throw new ArgumentOutOfRangeException("level");
+            }
+
+            pending = new DeflaterPending();
+            engine = new DeflaterEngine(pending);
+            this.noZlibHeaderOrFooter = noZlibHeaderOrFooter;
+            SetStrategy(DeflateStrategy.Default);
+            SetLevel(level);
+            Reset();
+        }
+        public void Reset()
+        {
+            state = (noZlibHeaderOrFooter ? BUSY_STATE : INIT_STATE);
+            totalOut = 0;
+            pending.Reset();
+            engine.Reset();
+        }
+
+        public int Adler
+        {
+            get
+            {
+                return engine.Adler;
+            }
+        }
+
+        public long TotalIn
+        {
+            get
+            {
+                return engine.TotalIn;
+            }
+        }
+
+        public long TotalOut
+        {
+            get
+            {
+                return totalOut;
+            }
+        }
+
+        public void Flush()
+        {
+            state |= IS_FLUSHING;
+        }
+
+        public void Finish()
+        {
+            state |= (IS_FLUSHING | IS_FINISHING);
+        }
+
+        public bool IsFinished
+        {
+            get
+            {
+                return (state == FINISHED_STATE) && pending.IsFlushed;
+            }
+        }
+
+        public bool IsNeedingInput
+        {
+            get
+            {
+                return engine.NeedsInput();
+            }
+        }
+
+        public void SetInput(byte[] input)
+        {
+            SetInput(input, 0, input.Length);
+        }
+
+        public void SetInput(byte[] input, int offset, int count)
+        {
+            if ((state & IS_FINISHING) != 0)
+            {
+                throw new InvalidOperationException("Finish() already called");
+            }
+            engine.SetInput(input, offset, count);
+        }
+
+        public void SetLevel(int level)
+        {
+            if (level == DEFAULT_COMPRESSION)
+            {
+                level = 6;
+            }
+            else if (level < NO_COMPRESSION || level > BEST_COMPRESSION)
+            {
+                throw new ArgumentOutOfRangeException("level");
+            }
+
+            if (this.level != level)
+            {
+                this.level = level;
+                engine.SetLevel(level);
+            }
+        }
+
+        public int GetLevel()
+        {
+            return level;
+        }
+
+        public void SetStrategy(DeflateStrategy strategy)
+        {
+            engine.Strategy = strategy;
+        }
+
+        public int Deflate(byte[] output)
+        {
+            return Deflate(output, 0, output.Length);
+        }
+
+        public int Deflate(byte[] output, int offset, int length)
+        {
+            int origLength = length;
+
+            if (state == CLOSED_STATE)
+            {
+                throw new InvalidOperationException("Deflater closed");
+            }
+
+            if (state < BUSY_STATE)
+            {
+                int header = (DEFLATED +
+                    ((DeflaterConstants.MAX_WBITS - 8) << 4)) << 8;
+                int level_flags = (level - 1) >> 1;
+                if (level_flags < 0 || level_flags > 3)
+                {
+                    level_flags = 3;
+                }
+                header |= level_flags << 6;
+                if ((state & IS_SETDICT) != 0)
+                {
+                    header |= DeflaterConstants.PRESET_DICT;
+                }
+                header += 31 - (header % 31);
+
+                pending.WriteShortMSB(header);
+                if ((state & IS_SETDICT) != 0)
+                {
+                    int chksum = engine.Adler;
+                    engine.ResetAdler();
+                    pending.WriteShortMSB(chksum >> 16);
+                    pending.WriteShortMSB(chksum & 0xffff);
+                }
+
+                state = BUSY_STATE | (state & (IS_FLUSHING | IS_FINISHING));
+            }
+
+            for (; ; )
+            {
+                int count = pending.Flush(output, offset, length);
+                offset += count;
+                totalOut += count;
+                length -= count;
+
+                if (length == 0 || state == FINISHED_STATE)
+                {
+                    break;
+                }
+
+                if (!engine.Deflate((state & IS_FLUSHING) != 0, (state & IS_FINISHING) != 0))
+                {
+                    if (state == BUSY_STATE)
+                    {
+                        return origLength - length;
+                    }
+                    else if (state == FLUSHING_STATE)
+                    {
+                        if (level != NO_COMPRESSION)
+                        {
+                            int neededbits = 8 + ((-pending.BitCount) & 7);
+                            while (neededbits > 0)
+                            {
+                                pending.WriteBits(2, 10);
+                                neededbits -= 10;
+                            }
+                        }
+                        state = BUSY_STATE;
+                    }
+                    else if (state == FINISHING_STATE)
+                    {
+                        pending.AlignToByte();
+
+                        if (!noZlibHeaderOrFooter)
+                        {
+                            int adler = engine.Adler;
+                            pending.WriteShortMSB(adler >> 16);
+                            pending.WriteShortMSB(adler & 0xffff);
+                        }
+                        state = FINISHED_STATE;
+                    }
+                }
+            }
+            return origLength - length;
+        }
+
+        public void SetDictionary(byte[] dictionary)
+        {
+            SetDictionary(dictionary, 0, dictionary.Length);
+        }
+
+        public void SetDictionary(byte[] dictionary, int index, int count)
+        {
+            if (state != INIT_STATE)
+            {
+                throw new InvalidOperationException();
+            }
+
+            state = SETDICT_STATE;
+            engine.SetDictionary(dictionary, index, count);
+        }
+
+        int level;
+
+        bool noZlibHeaderOrFooter;
+
+        int state;
+
+        long totalOut;
+
+        DeflaterPending pending;
+
+        DeflaterEngine engine;
+    }
+    internal class DeflaterConstants
+    {
+        public static bool DEBUGGING
+        {
+            get { return false; }
+        }
+        public const int STORED_BLOCK = 0;
+
+        public const int STATIC_TREES = 1;
+
+        public const int DYN_TREES = 2;
+
+        public const int PRESET_DICT = 0x20;
+
+        public const int DEFAULT_MEM_LEVEL = 8;
+
+        public const int MAX_MATCH = 258;
+
+        public const int MIN_MATCH = 3;
+
+        public const int MAX_WBITS = 15;
+
+        public const int WSIZE = 1 << MAX_WBITS;
+
+        public const int WMASK = WSIZE - 1;
+
+        public const int HASH_BITS = DEFAULT_MEM_LEVEL + 7;
+
+        public const int HASH_SIZE = 1 << HASH_BITS;
+
+        public const int HASH_MASK = HASH_SIZE - 1;
+
+        public const int HASH_SHIFT = (HASH_BITS + MIN_MATCH - 1) / MIN_MATCH;
+
+        public const int MIN_LOOKAHEAD = MAX_MATCH + MIN_MATCH + 1;
+
+        public const int MAX_DIST = WSIZE - MIN_LOOKAHEAD;
+
+        public const int PENDING_BUF_SIZE = 1 << (DEFAULT_MEM_LEVEL + 8);
+
+        public static int MAX_BLOCK_SIZE = Math.Min(65535, PENDING_BUF_SIZE - 5);
+
+        public const int DEFLATE_STORED = 0;
+
+        public const int DEFLATE_FAST = 1;
+
+        public const int DEFLATE_SLOW = 2;
+
+        public static int[] GOOD_LENGTH = { 0, 4, 4, 4, 4, 8, 8, 8, 32, 32 };
+
+        public static int[] MAX_LAZY = { 0, 4, 5, 6, 4, 16, 16, 32, 128, 258 };
+
+        public static int[] NICE_LENGTH = { 0, 8, 16, 32, 16, 32, 128, 128, 258, 258 };
+
+        public static int[] MAX_CHAIN = { 0, 4, 8, 32, 16, 32, 128, 256, 1024, 4096 };
+
+        public static int[] COMPR_FUNC = { 0, 1, 1, 1, 1, 2, 2, 2, 2, 2 };
+
+    }
+    internal enum DeflateStrategy
+    {
+        Default = 0,
+
+        Filtered = 1,
+
+
+        HuffmanOnly = 2
+    }
+
+
+    internal class DeflaterEngine : DeflaterConstants
+    {
+        const int TooFar = 4096;
+        public DeflaterEngine(DeflaterPending pending)
+        {
+            this.pending = pending;
+            huffman = new DeflaterHuffman(pending);
+            adler = new Adler32();
+
+            window = new byte[2 * WSIZE];
+            head = new short[HASH_SIZE];
+            prev = new short[WSIZE];
+
+            blockStart = strstart = 1;
+        }
+
+        public bool Deflate(bool flush, bool finish)
+        {
+            bool progress;
+            do
+            {
+                FillWindow();
+                bool canFlush = flush && (inputOff == inputEnd);
+
+                switch (compressionFunction)
+                {
+                    case DEFLATE_STORED:
+                        progress = DeflateStored(canFlush, finish);
+                        break;
+                    case DEFLATE_FAST:
+                        progress = DeflateFast(canFlush, finish);
+                        break;
+                    case DEFLATE_SLOW:
+                        progress = DeflateSlow(canFlush, finish);
+                        break;
+                    default:
+                        throw new InvalidOperationException("unknown compressionFunction");
+                }
+            } while (pending.IsFlushed && progress);
+            return progress;
+        }
+
+        public void SetInput(byte[] buffer, int offset, int count)
+        {
+            if (buffer == null)
+            {
+                throw new ArgumentNullException("buffer");
+            }
+
+            if (offset < 0)
+            {
+                throw new ArgumentOutOfRangeException("offset");
+            }
+
+            if (count < 0)
+            {
+                throw new ArgumentOutOfRangeException("count");
+            }
+
+            if (inputOff < inputEnd)
+            {
+                throw new InvalidOperationException("Old input was not completely processed");
+            }
+
+            int end = offset + count;
+
+            if ((offset > end) || (end > buffer.Length))
+            {
+                throw new ArgumentOutOfRangeException("count");
+            }
+
+            inputBuf = buffer;
+            inputOff = offset;
+            inputEnd = end;
+        }
+
+        public bool NeedsInput()
+        {
+            return (inputEnd == inputOff);
+        }
+
+        public void SetDictionary(byte[] buffer, int offset, int length)
+        {
+            adler.Update(buffer, offset, length);
+            if (length < MIN_MATCH)
+            {
+                return;
+            }
+
+            if (length > MAX_DIST)
+            {
+                offset += length - MAX_DIST;
+                length = MAX_DIST;
+            }
+
+            System.Array.Copy(buffer, offset, window, strstart, length);
+
+            UpdateHash();
+            --length;
+            while (--length > 0)
+            {
+                InsertString();
+                strstart++;
+            }
+            strstart += 2;
+            blockStart = strstart;
+        }
+
+        public void Reset()
+        {
+            huffman.Reset();
+            adler.Reset();
+            blockStart = strstart = 1;
+            lookahead = 0;
+            totalIn = 0;
+            prevAvailable = false;
+            matchLen = MIN_MATCH - 1;
+
+            for (int i = 0; i < HASH_SIZE; i++)
+            {
+                head[i] = 0;
+            }
+
+            for (int i = 0; i < WSIZE; i++)
+            {
+                prev[i] = 0;
+            }
+        }
+
+        public void ResetAdler()
+        {
+            adler.Reset();
+        }
+
+        public int Adler
+        {
+            get
+            {
+                return unchecked((int)adler.Value);
+            }
+        }
+
+        public long TotalIn
+        {
+            get
+            {
+                return totalIn;
+            }
+        }
+
+        public DeflateStrategy Strategy
+        {
+            get
+            {
+                return strategy;
+            }
+            set
+            {
+                strategy = value;
+            }
+        }
+
+        public void SetLevel(int level)
+        {
+            if ((level < 0) || (level > 9))
+            {
+                throw new ArgumentOutOfRangeException("level");
+            }
+
+            goodLength = DeflaterConstants.GOOD_LENGTH[level];
+            max_lazy = DeflaterConstants.MAX_LAZY[level];
+            niceLength = DeflaterConstants.NICE_LENGTH[level];
+            max_chain = DeflaterConstants.MAX_CHAIN[level];
+
+            if (DeflaterConstants.COMPR_FUNC[level] != compressionFunction)
+            {
+
+
+                switch (compressionFunction)
+                {
+                    case DEFLATE_STORED:
+                        if (strstart > blockStart)
+                        {
+                            huffman.FlushStoredBlock(window, blockStart,
+                                strstart - blockStart, false);
+                            blockStart = strstart;
+                        }
+                        UpdateHash();
+                        break;
+
+                    case DEFLATE_FAST:
+                        if (strstart > blockStart)
+                        {
+                            huffman.FlushBlock(window, blockStart, strstart - blockStart,
+                                false);
+                            blockStart = strstart;
+                        }
+                        break;
+
+                    case DEFLATE_SLOW:
+                        if (prevAvailable)
+                        {
+                            huffman.TallyLit(window[strstart - 1] & 0xff);
+                        }
+                        if (strstart > blockStart)
+                        {
+                            huffman.FlushBlock(window, blockStart, strstart - blockStart, false);
+                            blockStart = strstart;
+                        }
+                        prevAvailable = false;
+                        matchLen = MIN_MATCH - 1;
+                        break;
+                }
+                compressionFunction = COMPR_FUNC[level];
+            }
+        }
+
+        public void FillWindow()
+        {
+            if (strstart >= WSIZE + MAX_DIST)
+            {
+                SlideWindow();
+            }
+
+            while (lookahead < DeflaterConstants.MIN_LOOKAHEAD && inputOff < inputEnd)
+            {
+                int more = 2 * WSIZE - lookahead - strstart;
+
+                if (more > inputEnd - inputOff)
+                {
+                    more = inputEnd - inputOff;
+                }
+
+                System.Array.Copy(inputBuf, inputOff, window, strstart + lookahead, more);
+                adler.Update(inputBuf, inputOff, more);
+
+                inputOff += more;
+                totalIn += more;
+                lookahead += more;
+            }
+
+            if (lookahead >= MIN_MATCH)
+            {
+                UpdateHash();
+            }
+        }
+
+        void UpdateHash()
+        {
+            ins_h = (window[strstart] << HASH_SHIFT) ^ window[strstart + 1];
+        }
+
+        int InsertString()
+        {
+            short match;
+            int hash = ((ins_h << HASH_SHIFT) ^ window[strstart + (MIN_MATCH - 1)]) & HASH_MASK;
+
+            prev[strstart & WMASK] = match = head[hash];
+            head[hash] = unchecked((short)strstart);
+            ins_h = hash;
+            return match & 0xffff;
+        }
+
+        void SlideWindow()
+        {
+            Array.Copy(window, WSIZE, window, 0, WSIZE);
+            matchStart -= WSIZE;
+            strstart -= WSIZE;
+            blockStart -= WSIZE;
+
+            for (int i = 0; i < HASH_SIZE; ++i)
+            {
+                int m = head[i] & 0xffff;
+                head[i] = (short)(m >= WSIZE ? (m - WSIZE) : 0);
+            }
+
+            for (int i = 0; i < WSIZE; i++)
+            {
+                int m = prev[i] & 0xffff;
+                prev[i] = (short)(m >= WSIZE ? (m - WSIZE) : 0);
+            }
+        }
+
+        bool FindLongestMatch(int curMatch)
+        {
+            int chainLength = this.max_chain;
+            int niceLength = this.niceLength;
+            short[] prev = this.prev;
+            int scan = this.strstart;
+            int match;
+            int best_end = this.strstart + matchLen;
+            int best_len = Math.Max(matchLen, MIN_MATCH - 1);
+
+            int limit = Math.Max(strstart - MAX_DIST, 0);
+
+            int strend = strstart + MAX_MATCH - 1;
+            byte scan_end1 = window[best_end - 1];
+            byte scan_end = window[best_end];
+
+            if (best_len >= this.goodLength)
+            {
+                chainLength >>= 2;
+            }
+
+            if (niceLength > lookahead)
+            {
+                niceLength = lookahead;
+            }
+
+            do
+            {
+
+                if (window[curMatch + best_len] != scan_end ||
+                    window[curMatch + best_len - 1] != scan_end1 ||
+                    window[curMatch] != window[scan] ||
+                    window[curMatch + 1] != window[scan + 1])
+                {
+                    continue;
+                }
+
+                match = curMatch + 2;
+                scan += 2;
+
+                while (
+                    window[++scan] == window[++match] &&
+                    window[++scan] == window[++match] &&
+                    window[++scan] == window[++match] &&
+                    window[++scan] == window[++match] &&
+                    window[++scan] == window[++match] &&
+                    window[++scan] == window[++match] &&
+                    window[++scan] == window[++match] &&
+                    window[++scan] == window[++match] &&
+                    (scan < strend))
+                {
+                }
+
+                if (scan > best_end)
+                {
+                    matchStart = curMatch;
+                    best_end = scan;
+                    best_len = scan - strstart;
+
+                    if (best_len >= niceLength)
+                    {
+                        break;
+                    }
+
+                    scan_end1 = window[best_end - 1];
+                    scan_end = window[best_end];
+                }
+                scan = strstart;
+            } while ((curMatch = (prev[curMatch & WMASK] & 0xffff)) > limit && --chainLength != 0);
+
+            matchLen = Math.Min(best_len, lookahead);
+            return matchLen >= MIN_MATCH;
+        }
+
+        bool DeflateStored(bool flush, bool finish)
+        {
+            if (!flush && (lookahead == 0))
+            {
+                return false;
+            }
+
+            strstart += lookahead;
+            lookahead = 0;
+
+            int storedLength = strstart - blockStart;
+
+            if ((storedLength >= DeflaterConstants.MAX_BLOCK_SIZE) ||
+                (blockStart < WSIZE && storedLength >= MAX_DIST) ||
+                flush)
+            {
+                bool lastBlock = finish;
+                if (storedLength > DeflaterConstants.MAX_BLOCK_SIZE)
+                {
+                    storedLength = DeflaterConstants.MAX_BLOCK_SIZE;
+                    lastBlock = false;
+                }
+
+                huffman.FlushStoredBlock(window, blockStart, storedLength, lastBlock);
+                blockStart += storedLength;
+                return !lastBlock;
+            }
+            return true;
+        }
+
+        bool DeflateFast(bool flush, bool finish)
+        {
+            if (lookahead < MIN_LOOKAHEAD && !flush)
+            {
+                return false;
+            }
+
+            while (lookahead >= MIN_LOOKAHEAD || flush)
+            {
+                if (lookahead == 0)
+                {
+                    huffman.FlushBlock(window, blockStart, strstart - blockStart, finish);
+                    blockStart = strstart;
+                    return false;
+                }
+
+                if (strstart > 2 * WSIZE - MIN_LOOKAHEAD)
+                {
+                    SlideWindow();
+                }
+
+                int hashHead;
+                if (lookahead >= MIN_MATCH &&
+                    (hashHead = InsertString()) != 0 &&
+                    strategy != DeflateStrategy.HuffmanOnly &&
+                    strstart - hashHead <= MAX_DIST &&
+                    FindLongestMatch(hashHead))
+                {
+
+                    bool full = huffman.TallyDist(strstart - matchStart, matchLen);
+
+                    lookahead -= matchLen;
+                    if (matchLen <= max_lazy && lookahead >= MIN_MATCH)
+                    {
+                        while (--matchLen > 0)
+                        {
+                            ++strstart;
+                            InsertString();
+                        }
+                        ++strstart;
+                    }
+                    else
+                    {
+                        strstart += matchLen;
+                        if (lookahead >= MIN_MATCH - 1)
+                        {
+                            UpdateHash();
+                        }
+                    }
+                    matchLen = MIN_MATCH - 1;
+                    if (!full)
+                    {
+                        continue;
+                    }
+                }
+                else
+                {
+                    huffman.TallyLit(window[strstart] & 0xff);
+                    ++strstart;
+                    --lookahead;
+                }
+
+                if (huffman.IsFull())
+                {
+                    bool lastBlock = finish && (lookahead == 0);
+                    huffman.FlushBlock(window, blockStart, strstart - blockStart, lastBlock);
+                    blockStart = strstart;
+                    return !lastBlock;
+                }
+            }
+            return true;
+        }
+
+        bool DeflateSlow(bool flush, bool finish)
+        {
+            if (lookahead < MIN_LOOKAHEAD && !flush)
+            {
+                return false;
+            }
+
+            while (lookahead >= MIN_LOOKAHEAD || flush)
+            {
+                if (lookahead == 0)
+                {
+                    if (prevAvailable)
+                    {
+                        huffman.TallyLit(window[strstart - 1] & 0xff);
+                    }
+                    prevAvailable = false;
+
+                    huffman.FlushBlock(window, blockStart, strstart - blockStart,
+                        finish);
+                    blockStart = strstart;
+                    return false;
+                }
+
+                if (strstart >= 2 * WSIZE - MIN_LOOKAHEAD)
+                {
+                    SlideWindow();
+                }
+
+                int prevMatch = matchStart;
+                int prevLen = matchLen;
+                if (lookahead >= MIN_MATCH)
+                {
+
+                    int hashHead = InsertString();
+
+                    if (strategy != DeflateStrategy.HuffmanOnly &&
+                        hashHead != 0 &&
+                        strstart - hashHead <= MAX_DIST &&
+                        FindLongestMatch(hashHead))
+                    {
+
+                        if (matchLen <= 5 && (strategy == DeflateStrategy.Filtered || (matchLen == MIN_MATCH && strstart - matchStart > TooFar)))
+                        {
+                            matchLen = MIN_MATCH - 1;
+                        }
+                    }
+                }
+
+                if ((prevLen >= MIN_MATCH) && (matchLen <= prevLen))
+                {
+                    huffman.TallyDist(strstart - 1 - prevMatch, prevLen);
+                    prevLen -= 2;
+                    do
+                    {
+                        strstart++;
+                        lookahead--;
+                        if (lookahead >= MIN_MATCH)
+                        {
+                            InsertString();
+                        }
+                    } while (--prevLen > 0);
+
+                    strstart++;
+                    lookahead--;
+                    prevAvailable = false;
+                    matchLen = MIN_MATCH - 1;
+                }
+                else
+                {
+                    if (prevAvailable)
+                    {
+                        huffman.TallyLit(window[strstart - 1] & 0xff);
+                    }
+                    prevAvailable = true;
+                    strstart++;
+                    lookahead--;
+                }
+
+                if (huffman.IsFull())
+                {
+                    int len = strstart - blockStart;
+                    if (prevAvailable)
+                    {
+                        len--;
+                    }
+                    bool lastBlock = (finish && (lookahead == 0) && !prevAvailable);
+                    huffman.FlushBlock(window, blockStart, len, lastBlock);
+                    blockStart += len;
+                    return !lastBlock;
+                }
+            }
+            return true;
+        }
+
+        int ins_h;
+
+        short[] head;
+
+        short[] prev;
+
+        int matchStart;
+        int matchLen;
+        bool prevAvailable;
+        int blockStart;
+
+        int strstart;
+
+        int lookahead;
+
+        byte[] window;
+
+        DeflateStrategy strategy;
+        int max_chain, max_lazy, niceLength, goodLength;
+
+        int compressionFunction;
+
+        byte[] inputBuf;
+
+        long totalIn;
+
+        int inputOff;
+
+        int inputEnd;
+
+        DeflaterPending pending;
+        DeflaterHuffman huffman;
+
+        Adler32 adler;
+    }
+    internal class DeflaterHuffman
+    {
+        const int BUFSIZE = 1 << (DeflaterConstants.DEFAULT_MEM_LEVEL + 6);
+        const int LITERAL_NUM = 286;
+
+        const int DIST_NUM = 30;
+        const int BITLEN_NUM = 19;
+
+        const int REP_3_6 = 16;
+        const int REP_3_10 = 17;
+        const int REP_11_138 = 18;
+
+        const int EOF_SYMBOL = 256;
+
+        static readonly int[] BL_ORDER = { 16, 17, 18, 0, 8, 7, 9, 6, 10, 5, 11, 4, 12, 3, 13, 2, 14, 1, 15 };
+
+        static readonly byte[] bit4Reverse = {
+            0,
+            8,
+            4,
+            12,
+            2,
+            10,
+            6,
+            14,
+            1,
+            9,
+            5,
+            13,
+            3,
+            11,
+            7,
+            15
+        };
+
+        static short[] staticLCodes;
+        static byte[] staticLLength;
+        static short[] staticDCodes;
+        static byte[] staticDLength;
+
+        class Tree
+        {
+            public short[] freqs;
+
+            public byte[] length;
+
+            public int minNumCodes;
+
+            public int numCodes;
+
+            short[] codes;
+            int[] bl_counts;
+            int maxLength;
+            DeflaterHuffman dh;
+            public Tree(DeflaterHuffman dh, int elems, int minCodes, int maxLength)
+            {
+                this.dh = dh;
+                this.minNumCodes = minCodes;
+                this.maxLength = maxLength;
+                freqs = new short[elems];
+                bl_counts = new int[maxLength];
+            }
+
+            public void Reset()
+            {
+                for (int i = 0; i < freqs.Length; i++)
+                {
+                    freqs[i] = 0;
+                }
+                codes = null;
+                length = null;
+            }
+
+            public void WriteSymbol(int code)
+            {
+                dh.pending.WriteBits(codes[code] & 0xffff, length[code]);
+            }
+
+            public void CheckEmpty()
+            {
+                bool empty = true;
+                for (int i = 0; i < freqs.Length; i++)
+                {
+                    if (freqs[i] != 0)
+                    {
+                        empty = false;
+                    }
+                }
+
+                if (!empty)
+                {
+                    throw new SharpZipBaseException("!Empty");
+                }
+            }
+
+            public void SetStaticCodes(short[] staticCodes, byte[] staticLengths)
+            {
+                codes = staticCodes;
+                length = staticLengths;
+            }
+
+            public void BuildCodes()
+            {
+                int numSymbols = freqs.Length;
+                int[] nextCode = new int[maxLength];
+                int code = 0;
+
+                codes = new short[freqs.Length];
+
+                for (int bits = 0; bits < maxLength; bits++)
+                {
+                    nextCode[bits] = code;
+                    code += bl_counts[bits] << (15 - bits);
+
+                }
+                for (int i = 0; i < numCodes; i++)
+                {
+                    int bits = length[i];
+                    if (bits > 0)
+                    {
+
+                        codes[i] = BitReverse(nextCode[bits - 1]);
+                        nextCode[bits - 1] += 1 << (16 - bits);
+                    }
+                }
+            }
+
+            public void BuildTree()
+            {
+                int numSymbols = freqs.Length;
+
+                int[] heap = new int[numSymbols];
+                int heapLen = 0;
+                int maxCode = 0;
+                for (int n = 0; n < numSymbols; n++)
+                {
+                    int freq = freqs[n];
+                    if (freq != 0)
+                    {
+                        int pos = heapLen++;
+                        int ppos;
+                        while (pos > 0 && freqs[heap[ppos = (pos - 1) / 2]] > freq)
+                        {
+                            heap[pos] = heap[ppos];
+                            pos = ppos;
+                        }
+                        heap[pos] = n;
+
+                        maxCode = n;
+                    }
+                }
+
+                while (heapLen < 2)
+                {
+                    int node = maxCode < 2 ? ++maxCode : 0;
+                    heap[heapLen++] = node;
+                }
+
+                numCodes = Math.Max(maxCode + 1, minNumCodes);
+
+                int numLeafs = heapLen;
+                int[] childs = new int[4 * heapLen - 2];
+                int[] values = new int[2 * heapLen - 1];
+                int numNodes = numLeafs;
+                for (int i = 0; i < heapLen; i++)
+                {
+                    int node = heap[i];
+                    childs[2 * i] = node;
+                    childs[2 * i + 1] = -1;
+                    values[i] = freqs[node] << 8;
+                    heap[i] = i;
+                }
+
+                do
+                {
+                    int first = heap[0];
+                    int last = heap[--heapLen];
+
+                    int ppos = 0;
+                    int path = 1;
+
+                    while (path < heapLen)
+                    {
+                        if (path + 1 < heapLen && values[heap[path]] > values[heap[path + 1]])
+                        {
+                            path++;
+                        }
+
+                        heap[ppos] = heap[path];
+                        ppos = path;
+                        path = path * 2 + 1;
+                    }
+
+                    int lastVal = values[last];
+                    while ((path = ppos) > 0 && values[heap[ppos = (path - 1) / 2]] > lastVal)
+                    {
+                        heap[path] = heap[ppos];
+                    }
+                    heap[path] = last;
+
+
+                    int second = heap[0];
+
+                    last = numNodes++;
+                    childs[2 * last] = first;
+                    childs[2 * last + 1] = second;
+                    int mindepth = Math.Min(values[first] & 0xff, values[second] & 0xff);
+                    values[last] = lastVal = values[first] + values[second] - mindepth + 1;
+
+                    ppos = 0;
+                    path = 1;
+
+                    while (path < heapLen)
+                    {
+                        if (path + 1 < heapLen && values[heap[path]] > values[heap[path + 1]])
+                        {
+                            path++;
+                        }
+
+                        heap[ppos] = heap[path];
+                        ppos = path;
+                        path = ppos * 2 + 1;
+                    }
+
+                    while ((path = ppos) > 0 && values[heap[ppos = (path - 1) / 2]] > lastVal)
+                    {
+                        heap[path] = heap[ppos];
+                    }
+                    heap[path] = last;
+                } while (heapLen > 1);
+
+                if (heap[0] != childs.Length / 2 - 1)
+                {
+                    throw new SharpZipBaseException("Heap invariant violated");
+                }
+
+                BuildLength(childs);
+            }
+
+            public int GetEncodedLength()
+            {
+                int len = 0;
+                for (int i = 0; i < freqs.Length; i++)
+                {
+                    len += freqs[i] * length[i];
+                }
+                return len;
+            }
+
+            public void CalcBLFreq(Tree blTree)
+            {
+                int max_count;
+                int min_count;
+                int count;
+                int curlen = -1;
+
+                int i = 0;
+                while (i < numCodes)
+                {
+                    count = 1;
+                    int nextlen = length[i];
+                    if (nextlen == 0)
+                    {
+                        max_count = 138;
+                        min_count = 3;
+                    }
+                    else
+                    {
+                        max_count = 6;
+                        min_count = 3;
+                        if (curlen != nextlen)
+                        {
+                            blTree.freqs[nextlen]++;
+                            count = 0;
+                        }
+                    }
+                    curlen = nextlen;
+                    i++;
+
+                    while (i < numCodes && curlen == length[i])
+                    {
+                        i++;
+                        if (++count >= max_count)
+                        {
+                            break;
+                        }
+                    }
+
+                    if (count < min_count)
+                    {
+                        blTree.freqs[curlen] += (short)count;
+                    }
+                    else if (curlen != 0)
+                    {
+                        blTree.freqs[REP_3_6]++;
+                    }
+                    else if (count <= 10)
+                    {
+                        blTree.freqs[REP_3_10]++;
+                    }
+                    else
+                    {
+                        blTree.freqs[REP_11_138]++;
+                    }
+                }
+            }
+
+            public void WriteTree(Tree blTree)
+            {
+                int max_count;
+                int min_count;
+                int count;
+                int curlen = -1;
+
+                int i = 0;
+                while (i < numCodes)
+                {
+                    count = 1;
+                    int nextlen = length[i];
+                    if (nextlen == 0)
+                    {
+                        max_count = 138;
+                        min_count = 3;
+                    }
+                    else
+                    {
+                        max_count = 6;
+                        min_count = 3;
+                        if (curlen != nextlen)
+                        {
+                            blTree.WriteSymbol(nextlen);
+                            count = 0;
+                        }
+                    }
+                    curlen = nextlen;
+                    i++;
+
+                    while (i < numCodes && curlen == length[i])
+                    {
+                        i++;
+                        if (++count >= max_count)
+                        {
+                            break;
+                        }
+                    }
+
+                    if (count < min_count)
+                    {
+                        while (count-- > 0)
+                        {
+                            blTree.WriteSymbol(curlen);
+                        }
+                    }
+                    else if (curlen != 0)
+                    {
+                        blTree.WriteSymbol(REP_3_6);
+                        dh.pending.WriteBits(count - 3, 2);
+                    }
+                    else if (count <= 10)
+                    {
+                        blTree.WriteSymbol(REP_3_10);
+                        dh.pending.WriteBits(count - 3, 3);
+                    }
+                    else
+                    {
+                        blTree.WriteSymbol(REP_11_138);
+                        dh.pending.WriteBits(count - 11, 7);
+                    }
+                }
+            }
+
+            void BuildLength(int[] childs)
+            {
+                this.length = new byte[freqs.Length];
+                int numNodes = childs.Length / 2;
+                int numLeafs = (numNodes + 1) / 2;
+                int overflow = 0;
+
+                for (int i = 0; i < maxLength; i++)
+                {
+                    bl_counts[i] = 0;
+                }
+
+                int[] lengths = new int[numNodes];
+                lengths[numNodes - 1] = 0;
+
+                for (int i = numNodes - 1; i >= 0; i--)
+                {
+                    if (childs[2 * i + 1] != -1)
+                    {
+                        int bitLength = lengths[i] + 1;
+                        if (bitLength > maxLength)
+                        {
+                            bitLength = maxLength;
+                            overflow++;
+                        }
+                        lengths[childs[2 * i]] = lengths[childs[2 * i + 1]] = bitLength;
+                    }
+                    else
+                    {
+                        int bitLength = lengths[i];
+                        bl_counts[bitLength - 1]++;
+                        this.length[childs[2 * i]] = (byte)lengths[i];
+                    }
+                }
+
+                if (overflow == 0)
+                {
+                    return;
+                }
+
+                int incrBitLen = maxLength - 1;
+                do
+                {
+                    while (bl_counts[--incrBitLen] == 0)
+                        ;
+
+                    do
+                    {
+                        bl_counts[incrBitLen]--;
+                        bl_counts[++incrBitLen]++;
+                        overflow -= 1 << (maxLength - 1 - incrBitLen);
+                    } while (overflow > 0 && incrBitLen < maxLength - 1);
+                } while (overflow > 0);
+
+                bl_counts[maxLength - 1] += overflow;
+                bl_counts[maxLength - 2] -= overflow;
+
+                int nodePtr = 2 * numLeafs;
+                for (int bits = maxLength; bits != 0; bits--)
+                {
+                    int n = bl_counts[bits - 1];
+                    while (n > 0)
+                    {
+                        int childPtr = 2 * childs[nodePtr++];
+                        if (childs[childPtr + 1] == -1)
+                        {
+                            length[childs[childPtr]] = (byte)bits;
+                            n--;
+                        }
+                    }
+                }
+            }
+
+        }
+
+        public DeflaterPending pending;
+
+        Tree literalTree;
+        Tree distTree;
+        Tree blTree;
+
+        short[] d_buf;
+        byte[] l_buf;
+        int last_lit;
+        int extra_bits;
+        static DeflaterHuffman()
+        {
+            staticLCodes = new short[LITERAL_NUM];
+            staticLLength = new byte[LITERAL_NUM];
+
+            int i = 0;
+            while (i < 144)
+            {
+                staticLCodes[i] = BitReverse((0x030 + i) << 8);
+                staticLLength[i++] = 8;
+            }
+
+            while (i < 256)
+            {
+                staticLCodes[i] = BitReverse((0x190 - 144 + i) << 7);
+                staticLLength[i++] = 9;
+            }
+
+            while (i < 280)
+            {
+                staticLCodes[i] = BitReverse((0x000 - 256 + i) << 9);
+                staticLLength[i++] = 7;
+            }
+
+            while (i < LITERAL_NUM)
+            {
+                staticLCodes[i] = BitReverse((0x0c0 - 280 + i) << 8);
+                staticLLength[i++] = 8;
+            }
+
+            staticDCodes = new short[DIST_NUM];
+            staticDLength = new byte[DIST_NUM];
+            for (i = 0; i < DIST_NUM; i++)
+            {
+                staticDCodes[i] = BitReverse(i << 11);
+                staticDLength[i] = 5;
+            }
+        }
+
+        public DeflaterHuffman(DeflaterPending pending)
+        {
+            this.pending = pending;
+
+            literalTree = new Tree(this, LITERAL_NUM, 257, 15);
+            distTree = new Tree(this, DIST_NUM, 1, 15);
+            blTree = new Tree(this, BITLEN_NUM, 4, 7);
+
+            d_buf = new short[BUFSIZE];
+            l_buf = new byte[BUFSIZE];
+        }
+
+        public void Reset()
+        {
+            last_lit = 0;
+            extra_bits = 0;
+            literalTree.Reset();
+            distTree.Reset();
+            blTree.Reset();
+        }
+
+        public void SendAllTrees(int blTreeCodes)
+        {
+            blTree.BuildCodes();
+            literalTree.BuildCodes();
+            distTree.BuildCodes();
+            pending.WriteBits(literalTree.numCodes - 257, 5);
+            pending.WriteBits(distTree.numCodes - 1, 5);
+            pending.WriteBits(blTreeCodes - 4, 4);
+            for (int rank = 0; rank < blTreeCodes; rank++)
+            {
+                pending.WriteBits(blTree.length[BL_ORDER[rank]], 3);
+            }
+            literalTree.WriteTree(blTree);
+            distTree.WriteTree(blTree);
+
+        }
+
+        public void CompressBlock()
+        {
+            for (int i = 0; i < last_lit; i++)
+            {
+                int litlen = l_buf[i] & 0xff;
+                int dist = d_buf[i];
+                if (dist-- != 0)
+                {
+                    int lc = Lcode(litlen);
+                    literalTree.WriteSymbol(lc);
+
+                    int bits = (lc - 261) / 4;
+                    if (bits > 0 && bits <= 5)
+                    {
+                        pending.WriteBits(litlen & ((1 << bits) - 1), bits);
+                    }
+
+                    int dc = Dcode(dist);
+                    distTree.WriteSymbol(dc);
+
+                    bits = dc / 2 - 1;
+                    if (bits > 0)
+                    {
+                        pending.WriteBits(dist & ((1 << bits) - 1), bits);
+                    }
+                }
+                else
+                {
+                    literalTree.WriteSymbol(litlen);
+                }
+            }
+
+            literalTree.WriteSymbol(EOF_SYMBOL);
+        }
+
+        public void FlushStoredBlock(byte[] stored, int storedOffset, int storedLength, bool lastBlock)
+        {
+            pending.WriteBits((DeflaterConstants.STORED_BLOCK << 1) + (lastBlock ? 1 : 0), 3);
+            pending.AlignToByte();
+            pending.WriteShort(storedLength);
+            pending.WriteShort(~storedLength);
+            pending.WriteBlock(stored, storedOffset, storedLength);
+            Reset();
+        }
+
+        public void FlushBlock(byte[] stored, int storedOffset, int storedLength, bool lastBlock)
+        {
+            literalTree.freqs[EOF_SYMBOL]++;
+
+            literalTree.BuildTree();
+            distTree.BuildTree();
+
+            literalTree.CalcBLFreq(blTree);
+            distTree.CalcBLFreq(blTree);
+
+            blTree.BuildTree();
+
+            int blTreeCodes = 4;
+            for (int i = 18; i > blTreeCodes; i--)
+            {
+                if (blTree.length[BL_ORDER[i]] > 0)
+                {
+                    blTreeCodes = i + 1;
+                }
+            }
+            int opt_len = 14 + blTreeCodes * 3 + blTree.GetEncodedLength() +
+                literalTree.GetEncodedLength() + distTree.GetEncodedLength() +
+                extra_bits;
+
+            int static_len = extra_bits;
+            for (int i = 0; i < LITERAL_NUM; i++)
+            {
+                static_len += literalTree.freqs[i] * staticLLength[i];
+            }
+            for (int i = 0; i < DIST_NUM; i++)
+            {
+                static_len += distTree.freqs[i] * staticDLength[i];
+            }
+            if (opt_len >= static_len)
+            {
+                opt_len = static_len;
+            }
+
+            if (storedOffset >= 0 && storedLength + 4 < opt_len >> 3)
+            {
+                FlushStoredBlock(stored, storedOffset, storedLength, lastBlock);
+            }
+            else if (opt_len == static_len)
+            {
+                pending.WriteBits((DeflaterConstants.STATIC_TREES << 1) + (lastBlock ? 1 : 0), 3);
+                literalTree.SetStaticCodes(staticLCodes, staticLLength);
+                distTree.SetStaticCodes(staticDCodes, staticDLength);
+                CompressBlock();
+                Reset();
+            }
+            else
+            {
+                pending.WriteBits((DeflaterConstants.DYN_TREES << 1) + (lastBlock ? 1 : 0), 3);
+                SendAllTrees(blTreeCodes);
+                CompressBlock();
+                Reset();
+            }
+        }
+
+        public bool IsFull()
+        {
+            return last_lit >= BUFSIZE;
+        }
+
+        public bool TallyLit(int literal)
+        {
+            d_buf[last_lit] = 0;
+            l_buf[last_lit++] = (byte)literal;
+            literalTree.freqs[literal]++;
+            return IsFull();
+        }
+
+        public bool TallyDist(int distance, int length)
+        {
+            d_buf[last_lit] = (short)distance;
+            l_buf[last_lit++] = (byte)(length - 3);
+
+            int lc = Lcode(length - 3);
+            literalTree.freqs[lc]++;
+            if (lc >= 265 && lc < 285)
+            {
+                extra_bits += (lc - 261) / 4;
+            }
+
+            int dc = Dcode(distance - 1);
+            distTree.freqs[dc]++;
+            if (dc >= 4)
+            {
+                extra_bits += dc / 2 - 1;
+            }
+            return IsFull();
+        }
+
+
+        public static short BitReverse(int toReverse)
+        {
+            return (short)(bit4Reverse[toReverse & 0xF] << 12 |
+                            bit4Reverse[(toReverse >> 4) & 0xF] << 8 |
+                            bit4Reverse[(toReverse >> 8) & 0xF] << 4 |
+                            bit4Reverse[toReverse >> 12]);
+        }
+
+        static int Lcode(int length)
+        {
+            if (length == 255)
+            {
+                return 285;
+            }
+
+            int code = 257;
+            while (length >= 8)
+            {
+                code += 4;
+                length >>= 1;
+            }
+            return code + length;
+        }
+
+        static int Dcode(int distance)
+        {
+            int code = 0;
+            while (distance >= 4)
+            {
+                code += 2;
+                distance >>= 1;
+            }
+            return code + distance;
+        }
+    }
+    internal class DeflaterPending : PendingBuffer
+    {
+        public DeflaterPending()
+            : base(DeflaterConstants.PENDING_BUF_SIZE)
+        {
+        }
+    }
+    internal class Inflater
+    {
+        static readonly int[] CPLENS = {
+                                  3, 4, 5, 6, 7, 8, 9, 10, 11, 13, 15, 17, 19, 23, 27, 31,
+                                  35, 43, 51, 59, 67, 83, 99, 115, 131, 163, 195, 227, 258
+                              };
+
+        static readonly int[] CPLEXT = {
+                                  0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 2, 2, 2, 2,
+                                  3, 3, 3, 3, 4, 4, 4, 4, 5, 5, 5, 5, 0
+                              };
+
+        static readonly int[] CPDIST = {
+                                1, 2, 3, 4, 5, 7, 9, 13, 17, 25, 33, 49, 65, 97, 129, 193,
+                                257, 385, 513, 769, 1025, 1537, 2049, 3073, 4097, 6145,
+                                8193, 12289, 16385, 24577
+                              };
+
+        static readonly int[] CPDEXT = {
+                                0, 0, 0, 0, 1, 1, 2, 2, 3, 3, 4, 4, 5, 5, 6, 6,
+                                7, 7, 8, 8, 9, 9, 10, 10, 11, 11,
+                                12, 12, 13, 13
+                              };
+
+        const int DECODE_HEADER = 0;
+        const int DECODE_DICT = 1;
+        const int DECODE_BLOCKS = 2;
+        const int DECODE_STORED_LEN1 = 3;
+        const int DECODE_STORED_LEN2 = 4;
+        const int DECODE_STORED = 5;
+        const int DECODE_DYN_HEADER = 6;
+        const int DECODE_HUFFMAN = 7;
+        const int DECODE_HUFFMAN_LENBITS = 8;
+        const int DECODE_HUFFMAN_DIST = 9;
+        const int DECODE_HUFFMAN_DISTBITS = 10;
+        const int DECODE_CHKSUM = 11;
+        const int FINISHED = 12;
+        int mode;
+
+        int readAdler;
+
+        int neededBits;
+        int repLength;
+        int repDist;
+        int uncomprLen;
+
+        bool isLastBlock;
+
+        long totalOut;
+
+        long totalIn;
+
+        bool noHeader;
+
+        StreamManipulator input;
+        OutputWindow outputWindow;
+        InflaterDynHeader dynHeader;
+        InflaterHuffmanTree litlenTree, distTree;
+        Adler32 adler;
+        public Inflater()
+            : this(false)
+        {
+        }
+
+        public Inflater(bool noHeader)
+        {
+            this.noHeader = noHeader;
+            this.adler = new Adler32();
+            input = new StreamManipulator();
+            outputWindow = new OutputWindow();
+            mode = noHeader ? DECODE_BLOCKS : DECODE_HEADER;
+        }
+        public void Reset()
+        {
+            mode = noHeader ? DECODE_BLOCKS : DECODE_HEADER;
+            totalIn = 0;
+            totalOut = 0;
+            input.Reset();
+            outputWindow.Reset();
+            dynHeader = null;
+            litlenTree = null;
+            distTree = null;
+            isLastBlock = false;
+            adler.Reset();
+        }
+
+        private bool DecodeHeader()
+        {
+            int header = input.PeekBits(16);
+            if (header < 0)
+            {
+                return false;
+            }
+            input.DropBits(16);
+
+            header = ((header << 8) | (header >> 8)) & 0xffff;
+            if (header % 31 != 0)
+            {
+                throw new SharpZipBaseException("Header checksum illegal");
+            }
+
+            if ((header & 0x0f00) != (Deflater.DEFLATED << 8))
+            {
+                throw new SharpZipBaseException("Compression Method unknown");
+            }
+
+            if ((header & 0x0020) == 0)
+            {
+                mode = DECODE_BLOCKS;
+            }
+            else
+            {
+                mode = DECODE_DICT;
+                neededBits = 32;
+            }
+            return true;
+        }
+
+        private bool DecodeDict()
+        {
+            while (neededBits > 0)
+            {
+                int dictByte = input.PeekBits(8);
+                if (dictByte < 0)
+                {
+                    return false;
+                }
+                input.DropBits(8);
+                readAdler = (readAdler << 8) | dictByte;
+                neededBits -= 8;
+            }
+            return false;
+        }
+
+        private bool DecodeHuffman()
+        {
+            int free = outputWindow.GetFreeSpace();
+            while (free >= 258)
+            {
+                int symbol;
+                switch (mode)
+                {
+                    case DECODE_HUFFMAN:
+                        while (((symbol = litlenTree.GetSymbol(input)) & ~0xff) == 0)
+                        {
+                            outputWindow.Write(symbol);
+                            if (--free < 258)
+                            {
+                                return true;
+                            }
+                        }
+
+                        if (symbol < 257)
+                        {
+                            if (symbol < 0)
+                            {
+                                return false;
+                            }
+                            else
+                            {
+                                distTree = null;
+                                litlenTree = null;
+                                mode = DECODE_BLOCKS;
+                                return true;
+                            }
+                        }
+
+                        try
+                        {
+                            repLength = CPLENS[symbol - 257];
+                            neededBits = CPLEXT[symbol - 257];
+                        }
+                        catch (Exception)
+                        {
+                            throw new SharpZipBaseException("Illegal rep length code");
+                        }
+                        goto case DECODE_HUFFMAN_LENBITS;
+
+                    case DECODE_HUFFMAN_LENBITS:
+                        if (neededBits > 0)
+                        {
+                            mode = DECODE_HUFFMAN_LENBITS;
+                            int i = input.PeekBits(neededBits);
+                            if (i < 0)
+                            {
+                                return false;
+                            }
+                            input.DropBits(neededBits);
+                            repLength += i;
+                        }
+                        mode = DECODE_HUFFMAN_DIST;
+                        goto case DECODE_HUFFMAN_DIST;
+
+                    case DECODE_HUFFMAN_DIST:
+                        symbol = distTree.GetSymbol(input);
+                        if (symbol < 0)
+                        {
+                            return false;
+                        }
+
+                        try
+                        {
+                            repDist = CPDIST[symbol];
+                            neededBits = CPDEXT[symbol];
+                        }
+                        catch (Exception)
+                        {
+                            throw new SharpZipBaseException("Illegal rep dist code");
+                        }
+
+                        goto case DECODE_HUFFMAN_DISTBITS;
+
+                    case DECODE_HUFFMAN_DISTBITS:
+                        if (neededBits > 0)
+                        {
+                            mode = DECODE_HUFFMAN_DISTBITS;
+                            int i = input.PeekBits(neededBits);
+                            if (i < 0)
+                            {
+                                return false;
+                            }
+                            input.DropBits(neededBits);
+                            repDist += i;
+                        }
+
+                        outputWindow.Repeat(repLength, repDist);
+                        free -= repLength;
+                        mode = DECODE_HUFFMAN;
+                        break;
+
+                    default:
+                        throw new SharpZipBaseException("Inflater unknown mode");
+                }
+            }
+            return true;
+        }
+
+        private bool DecodeChksum()
+        {
+            while (neededBits > 0)
+            {
+                int chkByte = input.PeekBits(8);
+                if (chkByte < 0)
+                {
+                    return false;
+                }
+                input.DropBits(8);
+                readAdler = (readAdler << 8) | chkByte;
+                neededBits -= 8;
+            }
+
+            if ((int)adler.Value != readAdler)
+            {
+                throw new SharpZipBaseException("Adler chksum doesn't match: " + (int)adler.Value + " vs. " + readAdler);
+            }
+
+            mode = FINISHED;
+            return false;
+        }
+
+        private bool Decode()
+        {
+            switch (mode)
+            {
+                case DECODE_HEADER:
+                    return DecodeHeader();
+
+                case DECODE_DICT:
+                    return DecodeDict();
+
+                case DECODE_CHKSUM:
+                    return DecodeChksum();
+
+                case DECODE_BLOCKS:
+                    if (isLastBlock)
+                    {
+                        if (noHeader)
+                        {
+                            mode = FINISHED;
+                            return false;
+                        }
+                        else
+                        {
+                            input.SkipToByteBoundary();
+                            neededBits = 32;
+                            mode = DECODE_CHKSUM;
+                            return true;
+                        }
+                    }
+
+                    int type = input.PeekBits(3);
+                    if (type < 0)
+                    {
+                        return false;
+                    }
+                    input.DropBits(3);
+
+                    if ((type & 1) != 0)
+                    {
+                        isLastBlock = true;
+                    }
+                    switch (type >> 1)
+                    {
+                        case DeflaterConstants.STORED_BLOCK:
+                            input.SkipToByteBoundary();
+                            mode = DECODE_STORED_LEN1;
+                            break;
+                        case DeflaterConstants.STATIC_TREES:
+                            litlenTree = InflaterHuffmanTree.defLitLenTree;
+                            distTree = InflaterHuffmanTree.defDistTree;
+                            mode = DECODE_HUFFMAN;
+                            break;
+                        case DeflaterConstants.DYN_TREES:
+                            dynHeader = new InflaterDynHeader();
+                            mode = DECODE_DYN_HEADER;
+                            break;
+                        default:
+                            throw new SharpZipBaseException("Unknown block type " + type);
+                    }
+                    return true;
+
+                case DECODE_STORED_LEN1:
+                    {
+                        if ((uncomprLen = input.PeekBits(16)) < 0)
+                        {
+                            return false;
+                        }
+                        input.DropBits(16);
+                        mode = DECODE_STORED_LEN2;
+                    }
+                    goto case DECODE_STORED_LEN2;
+
+                case DECODE_STORED_LEN2:
+                    {
+                        int nlen = input.PeekBits(16);
+                        if (nlen < 0)
+                        {
+                            return false;
+                        }
+                        input.DropBits(16);
+                        if (nlen != (uncomprLen ^ 0xffff))
+                        {
+                            throw new SharpZipBaseException("broken uncompressed block");
+                        }
+                        mode = DECODE_STORED;
+                    }
+                    goto case DECODE_STORED;
+
+                case DECODE_STORED:
+                    {
+                        int more = outputWindow.CopyStored(input, uncomprLen);
+                        uncomprLen -= more;
+                        if (uncomprLen == 0)
+                        {
+                            mode = DECODE_BLOCKS;
+                            return true;
+                        }
+                        return !input.IsNeedingInput;
+                    }
+
+                case DECODE_DYN_HEADER:
+                    if (!dynHeader.Decode(input))
+                    {
+                        return false;
+                    }
+
+                    litlenTree = dynHeader.BuildLitLenTree();
+                    distTree = dynHeader.BuildDistTree();
+                    mode = DECODE_HUFFMAN;
+                    goto case DECODE_HUFFMAN;
+
+                case DECODE_HUFFMAN:
+                case DECODE_HUFFMAN_LENBITS:
+                case DECODE_HUFFMAN_DIST:
+                case DECODE_HUFFMAN_DISTBITS:
+                    return DecodeHuffman();
+
+                case FINISHED:
+                    return false;
+
+                default:
+                    throw new SharpZipBaseException("Inflater.Decode unknown mode");
+            }
+        }
+
+        public void SetDictionary(byte[] buffer)
+        {
+            SetDictionary(buffer, 0, buffer.Length);
+        }
+
+        public void SetDictionary(byte[] buffer, int index, int count)
+        {
+            if (buffer == null)
+            {
+                throw new ArgumentNullException("buffer");
+            }
+
+            if (index < 0)
+            {
+                throw new ArgumentOutOfRangeException("index");
+            }
+
+            if (count < 0)
+            {
+                throw new ArgumentOutOfRangeException("count");
+            }
+
+            if (!IsNeedingDictionary)
+            {
+                throw new InvalidOperationException("Dictionary is not needed");
+            }
+
+            adler.Update(buffer, index, count);
+
+            if ((int)adler.Value != readAdler)
+            {
+                throw new SharpZipBaseException("Wrong adler checksum");
+            }
+            adler.Reset();
+            outputWindow.CopyDict(buffer, index, count);
+            mode = DECODE_BLOCKS;
+        }
+
+        public void SetInput(byte[] buffer)
+        {
+            SetInput(buffer, 0, buffer.Length);
+        }
+
+        public void SetInput(byte[] buffer, int index, int count)
+        {
+            input.SetInput(buffer, index, count);
+            totalIn += (long)count;
+        }
+
+        public int Inflate(byte[] buffer)
+        {
+            if (buffer == null)
+            {
+                throw new ArgumentNullException("buffer");
+            }
+
+            return Inflate(buffer, 0, buffer.Length);
+        }
+
+        public int Inflate(byte[] buffer, int offset, int count)
+        {
+            if (buffer == null)
+            {
+                throw new ArgumentNullException("buffer");
+            }
+
+            if (count < 0)
+            {
+#if NETCF_1_0
+
+#else
+                throw new ArgumentOutOfRangeException("count", "count cannot be negative");
+#endif
+            }
+
+            if (offset < 0)
+            {
+#if NETCF_1_0
+
+#else
+                throw new ArgumentOutOfRangeException("offset", "offset cannot be negative");
+#endif
+            }
+
+            if (offset + count > buffer.Length)
+            {
+                throw new ArgumentException("count exceeds buffer bounds");
+            }
+
+            if (count == 0)
+            {
+                if (!IsFinished)
+                {
+                    Decode();
+                }
+                return 0;
+            }
+
+            int bytesCopied = 0;
+
+            do
+            {
+                if (mode != DECODE_CHKSUM)
+                {
+                    int more = outputWindow.CopyOutput(buffer, offset, count);
+                    if (more > 0)
+                    {
+                        adler.Update(buffer, offset, more);
+                        offset += more;
+                        bytesCopied += more;
+                        totalOut += (long)more;
+                        count -= more;
+                        if (count == 0)
+                        {
+                            return bytesCopied;
+                        }
+                    }
+                }
+            } while (Decode() || ((outputWindow.GetAvailable() > 0) && (mode != DECODE_CHKSUM)));
+            return bytesCopied;
+        }
+
+        public bool IsNeedingInput
+        {
+            get
+            {
+                return input.IsNeedingInput;
+            }
+        }
+
+        public bool IsNeedingDictionary
+        {
+            get
+            {
+                return mode == DECODE_DICT && neededBits == 0;
+            }
+        }
+
+        public bool IsFinished
+        {
+            get
+            {
+                return mode == FINISHED && outputWindow.GetAvailable() == 0;
+            }
+        }
+
+        public int Adler
+        {
+            get
+            {
+                return IsNeedingDictionary ? readAdler : (int)adler.Value;
+            }
+        }
+
+        public long TotalOut
+        {
+            get
+            {
+                return totalOut;
+            }
+        }
+
+        public long TotalIn
+        {
+            get
+            {
+                return totalIn - (long)RemainingInput;
+            }
+        }
+
+        public int RemainingInput
+        {
+            get
+            {
+                return input.AvailableBytes;
+            }
+        }
+    }
+    class InflaterDynHeader
+    {
+        const int LNUM = 0;
+        const int DNUM = 1;
+        const int BLNUM = 2;
+        const int BLLENS = 3;
+        const int LENS = 4;
+        const int REPS = 5;
+
+        static readonly int[] repMin = { 3, 3, 11 };
+        static readonly int[] repBits = { 2, 3, 7 };
+
+        byte[] blLens;
+        byte[] litdistLens;
+
+        InflaterHuffmanTree blTree;
+
+        int mode;
+        int lnum, dnum, blnum, num;
+        int repSymbol;
+        byte lastLen;
+        int ptr;
+
+        static readonly int[] BL_ORDER = { 16, 17, 18, 0, 8, 7, 9, 6, 10, 5, 11, 4, 12, 3, 13, 2, 14, 1, 15 };
+
+        public InflaterDynHeader()
+        {
+        }
+
+        public bool Decode(StreamManipulator input)
+        {
+        decode_loop:
+            for (; ; )
+            {
+                switch (mode)
+                {
+                    case LNUM:
+                        lnum = input.PeekBits(5);
+                        if (lnum < 0)
+                        {
+                            return false;
+                        }
+                        lnum += 257;
+                        input.DropBits(5);
+                        mode = DNUM;
+                        goto case DNUM;
+                    case DNUM:
+                        dnum = input.PeekBits(5);
+                        if (dnum < 0)
+                        {
+                            return false;
+                        }
+                        dnum++;
+                        input.DropBits(5);
+                        num = lnum + dnum;
+                        litdistLens = new byte[num];
+                        mode = BLNUM;
+                        goto case BLNUM;
+                    case BLNUM:
+                        blnum = input.PeekBits(4);
+                        if (blnum < 0)
+                        {
+                            return false;
+                        }
+                        blnum += 4;
+                        input.DropBits(4);
+                        blLens = new byte[19];
+                        ptr = 0;
+                        mode = BLLENS;
+                        goto case BLLENS;
+                    case BLLENS:
+                        while (ptr < blnum)
+                        {
+                            int len = input.PeekBits(3);
+                            if (len < 0)
+                            {
+                                return false;
+                            }
+                            input.DropBits(3);
+                            blLens[BL_ORDER[ptr]] = (byte)len;
+                            ptr++;
+                        }
+                        blTree = new InflaterHuffmanTree(blLens);
+                        blLens = null;
+                        ptr = 0;
+                        mode = LENS;
+                        goto case LENS;
+                    case LENS:
+                        {
+                            int symbol;
+                            while (((symbol = blTree.GetSymbol(input)) & ~15) == 0)
+                            {
+                                litdistLens[ptr++] = lastLen = (byte)symbol;
+
+                                if (ptr == num)
+                                {
+                                    return true;
+                                }
+                            }
+
+                            if (symbol < 0)
+                            {
+                                return false;
+                            }
+
+                            if (symbol >= 17)
+                            {
+                                lastLen = 0;
+                            }
+                            else
+                            {
+                                if (ptr == 0)
+                                {
+                                    throw new SharpZipBaseException();
+                                }
+                            }
+                            repSymbol = symbol - 16;
+                        }
+                        mode = REPS;
+                        goto case REPS;
+                    case REPS:
+                        {
+                            int bits = repBits[repSymbol];
+                            int count = input.PeekBits(bits);
+                            if (count < 0)
+                            {
+                                return false;
+                            }
+                            input.DropBits(bits);
+                            count += repMin[repSymbol];
+                            if (ptr + count > num)
+                            {
+                                throw new SharpZipBaseException();
+                            }
+                            while (count-- > 0)
+                            {
+                                litdistLens[ptr++] = lastLen;
+                            }
+
+                            if (ptr == num)
+                            {
+                                return true;
+                            }
+                        }
+                        mode = LENS;
+                        goto decode_loop;
+                }
+            }
+        }
+
+        public InflaterHuffmanTree BuildLitLenTree()
+        {
+            byte[] litlenLens = new byte[lnum];
+            Array.Copy(litdistLens, 0, litlenLens, 0, lnum);
+            return new InflaterHuffmanTree(litlenLens);
+        }
+
+        public InflaterHuffmanTree BuildDistTree()
+        {
+            byte[] distLens = new byte[dnum];
+            Array.Copy(litdistLens, lnum, distLens, 0, dnum);
+            return new InflaterHuffmanTree(distLens);
+        }
+    }
+    internal class InflaterHuffmanTree
+    {
+        static int MAX_BITLEN = 15;
+        short[] tree;
+
+        public static InflaterHuffmanTree defLitLenTree;
+
+        public static InflaterHuffmanTree defDistTree;
+
+        static InflaterHuffmanTree()
+        {
+            try
+            {
+                byte[] codeLengths = new byte[288];
+                int i = 0;
+                while (i < 144)
+                {
+                    codeLengths[i++] = 8;
+                }
+                while (i < 256)
+                {
+                    codeLengths[i++] = 9;
+                }
+                while (i < 280)
+                {
+                    codeLengths[i++] = 7;
+                }
+                while (i < 288)
+                {
+                    codeLengths[i++] = 8;
+                }
+                defLitLenTree = new InflaterHuffmanTree(codeLengths);
+
+                codeLengths = new byte[32];
+                i = 0;
+                while (i < 32)
+                {
+                    codeLengths[i++] = 5;
+                }
+                defDistTree = new InflaterHuffmanTree(codeLengths);
+            }
+            catch (Exception)
+            {
+                throw new SharpZipBaseException("InflaterHuffmanTree: static tree length illegal");
+            }
+        }
+
+        public InflaterHuffmanTree(byte[] codeLengths)
+        {
+            BuildTree(codeLengths);
+        }
+
+        void BuildTree(byte[] codeLengths)
+        {
+            int[] blCount = new int[MAX_BITLEN + 1];
+            int[] nextCode = new int[MAX_BITLEN + 1];
+
+            for (int i = 0; i < codeLengths.Length; i++)
+            {
+                int bits = codeLengths[i];
+                if (bits > 0)
+                {
+                    blCount[bits]++;
+                }
+            }
+
+            int code = 0;
+            int treeSize = 512;
+            for (int bits = 1; bits <= MAX_BITLEN; bits++)
+            {
+                nextCode[bits] = code;
+                code += blCount[bits] << (16 - bits);
+                if (bits >= 10)
+                {
+                    int start = nextCode[bits] & 0x1ff80;
+                    int end = code & 0x1ff80;
+                    treeSize += (end - start) >> (16 - bits);
+                }
+            }
+
+            tree = new short[treeSize];
+            int treePtr = 512;
+            for (int bits = MAX_BITLEN; bits >= 10; bits--)
+            {
+                int end = code & 0x1ff80;
+                code -= blCount[bits] << (16 - bits);
+                int start = code & 0x1ff80;
+                for (int i = start; i < end; i += 1 << 7)
+                {
+                    tree[DeflaterHuffman.BitReverse(i)] = (short)((-treePtr << 4) | bits);
+                    treePtr += 1 << (bits - 9);
+                }
+            }
+
+            for (int i = 0; i < codeLengths.Length; i++)
+            {
+                int bits = codeLengths[i];
+                if (bits == 0)
+                {
+                    continue;
+                }
+                code = nextCode[bits];
+                int revcode = DeflaterHuffman.BitReverse(code);
+                if (bits <= 9)
+                {
+                    do
+                    {
+                        tree[revcode] = (short)((i << 4) | bits);
+                        revcode += 1 << bits;
+                    } while (revcode < 512);
+                }
+                else
+                {
+                    int subTree = tree[revcode & 511];
+                    int treeLen = 1 << (subTree & 15);
+                    subTree = -(subTree >> 4);
+                    do
+                    {
+                        tree[subTree | (revcode >> 9)] = (short)((i << 4) | bits);
+                        revcode += 1 << bits;
+                    } while (revcode < treeLen);
+                }
+                nextCode[bits] = code + (1 << (16 - bits));
+            }
+
+        }
+
+        public int GetSymbol(StreamManipulator input)
+        {
+            int lookahead, symbol;
+            if ((lookahead = input.PeekBits(9)) >= 0)
+            {
+                if ((symbol = tree[lookahead]) >= 0)
+                {
+                    input.DropBits(symbol & 15);
+                    return symbol >> 4;
+                }
+                int subtree = -(symbol >> 4);
+                int bitlen = symbol & 15;
+                if ((lookahead = input.PeekBits(bitlen)) >= 0)
+                {
+                    symbol = tree[subtree | (lookahead >> 9)];
+                    input.DropBits(symbol & 15);
+                    return symbol >> 4;
+                }
+                else
+                {
+                    int bits = input.AvailableBits;
+                    lookahead = input.PeekBits(bits);
+                    symbol = tree[subtree | (lookahead >> 9)];
+                    if ((symbol & 15) <= bits)
+                    {
+                        input.DropBits(symbol & 15);
+                        return symbol >> 4;
+                    }
+                    else
+                    {
+                        return -1;
+                    }
+                }
+            }
+            else
+            {
+                int bits = input.AvailableBits;
+                lookahead = input.PeekBits(bits);
+                symbol = tree[lookahead];
+                if (symbol >= 0 && (symbol & 15) <= bits)
+                {
+                    input.DropBits(symbol & 15);
+                    return symbol >> 4;
+                }
+                else
+                {
+                    return -1;
+                }
+            }
+        }
+    }
+    internal class PendingBuffer
+    {
+        byte[] buffer_;
+
+        int start;
+        int end;
+
+        uint bits;
+        int bitCount;
+        public PendingBuffer()
+            : this(4096)
+        {
+        }
+
+        public PendingBuffer(int bufferSize)
+        {
+            buffer_ = new byte[bufferSize];
+        }
+
+        public void Reset()
+        {
+            start = end = bitCount = 0;
+        }
+
+        public void WriteByte(int value)
+        {
+
+            buffer_[end++] = unchecked((byte)value);
+        }
+
+        public void WriteShort(int value)
+        {
+            buffer_[end++] = unchecked((byte)value);
+            buffer_[end++] = unchecked((byte)(value >> 8));
+        }
+
+        public void WriteInt(int value)
+        {
+            buffer_[end++] = unchecked((byte)value);
+            buffer_[end++] = unchecked((byte)(value >> 8));
+            buffer_[end++] = unchecked((byte)(value >> 16));
+            buffer_[end++] = unchecked((byte)(value >> 24));
+        }
+
+        public void WriteBlock(byte[] block, int offset, int length)
+        {
+
+            System.Array.Copy(block, offset, buffer_, end, length);
+            end += length;
+        }
+
+        public int BitCount
+        {
+            get
+            {
+                return bitCount;
+            }
+        }
+
+        public void AlignToByte()
+        {
+
+            if (bitCount > 0)
+            {
+                buffer_[end++] = unchecked((byte)bits);
+                if (bitCount > 8)
+                {
+                    buffer_[end++] = unchecked((byte)(bits >> 8));
+                }
+            }
+            bits = 0;
+            bitCount = 0;
+        }
+
+        public void WriteBits(int b, int count)
+        {
+
+            bits |= (uint)(b << bitCount);
+            bitCount += count;
+            if (bitCount >= 16)
+            {
+                buffer_[end++] = unchecked((byte)bits);
+                buffer_[end++] = unchecked((byte)(bits >> 8));
+                bits >>= 16;
+                bitCount -= 16;
+            }
+        }
+
+        public void WriteShortMSB(int s)
+        {
+            buffer_[end++] = unchecked((byte)(s >> 8));
+            buffer_[end++] = unchecked((byte)s);
+        }
+
+        public bool IsFlushed
+        {
+            get
+            {
+                return end == 0;
+            }
+        }
+
+        public int Flush(byte[] output, int offset, int length)
+        {
+            if (bitCount >= 8)
+            {
+                buffer_[end++] = unchecked((byte)bits);
+                bits >>= 8;
+                bitCount -= 8;
+            }
+
+            if (length > end - start)
+            {
+                length = end - start;
+                System.Array.Copy(buffer_, start, output, offset, length);
+                start = 0;
+                end = 0;
+            }
+            else
+            {
+                System.Array.Copy(buffer_, start, output, offset, length);
+                start += length;
+            }
+            return length;
+        }
+
+        public byte[] ToByteArray()
+        {
+            byte[] result = new byte[end - start];
+            System.Array.Copy(buffer_, start, result, 0, result.Length);
+            start = 0;
+            end = 0;
+            return result;
+        }
+    }
+    public enum UseZip64
+    {
+        Off,
+        On,
+        Dynamic,
+    }
+
+    public enum CompressionMethod
+    {
+        Stored = 0,
+
+        Deflated = 8,
+
+        Deflate64 = 9,
+
+        BZip2 = 11,
+
+        WinZipAES = 99,
+
+    }
+
+    public enum EncryptionAlgorithm
+    {
+        None = 0,
+        PkzipClassic = 1,
+        Des = 0x6601,
+        RC2 = 0x6602,
+        TripleDes168 = 0x6603,
+        TripleDes112 = 0x6609,
+        Aes128 = 0x660e,
+        Aes192 = 0x660f,
+        Aes256 = 0x6610,
+        RC2Corrected = 0x6702,
+        Blowfish = 0x6720,
+        Twofish = 0x6721,
+        RC4 = 0x6801,
+        Unknown = 0xffff
+    }
+
+    [Flags]
+    public enum GeneralBitFlags : int
+    {
+        Encrypted = 0x0001,
+        Method = 0x0006,
+        Descriptor = 0x0008,
+        ReservedPKware4 = 0x0010,
+        Patched = 0x0020,
+        StrongEncryption = 0x0040,
+        Unused7 = 0x0080,
+        Unused8 = 0x0100,
+        Unused9 = 0x0200,
+        Unused10 = 0x0400,
+        UnicodeText = 0x0800,
+        EnhancedCompress = 0x1000,
+        HeaderMasked = 0x2000,
+        ReservedPkware14 = 0x4000,
+        ReservedPkware15 = 0x8000
+    }
+
+    internal sealed class ZipConstants
+    {
+        public const int VersionMadeBy = 51;
+
+        [Obsolete("Use VersionMadeBy instead")]
+        public const int VERSION_MADE_BY = 51;
+
+        public const int VersionStrongEncryption = 50;
+
+        [Obsolete("Use VersionStrongEncryption instead")]
+        public const int VERSION_STRONG_ENCRYPTION = 50;
+
+        public const int VERSION_AES = 51;
+
+        public const int VersionZip64 = 45;
+        public const int LocalHeaderBaseSize = 30;
+
+        [Obsolete("Use LocalHeaderBaseSize instead")]
+        public const int LOCHDR = 30;
+
+        public const int Zip64DataDescriptorSize = 24;
+
+        public const int DataDescriptorSize = 16;
+
+        [Obsolete("Use DataDescriptorSize instead")]
+        public const int EXTHDR = 16;
+
+        public const int CentralHeaderBaseSize = 46;
+
+        [Obsolete("Use CentralHeaderBaseSize instead")]
+        public const int CENHDR = 46;
+
+        public const int EndOfCentralRecordBaseSize = 22;
+
+        [Obsolete("Use EndOfCentralRecordBaseSize instead")]
+        public const int ENDHDR = 22;
+
+        public const int CryptoHeaderSize = 12;
+
+        [Obsolete("Use CryptoHeaderSize instead")]
+        public const int CRYPTO_HEADER_SIZE = 12;
+        public const int LocalHeaderSignature = 'P' | ('K' << 8) | (3 << 16) | (4 << 24);
+
+        [Obsolete("Use LocalHeaderSignature instead")]
+        public const int LOCSIG = 'P' | ('K' << 8) | (3 << 16) | (4 << 24);
+
+        public const int SpanningSignature = 'P' | ('K' << 8) | (7 << 16) | (8 << 24);
+
+        [Obsolete("Use SpanningSignature instead")]
+        public const int SPANNINGSIG = 'P' | ('K' << 8) | (7 << 16) | (8 << 24);
+
+        public const int SpanningTempSignature = 'P' | ('K' << 8) | ('0' << 16) | ('0' << 24);
+
+        [Obsolete("Use SpanningTempSignature instead")]
+        public const int SPANTEMPSIG = 'P' | ('K' << 8) | ('0' << 16) | ('0' << 24);
+
+        public const int DataDescriptorSignature = 'P' | ('K' << 8) | (7 << 16) | (8 << 24);
+
+        [Obsolete("Use DataDescriptorSignature instead")]
+        public const int EXTSIG = 'P' | ('K' << 8) | (7 << 16) | (8 << 24);
+
+        [Obsolete("Use CentralHeaderSignature instead")]
+        public const int CENSIG = 'P' | ('K' << 8) | (1 << 16) | (2 << 24);
+
+        public const int CentralHeaderSignature = 'P' | ('K' << 8) | (1 << 16) | (2 << 24);
+
+        public const int Zip64CentralFileHeaderSignature = 'P' | ('K' << 8) | (6 << 16) | (6 << 24);
+
+        [Obsolete("Use Zip64CentralFileHeaderSignature instead")]
+        public const int CENSIG64 = 'P' | ('K' << 8) | (6 << 16) | (6 << 24);
+
+        public const int Zip64CentralDirLocatorSignature = 'P' | ('K' << 8) | (6 << 16) | (7 << 24);
+
+        public const int ArchiveExtraDataSignature = 'P' | ('K' << 8) | (6 << 16) | (7 << 24);
+
+        public const int CentralHeaderDigitalSignature = 'P' | ('K' << 8) | (5 << 16) | (5 << 24);
+
+        [Obsolete("Use CentralHeaderDigitalSignaure instead")]
+        public const int CENDIGITALSIG = 'P' | ('K' << 8) | (5 << 16) | (5 << 24);
+
+        public const int EndOfCentralDirectorySignature = 'P' | ('K' << 8) | (5 << 16) | (6 << 24);
+
+        [Obsolete("Use EndOfCentralDirectorySignature instead")]
+        public const int ENDSIG = 'P' | ('K' << 8) | (5 << 16) | (6 << 24);
+#if true  
+#if SILVERLIGHT || NETFX_CORE || UWP
+
+#else
+        static int defaultCodePage = CultureInfo.CurrentCulture.TextInfo.ANSICodePage;
+#endif
+
+#endif
+
+        public static int DefaultCodePage
+        {
+            get
+            {
+                return defaultCodePage;
+            }
+            set
+            {
+                if ((value < 0) || (value > 65535) ||
+                    (value == 1) || (value == 2) || (value == 3) || (value == 42))
+                {
+                    throw new ArgumentOutOfRangeException("value");
+                }
+
+                defaultCodePage = value;
+            }
+        }
+
+        public static string ConvertToString(byte[] data, int count)
+        {
+            if (data == null)
+            {
+                return string.Empty;
+            }
+
+#if SILVERLIGHT || NETFX_CORE
+#else
+            return Encoding.GetEncoding(DefaultCodePage).GetString(data, 0, count);
+#endif
+        }
+
+        public static string ConvertToString(byte[] data)
+        {
+            if (data == null)
+            {
+                return string.Empty;
+            }
+            return ConvertToString(data, data.Length);
+        }
+
+        public static string ConvertToStringExt(int flags, byte[] data, int count)
+        {
+            if (data == null)
+            {
+                return string.Empty;
+            }
+
+            if ((flags & (int)GeneralBitFlags.UnicodeText) != 0)
+            {
+                return Encoding.UTF8.GetString(data, 0, count);
+            }
+            else
+            {
+                return ConvertToString(data, count);
+            }
+        }
+
+        public static string ConvertToStringExt(int flags, byte[] data)
+        {
+            if (data == null)
+            {
+                return string.Empty;
+            }
+
+            if ((flags & (int)GeneralBitFlags.UnicodeText) != 0)
+            {
+                return Encoding.UTF8.GetString(data, 0, data.Length);
+            }
+            else
+            {
+                return ConvertToString(data, data.Length);
+            }
+        }
+
+        public static byte[] ConvertToArray(string str)
+        {
+            if (str == null)
+            {
+                return new byte[0];
+            }
+
+#if SILVERLIGHT || NETFX_CORE
+#else
+            return Encoding.GetEncoding(DefaultCodePage).GetBytes(str);
+#endif
+        }
+
+        public static byte[] ConvertToArray(int flags, string str)
+        {
+            if (str == null)
+            {
+                return new byte[0];
+            }
+
+            if ((flags & (int)GeneralBitFlags.UnicodeText) != 0)
+            {
+                return Encoding.UTF8.GetBytes(str);
+            }
+            else
+            {
+                return ConvertToArray(str);
+            }
+        }
+
+
+        ZipConstants()
+        {
+        }
+    }
+    internal class ZipException : SharpZipBaseException
+    {
+        public ZipException()
+        {
+        }
+
+        public ZipException(string message)
+            : base(message)
+        {
+        }
+
+        public ZipException(string message, Exception exception)
+            : base(message, exception)
+        {
+        }
+    }
+    internal class SharpZipBaseException : ApplicationException
+    {
+        public SharpZipBaseException()
+        {
+        }
+
+        public SharpZipBaseException(string message)
+            : base(message)
+        {
+        }
+
+        public SharpZipBaseException(string message, Exception innerException)
+            : base(message, innerException)
+        {
+        }
+    }
 
 
 
