@@ -388,10 +388,45 @@ using System.Diagnostics;
 using System.IO;
 using System;
 using System.IO;
-
-
-
-
+using System.Text;
+using System;
+using System;
+using System.Diagnostics;
+using System.Text;
+using System;
+using System.Diagnostics;
+using System.Globalization;
+using System.Text;
+using System.Text;
+using System.Text;
+using System;
+using System.Collections.Generic;
+using System.Diagnostics;
+using System.IO;
+using System;
+using System;
+using System.Globalization;
+using System.Diagnostics;
+using System.Text;
+using System.IO;
+using System;
+using System.Diagnostics;
+using System.Globalization;
+using System.IO;
+using System;
+using System.Collections.Generic;
+using System.Diagnostics;
+using System.IO;
+using System;
+using System;
+using System.Collections.Generic;
+using System.Diagnostics;
+using System.Globalization;
+using System.Text;
+using System.IO;
+using System;
+using System.Collections.Generic;
+using System.Diagnostics;
 
 
 
@@ -36667,6 +36702,3505 @@ namespace pdf_guru
         int _nextData = 0;
         int _nextBits = 0;
     }
+    public sealed class AnsiEncoding : Encoding
+    {
+
+
+        public override int GetByteCount(char[] chars, int index, int count)
+        {
+            return count;
+        }
+
+        public override int GetBytes(char[] chars, int charIndex, int charCount, byte[] bytes, int byteIndex)
+        {
+            int count = charCount;
+            for (; charCount > 0; byteIndex++, charIndex++, charCount--)
+                bytes[byteIndex] = (byte)UnicodeToAnsi(chars[charIndex]);
+            return count;
+        }
+
+        public override int GetCharCount(byte[] bytes, int index, int count)
+        {
+            return count;
+        }
+
+        public override int GetChars(byte[] bytes, int byteIndex, int byteCount, char[] chars, int charIndex)
+        {
+            for (int idx = byteCount; idx > 0; byteIndex++, charIndex++, idx--)
+                chars[charIndex] = AnsiToUnicode[bytes[byteIndex]];
+            return byteCount;
+        }
+
+        public override int GetMaxByteCount(int charCount)
+        {
+            return charCount;
+        }
+
+        public override int GetMaxCharCount(int byteCount)
+        {
+            return byteCount;
+        }
+
+        public static bool IsAnsi1252Char(char ch)
+        {
+            if (ch < '\u0080' || (ch >= '\u00A0' && ch <= '\u00FF'))
+                return true;
+
+            switch (ch)
+            {
+                case '\u20AC':
+                case '\u0081':
+                case '\u201A':
+                case '\u0192':
+                case '\u201E':
+                case '\u2026':
+                case '\u2020':
+                case '\u2021':
+                case '\u02C6':
+                case '\u2030':
+                case '\u0160':
+                case '\u2039':
+                case '\u0152':
+                case '\u008D':
+                case '\u017D':
+                case '\u008F':
+                case '\u0090':
+                case '\u2018':
+                case '\u2019':
+                case '\u201C':
+                case '\u201D':
+                case '\u2022':
+                case '\u2013':
+                case '\u2014':
+                case '\u02DC':
+                case '\u2122':
+                case '\u0161':
+                case '\u203A':
+                case '\u0153':
+                case '\u009D':
+                case '\u017E':
+                case '\u0178':
+                    return true;
+            }
+            return false;
+        }
+
+        public static char UnicodeToAnsi(char ch)
+        {
+            if (ch < '\u0080' || (ch >= '\u00A0' && ch <= '\u00FF'))
+                return ch;
+
+            switch (ch)
+            {
+                case '\u20AC':
+                    return '\u0080';
+                case '\u0081':
+                    return '\u0081';
+                case '\u201A':
+                    return '\u0082';
+                case '\u0192':
+                    return '\u0083';
+                case '\u201E':
+                    return '\u0084';
+                case '\u2026':
+                    return '\u0085';
+                case '\u2020':
+                    return '\u0086';
+                case '\u2021':
+                    return '\u0087';
+                case '\u02C6':
+                    return '\u0088';
+                case '\u2030':
+                    return '\u0089';
+                case '\u0160':
+                    return '\u008A';
+                case '\u2039':
+                    return '\u008B';
+                case '\u0152':
+                    return '\u008C';
+                case '\u008D':
+                    return '\u008D';
+                case '\u017D':
+                    return '\u008E';
+                case '\u008F':
+                    return '\u008F';
+                case '\u0090':
+                    return '\u0090';
+                case '\u2018':
+                    return '\u0091';
+                case '\u2019':
+                    return '\u0092';
+                case '\u201C':
+                    return '\u0093';
+                case '\u201D':
+                    return '\u0094';
+                case '\u2022':
+                    return '\u0095';
+                case '\u2013':
+                    return '\u0096';
+                case '\u2014':
+                    return '\u0097';
+                case '\u02DC':
+                    return '\u0098';
+                case '\u2122':
+                    return '\u0099';
+                case '\u0161':
+                    return '\u009A';
+                case '\u203A':
+                    return '\u009B';
+                case '\u0153':
+                    return '\u009C';
+                case '\u009D':
+                    return '\u009D';
+                case '\u017E':
+                    return '\u009E';
+                case '\u0178':
+                    return '\u009F';
+            }
+            return '\u00A4';
+        }
+
+        static readonly char[] AnsiToUnicode =
+            {
+                 '\u0000', '\u0001', '\u0002', '\u0003', '\u0004', '\u0005', '\u0006', '\u0007', '\u0008', '\u0009', '\u000A', '\u000B', '\u000C', '\u000D', '\u000E', '\u000F',
+                 '\u0010', '\u0011', '\u0012', '\u0013', '\u0014', '\u0015', '\u0016', '\u0017', '\u0018', '\u0019', '\u001A', '\u001B', '\u001C', '\u001D', '\u001E', '\u001F',
+                 '\u0020', '\u0021', '\u0022', '\u0023', '\u0024', '\u0025', '\u0026', '\u0027', '\u0028', '\u0029', '\u002A', '\u002B', '\u002C', '\u002D', '\u002E', '\u002F',
+                 '\u0030', '\u0031', '\u0032', '\u0033', '\u0034', '\u0035', '\u0036', '\u0037', '\u0038', '\u0039', '\u003A', '\u003B', '\u003C', '\u003D', '\u003E', '\u003F',
+                 '\u0040', '\u0041', '\u0042', '\u0043', '\u0044', '\u0045', '\u0046', '\u0047', '\u0048', '\u0049', '\u004A', '\u004B', '\u004C', '\u004D', '\u004E', '\u004F',
+                 '\u0050', '\u0051', '\u0052', '\u0053', '\u0054', '\u0055', '\u0056', '\u0057', '\u0058', '\u0059', '\u005A', '\u005B', '\u005C', '\u005D', '\u005E', '\u005F',
+                 '\u0060', '\u0061', '\u0062', '\u0063', '\u0064', '\u0065', '\u0066', '\u0067', '\u0068', '\u0069', '\u006A', '\u006B', '\u006C', '\u006D', '\u006E', '\u006F',
+                 '\u0070', '\u0071', '\u0072', '\u0073', '\u0074', '\u0075', '\u0076', '\u0077', '\u0078', '\u0079', '\u007A', '\u007B', '\u007C', '\u007D', '\u007E', '\u007F',
+                 '\u20AC', '\u0081', '\u201A', '\u0192', '\u201E', '\u2026', '\u2020', '\u2021', '\u02C6', '\u2030', '\u0160', '\u2039', '\u0152', '\u008D', '\u017D', '\u008F',
+                 '\u0090', '\u2018', '\u2019', '\u201C', '\u201D', '\u2022', '\u2013', '\u2014', '\u02DC', '\u2122', '\u0161', '\u203A', '\u0153', '\u009D', '\u017E', '\u0178',
+                 '\u00A0', '\u00A1', '\u00A2', '\u00A3', '\u00A4', '\u00A5', '\u00A6', '\u00A7', '\u00A8', '\u00A9', '\u00AA', '\u00AB', '\u00AC', '\u00AD', '\u00AE', '\u00AF',
+                 '\u00B0', '\u00B1', '\u00B2', '\u00B3', '\u00B4', '\u00B5', '\u00B6', '\u00B7', '\u00B8', '\u00B9', '\u00BA', '\u00BB', '\u00BC', '\u00BD', '\u00BE', '\u00BF',
+                 '\u00C0', '\u00C1', '\u00C2', '\u00C3', '\u00C4', '\u00C5', '\u00C6', '\u00C7', '\u00C8', '\u00C9', '\u00CA', '\u00CB', '\u00CC', '\u00CD', '\u00CE', '\u00CF',
+                 '\u00D0', '\u00D1', '\u00D2', '\u00D3', '\u00D4', '\u00D5', '\u00D6', '\u00D7', '\u00D8', '\u00D9', '\u00DA', '\u00DB', '\u00DC', '\u00DD', '\u00DE', '\u00DF',
+                 '\u00E0', '\u00E1', '\u00E2', '\u00E3', '\u00E4', '\u00E5', '\u00E6', '\u00E7', '\u00E8', '\u00E9', '\u00EA', '\u00EB', '\u00EC', '\u00ED', '\u00EE', '\u00EF',
+                 '\u00F0', '\u00F1', '\u00F2', '\u00F3', '\u00F4', '\u00F5', '\u00F6', '\u00F7', '\u00F8', '\u00F9', '\u00FA', '\u00FB', '\u00FC', '\u00FD', '\u00FE', '\u00FF'
+            };
+    }
+    static class ColorSpaceHelper
+    {
+        public static XColor EnsureColorMode(PdfColorMode colorMode, XColor color)
+        {
+#if true
+            if (colorMode == PdfColorMode.Rgb && color.ColorSpace != XColorSpace.Rgb)
+                return XColor.FromArgb((int)(color.A * 255), color.R, color.G, color.B);
+
+            if (colorMode == PdfColorMode.Cmyk && color.ColorSpace != XColorSpace.Cmyk)
+                return XColor.FromCmyk(color.A, color.C, color.M, color.Y, color.K);
+
+            return color;
+
+#endif
+        }
+
+        public static XColor EnsureColorMode(PdfDocument document, XColor color)
+        {
+            if (document == null)
+                throw new ArgumentNullException("document");
+
+            return EnsureColorMode(document.Options.ColorMode, color);
+        }
+
+        public static bool IsEqualCmyk(XColor x, XColor y)
+        {
+            if (x.ColorSpace != XColorSpace.Cmyk || y.ColorSpace != XColorSpace.Cmyk)
+                return false;
+            return x.C == y.C && x.M == y.M && x.Y == y.Y && x.K == y.K;
+        }
+    }
+    internal sealed class DocEncoding : Encoding
+    {
+        public DocEncoding()
+        { }
+
+        public override int GetByteCount(char[] chars, int index, int count)
+        {
+            return PdfEncoders.WinAnsiEncoding.GetByteCount(chars, index, count);
+        }
+
+        public override int GetBytes(char[] chars, int charIndex, int charCount, byte[] bytes, int byteIndex)
+        {
+            byte[] ansi = PdfEncoders.WinAnsiEncoding.GetBytes(chars, charIndex, charCount);
+            for (int idx = 0, count = ansi.Length; count > 0; idx++, byteIndex++, count--)
+                bytes[byteIndex] = AnsiToDoc[ansi[idx]];
+            return ansi.Length;
+        }
+
+        public override int GetCharCount(byte[] bytes, int index, int count)
+        {
+            Debug.Assert(PdfEncoders.WinAnsiEncoding.GetCharCount(bytes, index, count) == count);
+            return count;
+        }
+
+        public override int GetChars(byte[] bytes, int byteIndex, int byteCount, char[] chars, int charIndex)
+        {
+            PdfDocToUnicode.GetType();
+            throw new NotImplementedException("GetChars");
+        }
+
+        public override int GetMaxByteCount(int charCount)
+        {
+            return charCount;
+        }
+
+        public override int GetMaxCharCount(int byteCount)
+        {
+            return byteCount;
+        }
+
+        static readonly byte[] AnsiToDoc = new byte[256]
+        {
+               0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x0A, 0x0B, 0x0C, 0x0D, 0x0E, 0x0F,
+               0x10, 0x11, 0x12, 0x13, 0x14, 0x15, 0x16, 0x17, 0x18, 0x19, 0x1A, 0x1B, 0x1C, 0x1D, 0x1E, 0x1F,
+               0x20, 0x21, 0x22, 0x23, 0x24, 0x25, 0x26, 0x27, 0x28, 0x29, 0x2A, 0x2B, 0x2C, 0x2D, 0x2E, 0x2F,
+               0x30, 0x31, 0x32, 0x33, 0x34, 0x35, 0x36, 0x37, 0x38, 0x39, 0x3A, 0x3B, 0x3C, 0x3D, 0x3E, 0x3F,
+               0x40, 0x41, 0x42, 0x43, 0x44, 0x45, 0x46, 0x47, 0x48, 0x49, 0x4A, 0x4B, 0x4C, 0x4D, 0x4E, 0x4F,
+               0x50, 0x51, 0x52, 0x53, 0x54, 0x55, 0x56, 0x57, 0x58, 0x59, 0x5A, 0x5B, 0x5C, 0x5D, 0x5E, 0x5F,
+               0x60, 0x61, 0x62, 0x63, 0x64, 0x65, 0x66, 0x67, 0x68, 0x69, 0x6A, 0x6B, 0x6C, 0x6D, 0x6E, 0x6F,
+               0x70, 0x71, 0x72, 0x73, 0x74, 0x75, 0x76, 0x77, 0x78, 0x79, 0x7A, 0x7B, 0x7C, 0x7D, 0x7E, 0x7F,
+               0xA0, 0x81, 0x91, 0x83, 0x8C, 0x83, 0x81, 0x82, 0x1A, 0x89, 0x97, 0x88, 0x96, 0x8D, 0x99, 0x8F,
+               0x90, 0x8F, 0x90, 0x8D, 0x8E, 0x80, 0x85, 0x84, 0x1F, 0x92, 0x90, 0x89, 0x9C, 0x9D, 0x9E, 0x98,
+               0x20, 0xA1, 0xA2, 0xA3, 0xA4, 0xA5, 0xA6, 0xA7, 0xA8, 0xA9, 0xAA, 0xAB, 0xAC, 0xAD, 0xAE, 0xAF,
+               0xB0, 0xB1, 0xB2, 0xB3, 0xB4, 0xB5, 0xB6, 0xB7, 0xB8, 0xB9, 0xBA, 0xBB, 0xBC, 0xBD, 0xBE, 0xBF,
+               0xC0, 0xC1, 0xC2, 0xC3, 0xC4, 0xC5, 0xC6, 0xC7, 0xC8, 0xC9, 0xCA, 0xCB, 0xCC, 0xCD, 0xCE, 0xCF,
+               0xD0, 0xD1, 0xD2, 0xD3, 0xD4, 0xD5, 0xD6, 0xD7, 0xD8, 0xD9, 0xDA, 0xDB, 0xDC, 0xDD, 0xDE, 0xDF,
+               0xE0, 0xE1, 0xE2, 0xE3, 0xE4, 0xE5, 0xE6, 0xE7, 0xE8, 0xE9, 0xEA, 0xEB, 0xEC, 0xED, 0xEE, 0xEF,
+               0xF0, 0xF1, 0xF2, 0xF3, 0xF4, 0xF5, 0xF6, 0xF7, 0xF8, 0xF9, 0xFA, 0xFB, 0xFC, 0xFD, 0xFE, 0xFF,
+
+        };
+
+        static readonly char[] PdfDocToUnicode = new char[]
+        {
+            '\x00', '\x01', '\x02', '\x03', '\x04', '\x05', '\x06', '\x07', '\x08', '\x09', '\x0A', '\x0B', '\x0C', '\x0D', '\x0E', '\x0F',
+            '\x10', '\x11', '\x12', '\x13', '\x14', '\x15', '\x16', '\x17', '\x18', '\x19', '\x1A', '\x1B', '\x1C', '\x1D', '\x1E', '\x1F',
+            '\x20', '\x21', '\x22', '\x23', '\x24', '\x25', '\x26', '\x27', '\x28', '\x29', '\x2A', '\x2B', '\x2C', '\x2D', '\x2E', '\x2F',
+            '\x30', '\x31', '\x32', '\x33', '\x34', '\x35', '\x36', '\x37', '\x38', '\x39', '\x3A', '\x3B', '\x3C', '\x3D', '\x3E', '\x3F',
+            '\x40', '\x41', '\x42', '\x43', '\x44', '\x45', '\x46', '\x47', '\x48', '\x49', '\x4A', '\x4B', '\x4C', '\x4D', '\x4E', '\x4F',
+            '\x50', '\x51', '\x52', '\x53', '\x54', '\x55', '\x56', '\x57', '\x58', '\x59', '\x5A', '\x5B', '\x5C', '\x5D', '\x5E', '\x5F',
+            '\x60', '\x61', '\x62', '\x63', '\x64', '\x65', '\x66', '\x67', '\x68', '\x69', '\x6A', '\x6B', '\x6C', '\x6D', '\x6E', '\x6F',
+            '\x70', '\x71', '\x72', '\x73', '\x74', '\x75', '\x76', '\x77', '\x78', '\x79', '\x7A', '\x7B', '\x7C', '\x7D', '\x7E', '\x7F',
+            '\x2022', '\x2020', '\x2021', '\x2026', '\x2014', '\x2013', '\x0192', '\x2044', '\x2039', '\x203A', '\x2212', '\x2030', '\x201E', '\x201C', '\x201D', '\x2018',
+            '\x2019', '\x201A', '\x2122', '\xFB01', '\xFB02', '\x0141', '\x0152', '\x0160', '\x0178', '\x017D', '\x0131', '\x0142', '\x0153', '\x0161', '\x017E', '\xFFFD',
+            '\x20AC', '\xA1', '\xA2', '\xA3', '\xA4', '\xA5', '\xA6', '\xA7', '\xA8', '\xA9', '\xAA', '\xAB', '\xAC', '\xAD', '\xAE', '\xAF',
+            '\xB0', '\xB1', '\xB2', '\xB3', '\xB4', '\xB5', '\xB6', '\xB7', '\xB8', '\xB9', '\xBA', '\xBB', '\xBC', '\xBD', '\xBE', '\xBF',
+            '\xC0', '\xC1', '\xC2', '\xC3', '\xC4', '\xC5', '\xC6', '\xC7', '\xC8', '\xC9', '\xCA', '\xCB', '\xCC', '\xCD', '\xCE', '\xCF',
+            '\xD0', '\xD1', '\xD2', '\xD3', '\xD4', '\xD5', '\xD6', '\xD7', '\xD8', '\xD9', '\xDA', '\xDB', '\xDC', '\xDD', '\xDE', '\xDF',
+            '\xE0', '\xE1', '\xE2', '\xE3', '\xE4', '\xE5', '\xE6', '\xE7', '\xE8', '\xE9', '\xEA', '\xEB', '\xEC', '\xED', '\xEE', '\xEF',
+            '\xF0', '\xF1', '\xF2', '\xF3', '\xF4', '\xF5', '\xF6', '\xF7', '\xF8', '\xF9', '\xFA', '\xFB', '\xFC', '\xFD', '\xFE', '\xFF',
+        };
+    }
+    class PdfDiagnostics
+    {
+        public static bool TraceCompressedObjects
+        {
+            get { return _traceCompressedObjects; }
+            set { _traceCompressedObjects = value; }
+        }
+        static bool _traceCompressedObjects = true;
+
+        public static bool TraceXrefStreams
+        {
+            get { return _traceXrefStreams && TraceCompressedObjects; }
+            set { _traceXrefStreams = value; }
+        }
+        static bool _traceXrefStreams = true;
+
+        public static bool TraceObjectStreams
+        {
+            get { return _traceObjectStreams && TraceCompressedObjects; }
+            set { _traceObjectStreams = value; }
+        }
+        static bool _traceObjectStreams = true;
+    }
+    internal static class PdfEncoders
+    {
+        public static Encoding RawEncoding
+        {
+            get { return _rawEncoding ?? (_rawEncoding = new RawEncoding()); }
+        }
+        static Encoding _rawEncoding;
+
+        public static Encoding RawUnicodeEncoding
+        {
+            get { return _rawUnicodeEncoding ?? (_rawUnicodeEncoding = new RawUnicodeEncoding()); }
+        }
+        static Encoding _rawUnicodeEncoding;
+
+        public static Encoding WinAnsiEncoding
+        {
+            get
+            {
+                if (_winAnsiEncoding == null)
+                {
+#if !SILVERLIGHT && !NETFX_CORE && !UWP
+                    _winAnsiEncoding = Encoding.GetEncoding(1252);
+
+#endif
+                }
+                return _winAnsiEncoding;
+            }
+        }
+        static Encoding _winAnsiEncoding;
+
+        public static Encoding DocEncoding
+        {
+            get { return _docEncoding ?? (_docEncoding = new DocEncoding()); }
+        }
+        static Encoding _docEncoding;
+
+        public static Encoding UnicodeEncoding
+        {
+            get { return _unicodeEncoding ?? (_unicodeEncoding = Encoding.Unicode); }
+        }
+        static Encoding _unicodeEncoding;
+
+
+        public static string ToStringLiteral(string text, PdfStringEncoding encoding, PdfStandardSecurityHandler securityHandler)
+        {
+            if (String.IsNullOrEmpty(text))
+                return "()";
+
+            byte[] bytes;
+            switch (encoding)
+            {
+                case PdfStringEncoding.RawEncoding:
+                    bytes = RawEncoding.GetBytes(text);
+                    break;
+
+                case PdfStringEncoding.WinAnsiEncoding:
+                    bytes = WinAnsiEncoding.GetBytes(text);
+                    break;
+
+                case PdfStringEncoding.PDFDocEncoding:
+                    bytes = DocEncoding.GetBytes(text);
+                    break;
+
+                case PdfStringEncoding.Unicode:
+                    bytes = RawUnicodeEncoding.GetBytes(text);
+                    break;
+
+                default:
+                    throw new NotImplementedException(encoding.ToString());
+            }
+            byte[] temp = FormatStringLiteral(bytes, encoding == PdfStringEncoding.Unicode, true, false, securityHandler);
+            return RawEncoding.GetString(temp, 0, temp.Length);
+        }
+
+        public static string ToStringLiteral(byte[] bytes, bool unicode, PdfStandardSecurityHandler securityHandler)
+        {
+            if (bytes == null || bytes.Length == 0)
+                return "()";
+
+            byte[] temp = FormatStringLiteral(bytes, unicode, true, false, securityHandler);
+            return RawEncoding.GetString(temp, 0, temp.Length);
+        }
+
+        public static string ToHexStringLiteral(string text, PdfStringEncoding encoding, PdfStandardSecurityHandler securityHandler)
+        {
+            if (String.IsNullOrEmpty(text))
+                return "<>";
+
+            byte[] bytes;
+            switch (encoding)
+            {
+                case PdfStringEncoding.RawEncoding:
+                    bytes = RawEncoding.GetBytes(text);
+                    break;
+
+                case PdfStringEncoding.WinAnsiEncoding:
+                    bytes = WinAnsiEncoding.GetBytes(text);
+                    break;
+
+                case PdfStringEncoding.PDFDocEncoding:
+                    bytes = DocEncoding.GetBytes(text);
+                    break;
+
+                case PdfStringEncoding.Unicode:
+                    bytes = RawUnicodeEncoding.GetBytes(text);
+                    break;
+
+                default:
+                    throw new NotImplementedException(encoding.ToString());
+            }
+
+            byte[] agTemp = FormatStringLiteral(bytes, encoding == PdfStringEncoding.Unicode, true, true, securityHandler);
+            return RawEncoding.GetString(agTemp, 0, agTemp.Length);
+        }
+
+        public static string ToHexStringLiteral(byte[] bytes, bool unicode, PdfStandardSecurityHandler securityHandler)
+        {
+            if (bytes == null || bytes.Length == 0)
+                return "<>";
+
+            byte[] agTemp = FormatStringLiteral(bytes, unicode, true, true, securityHandler);
+            return RawEncoding.GetString(agTemp, 0, agTemp.Length);
+        }
+
+        public static byte[] FormatStringLiteral(byte[] bytes, bool unicode, bool prefix, bool hex, PdfStandardSecurityHandler securityHandler)
+        {
+            if (bytes == null || bytes.Length == 0)
+                return hex ? new byte[] { (byte)'<', (byte)'>' } : new byte[] { (byte)'(', (byte)')' };
+
+            Debug.Assert(!unicode || bytes.Length % 2 == 0, "Odd number of bytes in Unicode string.");
+
+            byte[] originalBytes = null;
+
+            bool encrypted = false;
+            if (securityHandler != null && !hex)
+            {
+                originalBytes = bytes;
+                bytes = (byte[])bytes.Clone();
+                bytes = securityHandler.EncryptBytes(bytes);
+                encrypted = true;
+            }
+
+            int count = bytes.Length;
+            StringBuilder pdf = new StringBuilder();
+            if (!unicode)
+            {
+                if (!hex)
+                {
+                    pdf.Append("(");
+                    for (int idx = 0; idx < count; idx++)
+                    {
+                        char ch = (char)bytes[idx];
+                        if (ch < 32)
+                        {
+                            switch (ch)
+                            {
+                                case '\n':
+                                    pdf.Append("\\n");
+                                    break;
+
+                                case '\r':
+                                    pdf.Append("\\r");
+                                    break;
+
+                                case '\t':
+                                    pdf.Append("\\t");
+                                    break;
+
+                                case '\b':
+                                    pdf.Append("\\b");
+                                    break;
+
+                                default:
+                                    encrypted = true;
+                                    if (!encrypted)
+                                    {
+                                        pdf.Append("\\0");
+                                        pdf.Append((char)(ch % 8 + '0'));
+                                        pdf.Append((char)(ch / 8 + '0'));
+                                    }
+                                    else
+                                        pdf.Append(ch);
+                                    break;
+                            }
+                        }
+                        else
+                        {
+                            switch (ch)
+                            {
+                                case '(':
+                                    pdf.Append("\\(");
+                                    break;
+
+                                case ')':
+                                    pdf.Append("\\)");
+                                    break;
+
+                                case '\\':
+                                    pdf.Append("\\\\");
+                                    break;
+
+                                default:
+                                    pdf.Append(ch);
+                                    break;
+                            }
+                        }
+                    }
+                    pdf.Append(')');
+                }
+                else
+                {
+                    pdf.Append('<');
+                    for (int idx = 0; idx < count; idx++)
+                        pdf.AppendFormat("{0:X2}", bytes[idx]);
+                    pdf.Append('>');
+                }
+            }
+            else
+            {
+                if (hex)
+                {
+                    if (securityHandler != null && prefix)
+                    {
+                        var bytes2 = new byte[bytes.Length + 2];
+                        bytes2[0] = 0xfe;
+                        bytes2[1] = 0xff;
+                        Array.Copy(bytes, 0, bytes2, 2, bytes.Length);
+                        bytes2 = securityHandler.EncryptBytes(bytes2);
+                        encrypted = true;
+                        pdf.Append("<");
+                        var count2 = bytes2.Length;
+                        for (int idx = 0; idx < count2; idx += 2)
+                        {
+                            pdf.AppendFormat("{0:X2}{1:X2}", bytes2[idx], bytes2[idx + 1]);
+                            if (idx != 0 && (idx % 48) == 0)
+                                pdf.Append("\n");
+                        }
+                        pdf.Append(">");
+                    }
+                    else
+                    {
+                        pdf.Append(prefix ? "<FEFF" : "<");
+                        for (int idx = 0; idx < count; idx += 2)
+                        {
+                            pdf.AppendFormat("{0:X2}{1:X2}", bytes[idx], bytes[idx + 1]);
+                            if (idx != 0 && (idx % 48) == 0)
+                                pdf.Append("\n");
+                        }
+                        pdf.Append(">");
+                    }
+                }
+                else
+                {
+                    if (encrypted)
+                    {
+                        return FormatStringLiteral(originalBytes, unicode, prefix, true, securityHandler);
+                    }
+                    else
+                    {
+                        return FormatStringLiteral(bytes, true, prefix, true, null);
+                    }
+                }
+            }
+            return RawEncoding.GetBytes(pdf.ToString());
+        }
+
+        static byte[] docencode_______ = new byte[256]
+        {
+            0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x0A, 0x0B, 0x0C, 0x0D, 0x0E, 0x0F,
+            0x10, 0x11, 0x12, 0x13, 0x14, 0x15, 0x16, 0x17, 0x18, 0x19, 0x1A, 0x1B, 0x1C, 0x1D, 0x1E, 0x1F,
+            0x20, 0x21, 0x22, 0x23, 0x24, 0x25, 0x26, 0x27, 0x28, 0x29, 0x2A, 0x2B, 0x2C, 0x2D, 0x2E, 0x2F,
+            0x30, 0x31, 0x32, 0x33, 0x34, 0x35, 0x36, 0x37, 0x38, 0x39, 0x3A, 0x3B, 0x3C, 0x3D, 0x3E, 0x3F,
+            0x40, 0x41, 0x42, 0x43, 0x44, 0x45, 0x46, 0x47, 0x48, 0x49, 0x4A, 0x4B, 0x4C, 0x4D, 0x4E, 0x4F,
+            0x50, 0x51, 0x52, 0x53, 0x54, 0x55, 0x56, 0x57, 0x58, 0x59, 0x5A, 0x5B, 0x5C, 0x5D, 0x5E, 0x5F,
+            0x60, 0x61, 0x62, 0x63, 0x64, 0x65, 0x66, 0x67, 0x68, 0x69, 0x6A, 0x6B, 0x6C, 0x6D, 0x6E, 0x6F,
+            0x70, 0x71, 0x72, 0x73, 0x74, 0x75, 0x76, 0x77, 0x78, 0x79, 0x7A, 0x7B, 0x7C, 0x7D, 0x7E, 0x7F,
+            0xA0, 0x7F, 0x82, 0x83, 0x84, 0x85, 0x86, 0x87, 0x88, 0x89, 0x8A, 0x8B, 0x8C, 0x8D, 0x8E, 0x8F,
+            0x90, 0x91, 0x92, 0x93, 0x94, 0x95, 0x8A, 0x8C, 0x98, 0x99, 0x9A, 0x9B, 0x9C, 0x9D, 0x9E, 0x9F,
+            0xA0, 0xA1, 0xA2, 0xA3, 0xA4, 0xA5, 0xA6, 0xA7, 0xA8, 0xA9, 0xAA, 0xAB, 0xAC, 0xAD, 0xAE, 0xAF,
+            0xB0, 0xB1, 0xB2, 0xB3, 0xB4, 0xB5, 0xB6, 0xB7, 0xB8, 0xB9, 0xBA, 0xBB, 0xBC, 0xBD, 0xBE, 0xBF,
+            0xC0, 0xC1, 0xC2, 0xC3, 0xC4, 0xC5, 0xC6, 0xC7, 0xC8, 0xC9, 0xCA, 0xCB, 0xCC, 0xCD, 0xCE, 0xCF,
+            0xD0, 0xD1, 0xD2, 0xD3, 0xD4, 0xD5, 0xD6, 0xD7, 0xD8, 0xD9, 0xDA, 0xDB, 0xDC, 0xDD, 0xDE, 0xDF,
+            0xE0, 0xE1, 0xE2, 0xE3, 0xE4, 0xE5, 0xE6, 0xE7, 0xE8, 0xE9, 0xEA, 0xEB, 0xEC, 0xED, 0xEE, 0xEF,
+            0xF0, 0xF1, 0xF2, 0xF3, 0xF4, 0xF5, 0xF6, 0xF7, 0xF8, 0xF9, 0xFA, 0xFB, 0xFC, 0xFD, 0xFE, 0xFF,
+        };
+
+        public static string Format(string format, params object[] args)
+        {
+            return String.Format(CultureInfo.InvariantCulture, format, args);
+        }
+
+        public static string ToString(double val)
+        {
+            return val.ToString(Config.SignificantFigures3, CultureInfo.InvariantCulture);
+        }
+
+        public static string ToString(XColor color, PdfColorMode colorMode)
+        {
+            const string format = Config.SignificantFigures3;
+
+            if (colorMode == PdfColorMode.Undefined)
+                colorMode = color.ColorSpace == XColorSpace.Cmyk ? PdfColorMode.Cmyk : PdfColorMode.Rgb;
+
+            switch (colorMode)
+            {
+                case PdfColorMode.Cmyk:
+                    return String.Format(CultureInfo.InvariantCulture, "{0:" + format + "} {1:" + format + "} {2:" + format + "} {3:" + format + "}",
+                      color.C, color.M, color.Y, color.K);
+
+                default:
+                    return String.Format(CultureInfo.InvariantCulture, "{0:" + format + "} {1:" + format + "} {2:" + format + "}",
+                      color.R / 255.0, color.G / 255.0, color.B / 255.0);
+            }
+        }
+
+        public static string ToString(XMatrix matrix)
+        {
+            const string format = Config.SignificantFigures4;
+            return String.Format(CultureInfo.InvariantCulture,
+                "{0:" + format + "} {1:" + format + "} {2:" + format + "} {3:" + format + "} {4:" + format + "} {5:" + format + "}",
+                matrix.M11, matrix.M12, matrix.M21, matrix.M22, matrix.OffsetX, matrix.OffsetY);
+        }
+    }
+    public sealed class RawEncoding : Encoding
+    {
+        public RawEncoding()
+        { }
+        public override int GetByteCount(char[] chars, int index, int count)
+        {
+            return count;
+        }
+
+        public override int GetBytes(char[] chars, int charIndex, int charCount, byte[] bytes, int byteIndex)
+        {
+            for (int count = charCount; count > 0; charIndex++, byteIndex++, count--)
+            {
+
+                bytes[byteIndex] = (byte)chars[charIndex];
+            }
+            return charCount;
+        }
+
+        public override int GetCharCount(byte[] bytes, int index, int count)
+        {
+            return count;
+        }
+
+        public override int GetChars(byte[] bytes, int byteIndex, int byteCount, char[] chars, int charIndex)
+        {
+            for (int count = byteCount; count > 0; byteIndex++, charIndex++, count--)
+                chars[charIndex] = (char)bytes[byteIndex];
+            return byteCount;
+        }
+
+        public override int GetMaxByteCount(int charCount)
+        {
+            return charCount;
+        }
+
+        public override int GetMaxCharCount(int byteCount)
+        {
+            return byteCount;
+        }
+
+    }
+    internal sealed class RawUnicodeEncoding : Encoding
+    {
+        public RawUnicodeEncoding()
+        { }
+
+        public override int GetByteCount(char[] chars, int index, int count)
+        {
+            return 2 * count;
+        }
+
+        public override int GetBytes(char[] chars, int charIndex, int charCount, byte[] bytes, int byteIndex)
+        {
+            for (int count = charCount; count > 0; charIndex++, count--)
+            {
+                char ch = chars[charIndex];
+                bytes[byteIndex++] = (byte)(ch >> 8);
+                bytes[byteIndex++] = (byte)ch;
+            }
+            return charCount * 2;
+        }
+
+        public override int GetCharCount(byte[] bytes, int index, int count)
+        {
+            return count / 2;
+        }
+
+        public override int GetChars(byte[] bytes, int byteIndex, int byteCount, char[] chars, int charIndex)
+        {
+            for (int count = byteCount; count > 0; byteIndex += 2, charIndex++, count--)
+            {
+                chars[charIndex] = (char)((int)bytes[byteIndex] << 8 + (int)bytes[byteIndex + 1]);
+            }
+            return byteCount;
+        }
+
+        public override int GetMaxByteCount(int charCount)
+        {
+            return charCount * 2;
+        }
+
+        public override int GetMaxCharCount(int byteCount)
+        {
+            return byteCount / 2;
+        }
+    }
+    internal class ThreadLocalStorage
+    {
+        public ThreadLocalStorage()
+        {
+            _importedDocuments = new Dictionary<string, PdfDocument.DocumentHandle>(StringComparer.OrdinalIgnoreCase);
+        }
+
+        public void AddDocument(string path, PdfDocument document)
+        {
+            _importedDocuments.Add(path, document.Handle);
+        }
+
+        public void RemoveDocument(string path)
+        {
+            _importedDocuments.Remove(path);
+        }
+
+        public PdfDocument GetDocument(string path)
+        {
+            Debug.Assert(path.StartsWith("*") || Path.IsPathRooted(path), "Path must be full qualified.");
+
+            PdfDocument document = null;
+            PdfDocument.DocumentHandle handle;
+            if (_importedDocuments.TryGetValue(path, out handle))
+            {
+                document = handle.Target;
+                if (document == null)
+                    RemoveDocument(path);
+            }
+            if (document == null)
+            {
+                document = PdfReader.Open(path, PdfDocumentOpenMode.Import);
+                _importedDocuments.Add(path, document.Handle);
+            }
+            return document;
+        }
+
+        public PdfDocument[] Documents
+        {
+            get
+            {
+                List<PdfDocument> list = new List<PdfDocument>();
+                foreach (PdfDocument.DocumentHandle handle in _importedDocuments.Values)
+                {
+                    if (handle.IsAlive)
+                        list.Add(handle.Target);
+                }
+                return list.ToArray();
+            }
+        }
+
+        public void DetachDocument(PdfDocument.DocumentHandle handle)
+        {
+            if (handle.IsAlive)
+            {
+                foreach (string path in _importedDocuments.Keys)
+                {
+                    if (_importedDocuments[path] == handle)
+                    {
+                        _importedDocuments.Remove(path);
+                        break;
+                    }
+                }
+            }
+
+            bool itemRemoved = true;
+            while (itemRemoved)
+            {
+                itemRemoved = false;
+                foreach (string path in _importedDocuments.Keys)
+                {
+                    if (!_importedDocuments[path].IsAlive)
+                    {
+                        _importedDocuments.Remove(path);
+                        itemRemoved = true;
+                        break;
+                    }
+                }
+            }
+        }
+
+        readonly Dictionary<string, PdfDocument.DocumentHandle> _importedDocuments;
+    }
+    public enum PasswordValidity
+    {
+        Invalid,
+
+        UserPassword,
+
+        OwnerPassword,
+    }
+    public enum PdfDocumentOpenMode
+    {
+        Modify,
+
+        Import,
+
+        ReadOnly,
+
+        InformationOnly,
+    }
+    public enum PdfWriterLayout
+    {
+        Compact,
+
+        Standard,
+
+        Indented,
+
+        Verbose,
+    }
+    internal enum PdfWriterOptions
+    {
+        Regular = 0x000000,
+
+        OmitStream = 0x000001,
+
+        OmitInflation = 0x000002,
+    }
+    public enum Symbol
+    {
+        None,
+        Comment, Null, Integer, UInteger, Real, Boolean, String, HexString, UnicodeString, UnicodeHexString,
+        Name, Keyword,
+        BeginStream, EndStream,
+        BeginArray, EndArray,
+        BeginDictionary, EndDictionary,
+        Obj, EndObj, R, XRef, Trailer, StartXRef, Eof,
+    }
+    public sealed class Chars
+    {
+        public const char EOF = (char)65535;
+        public const char NUL = '\0';
+        public const char CR = '\x0D';
+        public const char LF = '\x0A';
+        public const char BEL = '\a';
+        public const char BS = '\b';
+        public const char FF = '\f';
+        public const char HT = '\t';
+        public const char VT = '\v';
+        public const char NonBreakableSpace = (char)160;
+
+        public const char SP = ' ';
+        public const char QuoteDbl = '"';
+        public const char QuoteSingle = '\'';
+        public const char ParenLeft = '(';
+        public const char ParenRight = ')';
+        public const char BraceLeft = '{';
+        public const char BraceRight = '}';
+        public const char BracketLeft = '[';
+        public const char BracketRight = ']';
+        public const char Less = '<';
+        public const char Greater = '>';
+        public const char Equal = '=';
+        public const char Period = '.';
+        public const char Semicolon = ';';
+        public const char Colon = ':';
+        public const char Slash = '/';
+        public const char Bar = '|';
+        public const char BackSlash = '\\';
+        public const char Percent = '%';
+        public const char Dollar = '$';
+        public const char At = '@';
+        public const char NumberSign = '#';
+        public const char Question = '?';
+        public const char Hyphen = '-';
+        public const char SoftHyphen = '­';
+        public const char Currency = '¤';
+
+    }
+    public class Lexer
+    {
+        public Lexer(Stream pdfInputStream)
+        {
+            _pdfSteam = pdfInputStream;
+            _pdfLength = (int)_pdfSteam.Length;
+            _idxChar = 0;
+            Position = 0;
+        }
+
+        public int Position
+        {
+            get { return _idxChar; }
+            set
+            {
+                _idxChar = value;
+                _pdfSteam.Position = value;
+                _currChar = (char)_pdfSteam.ReadByte();
+                _nextChar = (char)_pdfSteam.ReadByte();
+                _token = new StringBuilder();
+            }
+        }
+
+        public Symbol ScanNextToken()
+        {
+        Again:
+            _token = new StringBuilder();
+
+            char ch = MoveToNonWhiteSpace();
+            switch (ch)
+            {
+                case '%':
+                    ScanComment();
+                    goto Again;
+
+                case '/':
+                    return _symbol = ScanName();
+
+                case '+':
+                case '-':
+                    return _symbol = ScanNumber();
+
+                case '(':
+                    return _symbol = ScanLiteralString();
+
+                case '[':
+                    ScanNextChar(true);
+                    return _symbol = Symbol.BeginArray;
+
+                case ']':
+                    ScanNextChar(true);
+                    return _symbol = Symbol.EndArray;
+
+                case '<':
+                    if (_nextChar == '<')
+                    {
+                        ScanNextChar(true);
+                        ScanNextChar(true);
+                        return _symbol = Symbol.BeginDictionary;
+                    }
+                    return _symbol = ScanHexadecimalString();
+
+                case '>':
+                    if (_nextChar == '>')
+                    {
+                        ScanNextChar(true);
+                        ScanNextChar(true);
+                        return _symbol = Symbol.EndDictionary;
+                    }
+                    ParserDiagnostics.HandleUnexpectedCharacter(_nextChar);
+                    break;
+
+                case '.':
+                    return _symbol = ScanNumber();
+            }
+            if (char.IsDigit(ch))
+#if true_
+#else
+                if (PeekReference())
+                    return _symbol = ScanNumber();
+                else
+                    return _symbol = ScanNumber();
+#endif
+
+            if (char.IsLetter(ch))
+                return _symbol = ScanKeyword();
+
+            if (ch == Chars.EOF)
+                return _symbol = Symbol.Eof;
+
+            ParserDiagnostics.HandleUnexpectedCharacter(ch);
+            return _symbol = Symbol.None;
+        }
+
+        public byte[] ReadStream(int length)
+        {
+            int pos;
+
+            while (_currChar == Chars.SP)
+                ScanNextChar(true);
+
+            if (_currChar == Chars.CR)
+            {
+                if (_nextChar == Chars.LF)
+                    pos = _idxChar + 2;
+                else
+                    pos = _idxChar + 1;
+            }
+            else
+                pos = _idxChar + 1;
+
+            _pdfSteam.Position = pos;
+            byte[] bytes = new byte[length];
+            int read = _pdfSteam.Read(bytes, 0, length);
+            Debug.Assert(read == length);
+            if (bytes.Length != read)
+            {
+                Array.Resize(ref bytes, read);
+            }
+
+            Position = pos + read;
+            return bytes;
+        }
+
+        public String ReadRawString(int position, int length)
+        {
+            _pdfSteam.Position = position;
+            byte[] bytes = new byte[length];
+            _pdfSteam.Read(bytes, 0, length);
+            return PdfEncoders.RawEncoding.GetString(bytes, 0, bytes.Length);
+        }
+
+        public Symbol ScanComment()
+        {
+            Debug.Assert(_currChar == Chars.Percent);
+
+            _token = new StringBuilder();
+            while (true)
+            {
+                char ch = AppendAndScanNextChar();
+                if (ch == Chars.LF || ch == Chars.EOF)
+                    break;
+            }
+            if (_token.ToString().StartsWith("%%EOF"))
+                return Symbol.Eof;
+            return _symbol = Symbol.Comment;
+        }
+
+        public Symbol ScanName()
+        {
+            Debug.Assert(_currChar == Chars.Slash);
+
+            _token = new StringBuilder();
+            while (true)
+            {
+                char ch = AppendAndScanNextChar();
+                if (IsWhiteSpace(ch) || IsDelimiter(ch) || ch == Chars.EOF)
+                    return _symbol = Symbol.Name;
+
+                if (ch == '#')
+                {
+                    ScanNextChar(true);
+                    char[] hex = new char[2];
+                    hex[0] = _currChar;
+                    hex[1] = _nextChar;
+                    ScanNextChar(true);
+                    ch = (char)(ushort)int.Parse(new string(hex), NumberStyles.AllowHexSpecifier);
+                    _currChar = ch;
+                }
+            }
+        }
+
+        public Symbol ScanNumber()
+        {
+            bool period = false;
+            _token = new StringBuilder();
+            char ch = _currChar;
+            if (ch == '+' || ch == '-')
+            {
+                _token.Append(ch);
+                ch = ScanNextChar(true);
+            }
+            while (true)
+            {
+                if (char.IsDigit(ch))
+                {
+                    _token.Append(ch);
+                }
+                else if (ch == '.')
+                {
+                    if (period)
+                        ParserDiagnostics.ThrowParserException("More than one period in number.");
+
+                    period = true;
+                    _token.Append(ch);
+                }
+                else
+                    break;
+                ch = ScanNextChar(true);
+            }
+
+            if (period)
+                return Symbol.Real;
+            long l = Int64.Parse(_token.ToString(), CultureInfo.InvariantCulture);
+            if (l >= Int32.MinValue && l <= Int32.MaxValue)
+                return Symbol.Integer;
+            if (l > 0 && l <= UInt32.MaxValue)
+                return Symbol.UInteger;
+
+            return Symbol.Real;
+        }
+
+        public Symbol ScanNumberOrReference()
+        {
+            Symbol result = ScanNumber();
+            if (result == Symbol.Integer)
+            {
+                int pos = Position;
+                string objectNumber = Token;
+            }
+            return result;
+        }
+
+        public Symbol ScanKeyword()
+        {
+            _token = new StringBuilder();
+            char ch = _currChar;
+            while (true)
+            {
+                if (char.IsLetter(ch))
+                    _token.Append(ch);
+                else
+                    break;
+                ch = ScanNextChar(false);
+            }
+
+            switch (_token.ToString())
+            {
+                case "obj":
+                    return _symbol = Symbol.Obj;
+
+                case "endobj":
+                    return _symbol = Symbol.EndObj;
+
+                case "null":
+                    return _symbol = Symbol.Null;
+
+                case "true":
+                case "false":
+                    return _symbol = Symbol.Boolean;
+
+                case "R":
+                    return _symbol = Symbol.R;
+
+                case "stream":
+                    return _symbol = Symbol.BeginStream;
+
+                case "endstream":
+                    return _symbol = Symbol.EndStream;
+
+                case "xref":
+                    return _symbol = Symbol.XRef;
+
+                case "trailer":
+                    return _symbol = Symbol.Trailer;
+
+                case "startxref":
+                    return _symbol = Symbol.StartXRef;
+            }
+
+            return _symbol = Symbol.Keyword;
+        }
+
+        public Symbol ScanLiteralString()
+        {
+            Debug.Assert(_currChar == Chars.ParenLeft);
+            _token = new StringBuilder();
+            int parenLevel = 0;
+            char ch = ScanNextChar(false);
+
+            while (ch != Chars.EOF)
+            {
+                switch (ch)
+                {
+                    case '(':
+                        parenLevel++;
+                        break;
+
+                    case ')':
+                        if (parenLevel == 0)
+                        {
+                            ScanNextChar(false);
+                            goto Phase2;
+                        }
+                        parenLevel--;
+                        break;
+
+                    case '\\':
+                        {
+                            ch = ScanNextChar(false);
+                            switch (ch)
+                            {
+                                case 'n':
+                                    ch = Chars.LF;
+                                    break;
+
+                                case 'r':
+                                    ch = Chars.CR;
+                                    break;
+
+                                case 't':
+                                    ch = Chars.HT;
+                                    break;
+
+                                case 'b':
+                                    ch = Chars.BS;
+                                    break;
+
+                                case 'f':
+                                    ch = Chars.FF;
+                                    break;
+
+                                case '(':
+                                    ch = Chars.ParenLeft;
+                                    break;
+
+                                case ')':
+                                    ch = Chars.ParenRight;
+                                    break;
+
+                                case '\\':
+                                    ch = Chars.BackSlash;
+                                    break;
+
+                                case ' ':
+                                    ch = ' ';
+                                    break;
+
+                                case Chars.CR:
+                                case Chars.LF:
+                                    ch = ScanNextChar(false);
+                                    continue;
+
+                                default:
+                                    if (char.IsDigit(ch) && _nextChar != '8' && _nextChar != '9')
+                                    {
+                                        int n = ch - '0';
+                                        if (char.IsDigit(_nextChar) && _nextChar != '8' && _nextChar != '9')
+                                        {
+                                            ch = ScanNextChar(false);
+                                            n = n * 8 + ch - '0';
+                                            if (char.IsDigit(_nextChar) && _nextChar != '8' && _nextChar != '9')
+                                            {
+                                                ch = ScanNextChar(false);
+                                                n = n * 8 + ch - '0';
+                                            }
+                                        }
+                                        ch = (char)n;
+                                    }
+                                    else
+                                    {
+                                    }
+                                    break;
+                            }
+                            break;
+                        }
+                    default:
+                        break;
+                }
+
+                _token.Append(ch);
+                ch = ScanNextChar(false);
+            }
+
+        Phase2:
+            if (_token.Length >= 2 && _token[0] == '\xFE' && _token[1] == '\xFF')
+            {
+                StringBuilder temp = _token;
+                int length = temp.Length;
+                if ((length & 1) == 1)
+                {
+                    temp.Append(0);
+                    ++length;
+                    DebugBreak.Break();
+                }
+                _token = new StringBuilder();
+                for (int i = 2; i < length; i += 2)
+                {
+                    _token.Append((char)(256 * temp[i] + temp[i + 1]));
+                }
+                return _symbol = Symbol.UnicodeString;
+            }
+            if (_token.Length >= 2 && _token[0] == '\xFF' && _token[1] == '\xFE')
+            {
+                StringBuilder temp = _token;
+                int length = temp.Length;
+                if ((length & 1) == 1)
+                {
+                    temp.Append(0);
+                    ++length;
+                    DebugBreak.Break();
+                }
+                _token = new StringBuilder();
+                for (int i = 2; i < length; i += 2)
+                {
+                    _token.Append((char)(256 * temp[i + 1] + temp[i]));
+                }
+                return _symbol = Symbol.UnicodeString;
+            }
+            return _symbol = Symbol.String;
+        }
+
+        public Symbol ScanHexadecimalString()
+        {
+            Debug.Assert(_currChar == Chars.Less);
+
+            _token = new StringBuilder();
+            char[] hex = new char[2];
+            ScanNextChar(true);
+            while (true)
+            {
+                MoveToNonWhiteSpace();
+                if (_currChar == '>')
+                {
+                    ScanNextChar(true);
+                    break;
+                }
+                if (char.IsLetterOrDigit(_currChar))
+                {
+                    hex[0] = char.ToUpper(_currChar);
+                    if (char.IsLetterOrDigit(_nextChar))
+                    {
+                        hex[1] = char.ToUpper(_nextChar);
+                        ScanNextChar(true);
+                    }
+                    else
+                    {
+                        hex[1] = '0';
+                    }
+                    ScanNextChar(true);
+
+                    int ch = int.Parse(new string(hex), NumberStyles.AllowHexSpecifier);
+                    _token.Append(Convert.ToChar(ch));
+                }
+                else
+                    ParserDiagnostics.HandleUnexpectedCharacter(_currChar);
+            }
+            string chars = _token.ToString();
+            int count = chars.Length;
+            if (count > 2 && chars[0] == (char)0xFE && chars[1] == (char)0xFF)
+            {
+                Debug.Assert(count % 2 == 0);
+                _token.Length = 0;
+                for (int idx = 2; idx < count; idx += 2)
+                    _token.Append((char)(chars[idx] * 256 + chars[idx + 1]));
+                return _symbol = Symbol.UnicodeHexString;
+            }
+            return _symbol = Symbol.HexString;
+        }
+
+        internal char ScanNextChar(bool handleCRLF)
+        {
+            if (_pdfLength <= _idxChar)
+            {
+                _currChar = Chars.EOF;
+                _nextChar = Chars.EOF;
+            }
+            else
+            {
+                _currChar = _nextChar;
+                _nextChar = (char)_pdfSteam.ReadByte();
+                _idxChar++;
+                if (handleCRLF && _currChar == Chars.CR)
+                {
+                    if (_nextChar == Chars.LF)
+                    {
+                        _currChar = _nextChar;
+                        _nextChar = (char)_pdfSteam.ReadByte();
+                        _idxChar++;
+                    }
+                    else
+                    {
+                        _currChar = Chars.LF;
+                    }
+                }
+            }
+            return _currChar;
+        }
+
+        bool PeekReference()
+        {
+            int positon = Position;
+
+            while (char.IsDigit(_currChar))
+                ScanNextChar(true);
+
+            if (_currChar != Chars.SP)
+                goto False;
+
+            while (_currChar == Chars.SP)
+                ScanNextChar(true);
+
+            if (!char.IsDigit(_currChar))
+                goto False;
+
+            while (char.IsDigit(_currChar))
+                ScanNextChar(true);
+
+            if (_currChar != Chars.SP)
+                goto False;
+
+            while (_currChar == Chars.SP)
+                ScanNextChar(true);
+
+            if (_currChar != 'R')
+                goto False;
+
+            Position = positon;
+            return true;
+
+        False:
+            Position = positon;
+            return false;
+        }
+
+        internal char AppendAndScanNextChar()
+        {
+            if (_currChar == Chars.EOF)
+                ParserDiagnostics.ThrowParserException("Undetected EOF reached.");
+
+            _token.Append(_currChar);
+            return ScanNextChar(true);
+        }
+
+        public char MoveToNonWhiteSpace()
+        {
+            while (_currChar != Chars.EOF)
+            {
+                switch (_currChar)
+                {
+                    case Chars.NUL:
+                    case Chars.HT:
+                    case Chars.LF:
+                    case Chars.FF:
+                    case Chars.CR:
+                    case Chars.SP:
+                        ScanNextChar(true);
+                        break;
+
+                    case (char)11:
+                    case (char)173:
+                        ScanNextChar(true);
+                        break;
+
+
+                    default:
+                        return _currChar;
+                }
+            }
+            return _currChar;
+        }
+
+        public Symbol Symbol
+        {
+            get { return _symbol; }
+            set { _symbol = value; }
+        }
+
+        public string Token
+        {
+            get { return _token.ToString(); }
+        }
+
+        public bool TokenToBoolean
+        {
+            get
+            {
+                Debug.Assert(_token.ToString() == "true" || _token.ToString() == "false");
+                return _token.ToString()[0] == 't';
+            }
+        }
+
+        public int TokenToInteger
+        {
+            get
+            {
+                return int.Parse(_token.ToString(), CultureInfo.InvariantCulture);
+            }
+        }
+
+        public uint TokenToUInteger
+        {
+            get
+            {
+                return uint.Parse(_token.ToString(), CultureInfo.InvariantCulture);
+            }
+        }
+
+        public double TokenToReal
+        {
+            get { return double.Parse(_token.ToString(), CultureInfo.InvariantCulture); }
+        }
+
+        public PdfObjectID TokenToObjectID
+        {
+            get
+            {
+                string[] numbers = Token.Split('|');
+                int objectNumber = Int32.Parse(numbers[0]);
+                int generationNumber = Int32.Parse(numbers[1]);
+                return new PdfObjectID(objectNumber, generationNumber);
+            }
+        }
+
+        internal static bool IsWhiteSpace(char ch)
+        {
+            switch (ch)
+            {
+                case Chars.NUL:
+                case Chars.HT:
+                case Chars.LF:
+                case Chars.FF:
+                case Chars.CR:
+                case Chars.SP:
+                    return true;
+            }
+            return false;
+        }
+
+        internal static bool IsDelimiter(char ch)
+        {
+            switch (ch)
+            {
+                case '(':
+                case ')':
+                case '<':
+                case '>':
+                case '[':
+                case ']':
+                case '{':
+                case '}':
+                case '/':
+                case '%':
+                    return true;
+            }
+            return false;
+        }
+
+        public int PdfLength
+        {
+            get { return _pdfLength; }
+        }
+
+        readonly int _pdfLength;
+        int _idxChar;
+        char _currChar;
+        char _nextChar;
+        StringBuilder _token;
+        Symbol _symbol = Symbol.None;
+
+        readonly Stream _pdfSteam;
+    }
+    internal sealed class Parser
+    {
+        public Parser(PdfDocument document, Stream pdf)
+        {
+            _document = document;
+            _lexer = new Lexer(pdf);
+            _stack = new ShiftStack();
+        }
+
+        public Parser(PdfDocument document)
+        {
+            _document = document;
+            _lexer = document._lexer;
+            _stack = new ShiftStack();
+        }
+
+        public int MoveToObject(PdfObjectID objectID)
+        {
+            int position = _document._irefTable[objectID].Position;
+            return _lexer.Position = position;
+        }
+
+        public Symbol Symbol
+        {
+            get { return _lexer.Symbol; }
+        }
+
+        public PdfObjectID ReadObjectNumber(int position)
+        {
+            _lexer.Position = position;
+            int objectNumber = ReadInteger();
+            int generationNumber = ReadInteger();
+
+            return new PdfObjectID(objectNumber, generationNumber);
+        }
+
+
+        public PdfObject ReadObject(PdfObject pdfObject, PdfObjectID objectID, bool includeReferences, bool fromObjecStream)
+        {
+
+            int objectNumber = objectID.ObjectNumber;
+            int generationNumber = objectID.GenerationNumber;
+            if (!fromObjecStream)
+            {
+                MoveToObject(objectID);
+                objectNumber = ReadInteger();
+                generationNumber = ReadInteger();
+            }
+
+            objectNumber = objectID.ObjectNumber;
+            generationNumber = objectID.GenerationNumber;
+
+            if (!fromObjecStream)
+                ReadSymbol(Symbol.Obj);
+
+            bool checkForStream = false;
+            Symbol symbol = ScanNextToken();
+            switch (symbol)
+            {
+                case Symbol.BeginArray:
+                    PdfArray array;
+                    if (pdfObject == null)
+                        array = new PdfArray(_document);
+                    else
+                        array = (PdfArray)pdfObject;
+                    pdfObject = ReadArray(array, includeReferences);
+                    pdfObject.SetObjectID(objectNumber, generationNumber);
+                    break;
+
+                case Symbol.BeginDictionary:
+                    PdfDictionary dict;
+                    if (pdfObject == null)
+                        dict = new PdfDictionary(_document);
+                    else
+                        dict = (PdfDictionary)pdfObject;
+                    checkForStream = true;
+                    pdfObject = ReadDictionary(dict, includeReferences);
+                    pdfObject.SetObjectID(objectNumber, generationNumber);
+                    break;
+
+                case Symbol.Null:
+                    pdfObject = new PdfNullObject(_document);
+                    pdfObject.SetObjectID(objectNumber, generationNumber);
+                    if (!fromObjecStream)
+                        ReadSymbol(Symbol.EndObj);
+                    return pdfObject;
+
+                case Symbol.EndObj:
+                    pdfObject = new PdfNullObject(_document);
+                    pdfObject.SetObjectID(objectNumber, generationNumber);
+                    return pdfObject;
+
+                case Symbol.Boolean:
+                    pdfObject = new PdfBooleanObject(_document, String.Compare(_lexer.Token, Boolean.TrueString, StringComparison.OrdinalIgnoreCase) == 0);
+                    pdfObject.SetObjectID(objectNumber, generationNumber);
+                    if (!fromObjecStream)
+                        ReadSymbol(Symbol.EndObj);
+                    return pdfObject;
+
+                case Symbol.Integer:
+                    pdfObject = new PdfIntegerObject(_document, _lexer.TokenToInteger);
+                    pdfObject.SetObjectID(objectNumber, generationNumber);
+                    if (!fromObjecStream)
+                        ReadSymbol(Symbol.EndObj);
+                    return pdfObject;
+
+                case Symbol.UInteger:
+                    pdfObject = new PdfUIntegerObject(_document, _lexer.TokenToUInteger);
+                    pdfObject.SetObjectID(objectNumber, generationNumber);
+                    if (!fromObjecStream)
+                        ReadSymbol(Symbol.EndObj);
+                    return pdfObject;
+
+                case Symbol.Real:
+                    pdfObject = new PdfRealObject(_document, _lexer.TokenToReal);
+                    pdfObject.SetObjectID(objectNumber, generationNumber);
+                    if (!fromObjecStream)
+                        ReadSymbol(Symbol.EndObj);
+                    return pdfObject;
+
+                case Symbol.String:
+                case Symbol.UnicodeString:
+                case Symbol.HexString:
+                case Symbol.UnicodeHexString:
+                    pdfObject = new PdfStringObject(_document, _lexer.Token);
+                    pdfObject.SetObjectID(objectNumber, generationNumber);
+                    if (!fromObjecStream)
+                        ReadSymbol(Symbol.EndObj);
+                    return pdfObject;
+
+                case Symbol.Name:
+                    pdfObject = new PdfNameObject(_document, _lexer.Token);
+                    pdfObject.SetObjectID(objectNumber, generationNumber);
+                    if (!fromObjecStream)
+                        ReadSymbol(Symbol.EndObj);
+                    return pdfObject;
+
+                case Symbol.Keyword:
+                    ParserDiagnostics.HandleUnexpectedToken(_lexer.Token);
+                    break;
+
+                default:
+                    ParserDiagnostics.HandleUnexpectedToken(_lexer.Token);
+                    break;
+            }
+            symbol = ScanNextToken();
+            if (symbol == Symbol.BeginStream)
+            {
+                PdfDictionary dict = (PdfDictionary)pdfObject;
+                Debug.Assert(checkForStream, "Unexpected stream...");
+
+                int length = GetStreamLength(dict);
+                byte[] bytes = _lexer.ReadStream(length);
+
+                PdfDictionary.PdfStream stream = new PdfDictionary.PdfStream(bytes, dict);
+                dict.Stream = stream;
+                ReadSymbol(Symbol.EndStream);
+                symbol = ScanNextToken();
+
+            }
+            if (!fromObjecStream && symbol != Symbol.EndObj)
+                ParserDiagnostics.ThrowParserException(PSSR.UnexpectedToken(_lexer.Token));
+            return pdfObject;
+        }
+
+        private void ReadStream(PdfDictionary dict)
+        {
+            Symbol symbol = _lexer.Symbol;
+            Debug.Assert(symbol == Symbol.BeginStream);
+            int length = GetStreamLength(dict);
+            byte[] bytes = _lexer.ReadStream(length);
+            PdfDictionary.PdfStream stream = new PdfDictionary.PdfStream(bytes, dict);
+            Debug.Assert(dict.Stream == null, "Dictionary already has a stream.");
+            dict.Stream = stream;
+            ReadSymbol(Symbol.EndStream);
+            ScanNextToken();
+        }
+
+        private int GetStreamLength(PdfDictionary dict)
+        {
+            if (dict.Elements["/F"] != null)
+                throw new NotImplementedException("File streams are not yet implemented.");
+
+            PdfItem value = dict.Elements["/Length"];
+            if (value is PdfInteger)
+                return Convert.ToInt32(value);
+
+            PdfReference reference = value as PdfReference;
+            if (reference != null)
+            {
+                ParserState state = SaveState();
+                object length = ReadObject(null, reference.ObjectID, false, false);
+                RestoreState(state);
+                int len = ((PdfIntegerObject)length).Value;
+                dict.Elements["/Length"] = new PdfInteger(len);
+                return len;
+            }
+            throw new InvalidOperationException("Cannot retrieve stream length.");
+        }
+
+        public PdfArray ReadArray(PdfArray array, bool includeReferences)
+        {
+            Debug.Assert(Symbol == Symbol.BeginArray);
+
+            if (array == null)
+                array = new PdfArray(_document);
+
+            int sp = _stack.SP;
+            ParseObject(Symbol.EndArray);
+            int count = _stack.SP - sp;
+            PdfItem[] items = _stack.ToArray(sp, count);
+            _stack.Reduce(count);
+            for (int idx = 0; idx < count; idx++)
+            {
+                PdfItem val = items[idx];
+                if (includeReferences && val is PdfReference)
+                    val = ReadReference((PdfReference)val, true);
+                array.Elements.Add(val);
+            }
+            return array;
+        }
+
+        internal PdfDictionary ReadDictionary(PdfDictionary dict, bool includeReferences)
+        {
+            Debug.Assert(Symbol == Symbol.BeginDictionary);
+
+
+            if (dict == null)
+                dict = new PdfDictionary(_document);
+            DictionaryMeta meta = dict.Meta;
+
+            int sp = _stack.SP;
+            ParseObject(Symbol.EndDictionary);
+            int count = _stack.SP - sp;
+            Debug.Assert(count % 2 == 0);
+            PdfItem[] items = _stack.ToArray(sp, count);
+            _stack.Reduce(count);
+            for (int idx = 0; idx < count; idx += 2)
+            {
+                PdfItem val = items[idx];
+                if (!(val is PdfName))
+                    ParserDiagnostics.ThrowParserException("Name expected.");
+
+                string key = val.ToString();
+                val = items[idx + 1];
+                if (includeReferences && val is PdfReference)
+                    val = ReadReference((PdfReference)val, true);
+                dict.Elements[key] = val;
+            }
+            return dict;
+        }
+
+
+        private void ParseObject(Symbol stop)
+        {
+            Symbol symbol;
+            while ((symbol = ScanNextToken()) != Symbol.Eof)
+            {
+                if (symbol == stop)
+                    return;
+
+                switch (symbol)
+                {
+                    case Symbol.Comment:
+                        break;
+
+                    case Symbol.Null:
+                        _stack.Shift(PdfNull.Value);
+                        break;
+
+                    case Symbol.Boolean:
+                        _stack.Shift(new PdfBoolean(_lexer.TokenToBoolean));
+                        break;
+
+                    case Symbol.Integer:
+                        _stack.Shift(new PdfInteger(_lexer.TokenToInteger));
+                        break;
+
+                    case Symbol.UInteger:
+                        _stack.Shift(new PdfUInteger(_lexer.TokenToUInteger));
+                        break;
+
+                    case Symbol.Real:
+                        _stack.Shift(new PdfReal(_lexer.TokenToReal));
+                        break;
+
+                    case Symbol.String:
+                        _stack.Shift(new PdfString(_lexer.Token, PdfStringFlags.RawEncoding));
+                        break;
+
+                    case Symbol.UnicodeString:
+                        _stack.Shift(new PdfString(_lexer.Token, PdfStringFlags.Unicode));
+                        break;
+
+                    case Symbol.HexString:
+                        _stack.Shift(new PdfString(_lexer.Token, PdfStringFlags.HexLiteral));
+                        break;
+
+                    case Symbol.UnicodeHexString:
+                        _stack.Shift(new PdfString(_lexer.Token, PdfStringFlags.Unicode | PdfStringFlags.HexLiteral));
+                        break;
+
+                    case Symbol.Name:
+                        _stack.Shift(new PdfName(_lexer.Token));
+                        break;
+
+                    case Symbol.R:
+                        {
+                            Debug.Assert(_stack.GetItem(-1) is PdfInteger && _stack.GetItem(-2) is PdfInteger);
+                            PdfObjectID objectID = new PdfObjectID(_stack.GetInteger(-2), _stack.GetInteger(-1));
+
+                            PdfReference iref = _document._irefTable[objectID];
+                            if (iref == null)
+                            {
+                                if (_document._irefTable.IsUnderConstruction)
+                                {
+                                    iref = new PdfReference(objectID, 0);
+                                    _stack.Reduce(iref, 2);
+                                    break;
+                                }
+                                _stack.Reduce(PdfNull.Value, 2);
+                            }
+                            else
+                                _stack.Reduce(iref, 2);
+                            break;
+                        }
+
+                    case Symbol.BeginArray:
+                        PdfArray array = new PdfArray(_document);
+                        ReadArray(array, false);
+                        _stack.Shift(array);
+                        break;
+
+                    case Symbol.BeginDictionary:
+                        PdfDictionary dict = new PdfDictionary(_document);
+                        ReadDictionary(dict, false);
+                        _stack.Shift(dict);
+                        break;
+
+                    case Symbol.BeginStream:
+                        throw new NotImplementedException();
+
+                    default:
+                        ParserDiagnostics.HandleUnexpectedToken(_lexer.Token);
+                        SkipCharsUntil(stop);
+                        return;
+                }
+            }
+            ParserDiagnostics.ThrowParserException("Unexpected end of file.");
+        }
+
+        private Symbol ScanNextToken()
+        {
+            return _lexer.ScanNextToken();
+        }
+
+        private Symbol ScanNextToken(out string token)
+        {
+            Symbol symbol = _lexer.ScanNextToken();
+            token = _lexer.Token;
+            return symbol;
+        }
+
+        private Symbol SkipCharsUntil(Symbol stop)
+        {
+            Symbol symbol;
+            switch (stop)
+            {
+                case Symbol.EndDictionary:
+                    return SkipCharsUntil(">>", stop);
+
+                default:
+                    do
+                    {
+                        symbol = ScanNextToken();
+                    } while (symbol != stop && symbol != Symbol.Eof);
+                    return symbol;
+            }
+        }
+
+        private Symbol SkipCharsUntil(string text, Symbol stop)
+        {
+            int length = text.Length;
+            int idx = 0;
+            char ch;
+            while ((ch = _lexer.ScanNextChar(true)) != Chars.EOF)
+            {
+                if (ch == text[idx])
+                {
+                    if (idx + 1 == length)
+                    {
+                        _lexer.ScanNextChar(true);
+                        return stop;
+                    }
+                    idx++;
+                }
+                else
+                    idx = 0;
+            }
+            return Symbol.Eof;
+        }
+
+        private void ReadObjectID(PdfObject obj)
+        {
+            int objectNubmer = ReadInteger();
+            int generationNumber = ReadInteger();
+            ReadSymbol(Symbol.Obj);
+            if (obj != null)
+                obj.SetObjectID(objectNubmer, generationNumber);
+        }
+
+        private PdfItem ReadReference(PdfReference iref, bool includeReferences)
+        {
+            throw new NotImplementedException("ReadReference");
+        }
+
+        private Symbol ReadSymbol(Symbol symbol)
+        {
+            if (symbol == Symbol.EndStream)
+            {
+            Skip:
+                char ch = _lexer.MoveToNonWhiteSpace();
+
+                if (ch == Chars.EOF)
+                    ParserDiagnostics.HandleUnexpectedCharacter(ch);
+
+                if (ch != 'e')
+                {
+                    _lexer.ScanNextChar(false);
+                    goto Skip;
+                }
+            }
+            Symbol current = _lexer.ScanNextToken();
+            if (symbol != current)
+                ParserDiagnostics.HandleUnexpectedToken(_lexer.Token);
+            return current;
+        }
+
+        private Symbol ReadToken(string token)
+        {
+            Symbol current = _lexer.ScanNextToken();
+            if (token != _lexer.Token)
+                ParserDiagnostics.HandleUnexpectedToken(_lexer.Token);
+            return current;
+        }
+
+        private string ReadName()
+        {
+            string name;
+            Symbol symbol = ScanNextToken(out name);
+            if (symbol != Symbol.Name)
+                ParserDiagnostics.HandleUnexpectedToken(name);
+            return name;
+        }
+
+        private int ReadInteger(bool canBeIndirect)
+        {
+            Symbol symbol = _lexer.ScanNextToken();
+            if (symbol == Symbol.Integer)
+                return _lexer.TokenToInteger;
+
+            if (symbol == Symbol.R)
+            {
+                int position = _lexer.Position;
+                ReadObjectID(null);
+                int n = ReadInteger();
+                ReadSymbol(Symbol.EndObj);
+                _lexer.Position = position;
+                return n;
+            }
+            ParserDiagnostics.HandleUnexpectedToken(_lexer.Token);
+            return 0;
+        }
+
+        private int ReadInteger()
+        {
+            return ReadInteger(false);
+        }
+
+        public static PdfObject ReadObject(PdfDocument owner, PdfObjectID objectID)
+        {
+            if (owner == null)
+                throw new ArgumentNullException("owner");
+
+            Parser parser = new Parser(owner);
+            return parser.ReadObject(null, objectID, false, false);
+        }
+
+        internal void ReadIRefsFromCompressedObject(PdfObjectID objectID)
+        {
+            PdfReference iref;
+
+            Debug.Assert(_document._irefTable.ObjectTable.ContainsKey(objectID));
+            if (!_document._irefTable.ObjectTable.TryGetValue(objectID, out iref))
+            {
+                throw new NotImplementedException("This case is not coded or something else went wrong");
+            }
+
+            if (iref.Value == null)
+            {
+                try
+                {
+                    Debug.Assert(_document._irefTable.Contains(iref.ObjectID));
+                    PdfDictionary pdfObject = (PdfDictionary)ReadObject(null, iref.ObjectID, false, false);
+                    PdfObjectStream objectStream = new PdfObjectStream(pdfObject);
+                    Debug.Assert(objectStream.Reference == iref);
+                    Debug.Assert(objectStream.Reference.Value != null, "Something went wrong.");
+                }
+                catch (Exception ex)
+                {
+                    Debug.WriteLine(ex.Message);
+                    throw;
+                }
+            }
+            Debug.Assert(iref.Value != null);
+
+            PdfObjectStream objectStreamStream = iref.Value as PdfObjectStream;
+            if (objectStreamStream == null)
+            {
+                Debug.Assert(((PdfDictionary)iref.Value).Elements.GetName("/Type") == "/ObjStm");
+
+                objectStreamStream = new PdfObjectStream((PdfDictionary)iref.Value);
+                Debug.Assert(objectStreamStream.Reference == iref);
+                Debug.Assert(objectStreamStream.Reference.Value != null, "Something went wrong.");
+            }
+            Debug.Assert(objectStreamStream != null);
+
+
+            if (objectStreamStream == null)
+                throw new Exception("Something went wrong here.");
+            objectStreamStream.ReadReferences(_document._irefTable);
+        }
+
+        internal PdfReference ReadCompressedObject(PdfObjectID objectID, int index)
+        {
+            PdfReference iref;
+#if true
+            Debug.Assert(_document._irefTable.ObjectTable.ContainsKey(objectID));
+            if (!_document._irefTable.ObjectTable.TryGetValue(objectID, out iref))
+            {
+                throw new NotImplementedException("This case is not coded or something else went wrong");
+            }
+
+#endif
+
+            if (iref.Value == null)
+            {
+                try
+                {
+                    Debug.Assert(_document._irefTable.Contains(iref.ObjectID));
+                    PdfDictionary pdfObject = (PdfDictionary)ReadObject(null, iref.ObjectID, false, false);
+                    PdfObjectStream objectStream = new PdfObjectStream(pdfObject);
+                    Debug.Assert(objectStream.Reference == iref);
+                    Debug.Assert(objectStream.Reference.Value != null, "Something went wrong.");
+                }
+                catch (Exception ex)
+                {
+                    Debug.WriteLine(ex.Message);
+                    throw;
+                }
+            }
+            Debug.Assert(iref.Value != null);
+
+            PdfObjectStream objectStreamStream = iref.Value as PdfObjectStream;
+            if (objectStreamStream == null)
+            {
+                Debug.Assert(((PdfDictionary)iref.Value).Elements.GetName("/Type") == "/ObjStm");
+
+                objectStreamStream = new PdfObjectStream((PdfDictionary)iref.Value);
+                Debug.Assert(objectStreamStream.Reference == iref);
+                Debug.Assert(objectStreamStream.Reference.Value != null, "Something went wrong.");
+            }
+            Debug.Assert(objectStreamStream != null);
+
+
+            if (objectStreamStream == null)
+                throw new Exception("Something went wrong here.");
+            return objectStreamStream.ReadCompressedObject(index);
+        }
+
+        internal PdfReference ReadCompressedObject(int objectNumber, int offset)
+        {
+
+            PdfObjectID objectID = new PdfObjectID(objectNumber);
+            _lexer.Position = offset;
+            PdfObject obj = ReadObject(null, objectID, false, true);
+            return obj.Reference;
+        }
+
+        internal int[][] ReadObjectStreamHeader(int n, int first)
+        {
+            int[][] header = new int[n][];
+            for (int idx = 0; idx < n; idx++)
+            {
+                int number = ReadInteger();
+
+                int offset = ReadInteger() + first;
+                header[idx] = new int[] { number, offset };
+            }
+            return header;
+        }
+
+        internal PdfTrailer ReadTrailer()
+        {
+            int length = _lexer.PdfLength;
+
+            int idx;
+            if (length < 1030)
+            {
+                string trail = _lexer.ReadRawString(length - 31, 30);
+                idx = trail.LastIndexOf("startxref", StringComparison.Ordinal);
+                _lexer.Position = length - 31 + idx;
+            }
+            else
+            {
+                string trail = _lexer.ReadRawString(length - 1031, 1030);
+                idx = trail.LastIndexOf("startxref", StringComparison.Ordinal);
+                _lexer.Position = length - 1031 + idx;
+            }
+
+            if (idx == -1)
+            {
+                string trail = _lexer.ReadRawString(0, length);
+                idx = trail.LastIndexOf("startxref", StringComparison.Ordinal);
+                _lexer.Position = idx;
+            }
+            if (idx == -1)
+                throw new Exception("The StartXRef table could not be found, the file cannot be opened.");
+
+            ReadSymbol(Symbol.StartXRef);
+            _lexer.Position = ReadInteger();
+
+            while (true)
+            {
+                PdfTrailer trailer = ReadXRefTableAndTrailer(_document._irefTable);
+                if (_document._trailer == null)
+                    _document._trailer = trailer;
+                int prev = trailer != null ? trailer.Elements.GetInteger(PdfTrailer.Keys.Prev) : 0;
+                if (prev == 0)
+                    break;
+                _lexer.Position = prev;
+            }
+
+            return _document._trailer;
+        }
+
+        private PdfTrailer ReadXRefTableAndTrailer(PdfCrossReferenceTable xrefTable)
+        {
+            Debug.Assert(xrefTable != null);
+
+            Symbol symbol = ScanNextToken();
+
+            if (symbol == Symbol.XRef)
+            {
+                while (true)
+                {
+                    symbol = ScanNextToken();
+                    if (symbol == Symbol.Integer)
+                    {
+                        int start = _lexer.TokenToInteger;
+                        int length = ReadInteger();
+                        for (int id = start; id < start + length; id++)
+                        {
+                            int position = ReadInteger();
+                            int generation = ReadInteger();
+                            ReadSymbol(Symbol.Keyword);
+                            string token = _lexer.Token;
+                            if (id == 0)
+                                continue;
+                            if (token != "n")
+                                continue;
+#if true
+                            int idToUse = id;
+                            int idChecked, generationChecked;
+                            if (!CheckXRefTableEntry(position, id, generation, out idChecked, out generationChecked))
+                            {
+                                if (generation == generationChecked && id == idChecked + 1)
+                                    idToUse = idChecked;
+                                else
+                                    ParserDiagnostics.ThrowParserException("Invalid entry in XRef table, ID=" + id + ", Generation=" + generation + ", Position=" + position + ", ID of referenced object=" + idChecked + ", Generation of referenced object=" + generationChecked);
+                            }
+#endif
+                            PdfObjectID objectID = new PdfObjectID(idToUse, generation);
+                            if (xrefTable.Contains(objectID))
+                                continue;
+                            xrefTable.Add(new PdfReference(objectID, position));
+                        }
+                    }
+                    else if (symbol == Symbol.Trailer)
+                    {
+                        ReadSymbol(Symbol.BeginDictionary);
+                        PdfTrailer trailer = new PdfTrailer(_document);
+                        ReadDictionary(trailer, false);
+                        return trailer;
+                    }
+                    else
+                        ParserDiagnostics.HandleUnexpectedToken(_lexer.Token);
+                }
+            }
+            else if (symbol == Symbol.Integer)
+            {
+                return ReadXRefStream(xrefTable);
+            }
+            return null;
+        }
+
+        private bool CheckXRefTableEntry(int position, int id, int generation, out int idChecked, out int generationChecked)
+        {
+            int origin = _lexer.Position;
+            idChecked = -1;
+            generationChecked = -1;
+            try
+            {
+                _lexer.Position = position;
+                idChecked = ReadInteger();
+                generationChecked = ReadInteger();
+                Symbol symbol = _lexer.ScanNextToken();
+                if (symbol != Symbol.Obj)
+                    ParserDiagnostics.ThrowParserException("Invalid entry in XRef table, ID=" + id + ", Generation=" + generation + ", Position=" + position);
+
+                if (id != idChecked || generation != generationChecked)
+                    return false;
+            }
+            catch (PdfReaderException)
+            {
+                throw;
+            }
+            catch (Exception ex)
+            {
+                ParserDiagnostics.ThrowParserException("Invalid entry in XRef table, ID=" + id + ", Generation=" + generation + ", Position=" + position, ex);
+            }
+            finally
+            {
+                _lexer.Position = origin;
+            }
+            return true;
+        }
+
+        private PdfTrailer ReadXRefStream(PdfCrossReferenceTable xrefTable)
+        {
+            int number = _lexer.TokenToInteger;
+            int generation = ReadInteger();
+            Debug.Assert(generation == 0);
+
+            ReadSymbol(Symbol.Obj);
+            ReadSymbol(Symbol.BeginDictionary);
+            PdfObjectID objectID = new PdfObjectID(number, generation);
+
+            PdfCrossReferenceStream xrefStream = new PdfCrossReferenceStream(_document);
+
+            ReadDictionary(xrefStream, false);
+            ReadSymbol(Symbol.BeginStream);
+            ReadStream(xrefStream);
+
+            PdfReference iref = new PdfReference(xrefStream);
+            iref.ObjectID = objectID;
+            iref.Value = xrefStream;
+            xrefTable.Add(iref);
+
+            Debug.Assert(xrefStream.Stream != null);
+            byte[] bytesRaw = xrefStream.Stream.UnfilteredValue;
+            byte[] bytes = bytesRaw;
+
+            if (xrefStream.Stream.HasDecodeParams)
+            {
+                int predictor = xrefStream.Stream.DecodePredictor;
+                int columns = xrefStream.Stream.DecodeColumns;
+                bytes = DecodeCrossReferenceStream(bytesRaw, columns, predictor);
+            }
+
+
+            int size = xrefStream.Elements.GetInteger(PdfCrossReferenceStream.Keys.Size);
+            PdfArray index = xrefStream.Elements.GetValue(PdfCrossReferenceStream.Keys.Index) as PdfArray;
+            int prev = xrefStream.Elements.GetInteger(PdfCrossReferenceStream.Keys.Prev);
+            PdfArray w = (PdfArray)xrefStream.Elements.GetValue(PdfCrossReferenceStream.Keys.W);
+
+            int subsectionCount;
+            int[][] subsections = null;
+            int subsectionEntryCount = 0;
+            if (index == null)
+            {
+                subsectionCount = 1;
+                subsections = new int[subsectionCount][];
+                subsections[0] = new int[] { 0, size };
+                subsectionEntryCount = size;
+            }
+            else
+            {
+                Debug.Assert(index.Elements.Count % 2 == 0);
+                subsectionCount = index.Elements.Count / 2;
+                subsections = new int[subsectionCount][];
+                for (int idx = 0; idx < subsectionCount; idx++)
+                {
+                    subsections[idx] = new int[] { index.Elements.GetInteger(2 * idx), index.Elements.GetInteger(2 * idx + 1) };
+                    subsectionEntryCount += subsections[idx][1];
+                }
+            }
+
+            Debug.Assert(w.Elements.Count == 3);
+            int[] wsize = { w.Elements.GetInteger(0), w.Elements.GetInteger(1), w.Elements.GetInteger(2) };
+            int wsum = StreamHelper.WSize(wsize);
+            if (wsum * subsectionEntryCount != bytes.Length)
+                GetType();
+            Debug.Assert(wsum * subsectionEntryCount == bytes.Length, "Check implementation here.");
+            int testcount = subsections[0][1];
+            int[] currentSubsection = subsections[0];
+
+            int index2 = -1;
+            for (int ssc = 0; ssc < subsectionCount; ssc++)
+            {
+                int abc = subsections[ssc][1];
+                for (int idx = 0; idx < abc; idx++)
+                {
+                    index2++;
+
+                    PdfCrossReferenceStream.CrossReferenceStreamEntry item =
+                        new PdfCrossReferenceStream.CrossReferenceStreamEntry();
+
+                    item.Type = StreamHelper.ReadBytes(bytes, index2 * wsum, wsize[0]);
+                    item.Field2 = StreamHelper.ReadBytes(bytes, index2 * wsum + wsize[0], wsize[1]);
+                    item.Field3 = StreamHelper.ReadBytes(bytes, index2 * wsum + wsize[0] + wsize[1], wsize[2]);
+
+                    xrefStream.Entries.Add(item);
+
+                    switch (item.Type)
+                    {
+                        case 0:
+                            break;
+
+                        case 1:
+                            int position = (int)item.Field2;
+                            objectID = ReadObjectNumber(position);
+
+                            Debug.Assert(objectID.GenerationNumber == item.Field3);
+
+                            if (!xrefTable.Contains(objectID))
+                            {
+
+                                xrefTable.Add(new PdfReference(objectID, position));
+
+                            }
+                            break;
+
+                        case 2:
+                            break;
+                    }
+                }
+            }
+            return xrefStream;
+        }
+
+        internal static DateTime ParseDateTime(string date, DateTime errorValue)
+        {
+            DateTime datetime = errorValue;
+            try
+            {
+                if (date.StartsWith("D:"))
+                {
+                    int length = date.Length;
+                    int year = 0, month = 0, day = 0, hour = 0, minute = 0, second = 0, hh = 0, mm = 0;
+                    char o = 'Z';
+                    if (length >= 10)
+                    {
+                        year = Int32.Parse(date.Substring(2, 4));
+                        month = Int32.Parse(date.Substring(6, 2));
+                        day = Int32.Parse(date.Substring(8, 2));
+                        if (length >= 16)
+                        {
+                            hour = Int32.Parse(date.Substring(10, 2));
+                            minute = Int32.Parse(date.Substring(12, 2));
+                            second = Int32.Parse(date.Substring(14, 2));
+                            if (length >= 23)
+                            {
+                                if ((o = date[16]) != 'Z')
+                                {
+                                    hh = Int32.Parse(date.Substring(17, 2));
+                                    mm = Int32.Parse(date.Substring(20, 2));
+                                }
+                            }
+                        }
+                    }
+                    month = Math.Min(Math.Max(month, 1), 12);
+                    datetime = new DateTime(year, month, day, hour, minute, second);
+                    if (o != 'Z')
+                    {
+                        TimeSpan ts = new TimeSpan(hh, mm, 0);
+                        if (o == '-')
+                            datetime = datetime.Add(ts);
+                        else
+                            datetime = datetime.Subtract(ts);
+                    }
+                    DateTime.SpecifyKind(datetime, DateTimeKind.Utc);
+                }
+                else
+                {
+                    datetime = DateTime.Parse(date, CultureInfo.InvariantCulture);
+                }
+            }
+            catch (Exception ex)
+            {
+                Debug.Assert(false, ex.Message);
+            }
+            return datetime;
+        }
+
+        private ParserState SaveState()
+        {
+            ParserState state = new ParserState();
+            state.Position = _lexer.Position;
+            state.Symbol = _lexer.Symbol;
+            return state;
+        }
+
+        private void RestoreState(ParserState state)
+        {
+            _lexer.Position = state.Position;
+            _lexer.Symbol = state.Symbol;
+        }
+
+        private class ParserState
+        {
+            public int Position;
+            public Symbol Symbol;
+        }
+
+        byte[] DecodeCrossReferenceStream(byte[] bytes, int columns, int predictor)
+        {
+            int size = bytes.Length;
+            if (predictor < 10 || predictor > 15)
+                throw new ArgumentException("Invalid predictor.", "predictor");
+
+            int rowSizeRaw = columns + 1;
+
+            if (size % rowSizeRaw != 0)
+                throw new ArgumentException("Columns and size of array do not match.");
+
+            int rows = size / rowSizeRaw;
+
+            byte[] result = new byte[rows * columns];
+
+            for (int row = 0; row < rows; ++row)
+            {
+                if (bytes[row * rowSizeRaw] != 2)
+                    throw new ArgumentException("Invalid predictor in array.");
+
+                for (int col = 0; col < columns; ++col)
+                {
+                    if (row == 0)
+                        result[row * columns + col] = bytes[row * rowSizeRaw + col + 1];
+                    else
+                    {
+                        result[row * columns + col] = (byte)(result[row * columns - columns + col] + bytes[row * rowSizeRaw + col + 1]);
+                    }
+                }
+            }
+            return result;
+        }
+
+        private readonly PdfDocument _document;
+        private readonly Lexer _lexer;
+        private readonly ShiftStack _stack;
+    }
+    static class StreamHelper
+    {
+        public static int WSize(int[] w)
+        {
+            Debug.Assert(w.Length == 3);
+            return w[0] + w[1] + w[2];
+        }
+
+        public static uint ReadBytes(byte[] bytes, int index, int byteCount)
+        {
+            uint value = 0;
+            for (int idx = 0; idx < byteCount; idx++)
+            {
+                value *= 256;
+                value += bytes[index + idx];
+            }
+            return value;
+        }
+    }
+    public class PdfPasswordProviderArgs
+    {
+        public string Password;
+
+        public bool Abort;
+    }
+
+    public delegate void PdfPasswordProvider(PdfPasswordProviderArgs args);
+
+    public static class PdfReader
+    {
+        public static int TestPdfFile(string path)
+        {
+#if !NETFX_CORE
+            FileStream stream = null;
+            try
+            {
+                int pageNumber;
+                string realPath = Drawing.XPdfForm.ExtractPageNumber(path, out pageNumber);
+                if (File.Exists(realPath))
+                {
+                    stream = new FileStream(realPath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
+                    byte[] bytes = new byte[1024];
+                    stream.Read(bytes, 0, 1024);
+                    return GetPdfFileVersion(bytes);
+                }
+            }
+            catch { }
+            finally
+            {
+                try
+                {
+                    if (stream != null)
+                    {
+
+                        stream.Close();
+#endif
+                    }
+                }
+                catch
+                {
+                }
+            }
+            return 0;
+        }
+
+        public static int TestPdfFile(Stream stream)
+        {
+            long pos = -1;
+            try
+            {
+                pos = stream.Position;
+                byte[] bytes = new byte[1024];
+                stream.Read(bytes, 0, 1024);
+                return GetPdfFileVersion(bytes);
+            }
+            catch { }
+            finally
+            {
+                try
+                {
+                    if (pos != -1)
+                        stream.Position = pos;
+                }
+                catch { }
+            }
+            return 0;
+        }
+
+        public static int TestPdfFile(byte[] data)
+        {
+            return GetPdfFileVersion(data);
+        }
+
+        internal static int GetPdfFileVersion(byte[] bytes)
+        {
+            try
+            {
+                string header = PdfEncoders.RawEncoding.GetString(bytes, 0, bytes.Length);
+                if (header[0] == '%' || header.IndexOf("%PDF", StringComparison.Ordinal) >= 0)
+                {
+                    int ich = header.IndexOf("PDF-", StringComparison.Ordinal);
+                    if (ich > 0 && header[ich + 5] == '.')
+                    {
+                        char major = header[ich + 4];
+                        char minor = header[ich + 6];
+                        if (major >= '1' && major < '2' && minor >= '0' && minor <= '9')
+                            return (major - '0') * 10 + (minor - '0');
+                    }
+                }
+            }
+            catch { }
+            return 0;
+        }
+
+        public static PdfDocument Open(string path, PdfDocumentOpenMode openmode)
+        {
+            return Open(path, null, openmode, null);
+        }
+
+        public static PdfDocument Open(string path, PdfDocumentOpenMode openmode, PdfPasswordProvider provider)
+        {
+            return Open(path, null, openmode, provider);
+        }
+
+        public static PdfDocument Open(string path, string password, PdfDocumentOpenMode openmode)
+        {
+            return Open(path, password, openmode, null);
+        }
+
+        public static PdfDocument Open(string path, string password, PdfDocumentOpenMode openmode, PdfPasswordProvider provider)
+        {
+#if !NETFX_CORE
+            PdfDocument document;
+            Stream stream = null;
+            try
+            {
+                stream = new FileStream(path, FileMode.Open, FileAccess.Read);
+                document = Open(stream, password, openmode, provider);
+                if (document != null)
+                {
+                    document._fullPath = Path.GetFullPath(path);
+                }
+            }
+            finally
+            {
+                if (stream != null)
+#if !UWP
+                    stream.Close();
+
+#endif
+            }
+            return document;
+
+#endif
+        }
+
+        public static PdfDocument Open(string path)
+        {
+            return Open(path, null, PdfDocumentOpenMode.Modify, null);
+        }
+
+        public static PdfDocument Open(string path, string password)
+        {
+            return Open(path, password, PdfDocumentOpenMode.Modify, null);
+        }
+
+        public static PdfDocument Open(Stream stream, PdfDocumentOpenMode openmode)
+        {
+            return Open(stream, null, openmode);
+        }
+
+        public static PdfDocument Open(Stream stream, PdfDocumentOpenMode openmode, PdfPasswordProvider passwordProvider)
+        {
+            return Open(stream, null, openmode, passwordProvider);
+        }
+        public static PdfDocument Open(Stream stream, string password, PdfDocumentOpenMode openmode)
+        {
+            return Open(stream, password, openmode, null);
+        }
+
+        public static PdfDocument Open(Stream stream, string password, PdfDocumentOpenMode openmode, PdfPasswordProvider passwordProvider)
+        {
+            PdfDocument document;
+            try
+            {
+                Lexer lexer = new Lexer(stream);
+                document = new PdfDocument(lexer);
+                document._state |= DocumentState.Imported;
+                document._openMode = openmode;
+                document._fileSize = stream.Length;
+
+                byte[] header = new byte[1024];
+                stream.Position = 0;
+                stream.Read(header, 0, 1024);
+                document._version = GetPdfFileVersion(header);
+                if (document._version == 0)
+                    throw new InvalidOperationException(PSSR.InvalidPdf);
+
+                document._irefTable.IsUnderConstruction = true;
+                Parser parser = new Parser(document);
+                document._trailer = parser.ReadTrailer();
+                if (document._trailer == null)
+                    ParserDiagnostics.ThrowParserException("Invalid PDF file: no trailer found.");
+
+                Debug.Assert(document._irefTable.IsUnderConstruction);
+                document._irefTable.IsUnderConstruction = false;
+
+                PdfReference xrefEncrypt = document._trailer.Elements[PdfTrailer.Keys.Encrypt] as PdfReference;
+                if (xrefEncrypt != null)
+                {
+                    PdfObject encrypt = parser.ReadObject(null, xrefEncrypt.ObjectID, false, false);
+
+                    encrypt.Reference = xrefEncrypt;
+                    xrefEncrypt.Value = encrypt;
+                    PdfStandardSecurityHandler securityHandler = document.SecurityHandler;
+                TryAgain:
+                    PasswordValidity validity = securityHandler.ValidatePassword(password);
+                    if (validity == PasswordValidity.Invalid)
+                    {
+                        if (passwordProvider != null)
+                        {
+                            PdfPasswordProviderArgs args = new PdfPasswordProviderArgs();
+                            passwordProvider(args);
+                            if (args.Abort)
+                                return null;
+                            password = args.Password;
+                            goto TryAgain;
+                        }
+                        else
+                        {
+                            if (password == null)
+                                throw new PdfReaderException(PSSR.PasswordRequired);
+                            else
+                                throw new PdfReaderException(PSSR.InvalidPassword);
+                        }
+                    }
+                    else if (validity == PasswordValidity.UserPassword && openmode == PdfDocumentOpenMode.Modify)
+                    {
+                        if (passwordProvider != null)
+                        {
+                            PdfPasswordProviderArgs args = new PdfPasswordProviderArgs();
+                            passwordProvider(args);
+                            if (args.Abort)
+                                return null;
+                            password = args.Password;
+                            goto TryAgain;
+                        }
+                        else
+                            throw new PdfReaderException(PSSR.OwnerPasswordRequired);
+                    }
+                }
+                else
+                {
+                    if (password != null)
+                    {
+                    }
+                }
+
+                PdfReference[] irefs2 = document._irefTable.AllReferences;
+                int count2 = irefs2.Length;
+
+                Dictionary<int, object> objectStreams = new Dictionary<int, object>();
+                for (int idx = 0; idx < count2; idx++)
+                {
+                    PdfReference iref = irefs2[idx];
+                    PdfCrossReferenceStream xrefStream = iref.Value as PdfCrossReferenceStream;
+                    if (xrefStream != null)
+                    {
+                        for (int idx2 = 0; idx2 < xrefStream.Entries.Count; idx2++)
+                        {
+                            PdfCrossReferenceStream.CrossReferenceStreamEntry item = xrefStream.Entries[idx2];
+                            if (item.Type == 2)
+                            {
+                                int objectNumber = (int)item.Field2;
+                                if (!objectStreams.ContainsKey(objectNumber))
+                                {
+                                    objectStreams.Add(objectNumber, null);
+                                    PdfObjectID objectID = new PdfObjectID((int)item.Field2);
+                                    parser.ReadIRefsFromCompressedObject(objectID);
+                                }
+                            }
+                        }
+                    }
+                }
+
+                for (int idx = 0; idx < count2; idx++)
+                {
+                    PdfReference iref = irefs2[idx];
+                    PdfCrossReferenceStream xrefStream = iref.Value as PdfCrossReferenceStream;
+                    if (xrefStream != null)
+                    {
+                        for (int idx2 = 0; idx2 < xrefStream.Entries.Count; idx2++)
+                        {
+                            PdfCrossReferenceStream.CrossReferenceStreamEntry item = xrefStream.Entries[idx2];
+                            if (item.Type == 2)
+                            {
+                                PdfReference irefNew = parser.ReadCompressedObject(new PdfObjectID((int)item.Field2),
+                                    (int)item.Field3);
+                                Debug.Assert(document._irefTable.Contains(iref.ObjectID));
+                            }
+                        }
+                    }
+                }
+
+
+                PdfReference[] irefs = document._irefTable.AllReferences;
+                int count = irefs.Length;
+
+                for (int idx = 0; idx < count; idx++)
+                {
+                    PdfReference iref = irefs[idx];
+                    if (iref.Value == null)
+                    {
+
+                        try
+                        {
+                            Debug.Assert(document._irefTable.Contains(iref.ObjectID));
+                            PdfObject pdfObject = parser.ReadObject(null, iref.ObjectID, false, false);
+                            Debug.Assert(pdfObject.Reference == iref);
+                            pdfObject.Reference = iref;
+                            Debug.Assert(pdfObject.Reference.Value != null, "Something went wrong.");
+                        }
+                        catch (Exception ex)
+                        {
+                            Debug.WriteLine(ex.Message);
+                            throw;
+                        }
+                    }
+                    else
+                    {
+                        Debug.Assert(document._irefTable.Contains(iref.ObjectID));
+                    }
+                    document._irefTable._maxObjectNumber = Math.Max(document._irefTable._maxObjectNumber,
+                        iref.ObjectNumber);
+                }
+
+                if (xrefEncrypt != null)
+                {
+                    document.SecurityHandler.EncryptDocument();
+                }
+
+                document._trailer.Finish();
+
+
+                if (openmode == PdfDocumentOpenMode.Modify)
+                {
+                    if (document.Internals.SecondDocumentID == "")
+                        document._trailer.CreateNewDocumentIDs();
+                    else
+                    {
+                        byte[] agTemp = Guid.NewGuid().ToByteArray();
+                        document.Internals.SecondDocumentID = PdfEncoders.RawEncoding.GetString(agTemp, 0, agTemp.Length);
+                    }
+
+                    document.Info.ModificationDate = DateTime.Now;
+
+                    int removed = document._irefTable.Compact();
+                    if (removed != 0)
+                        Debug.WriteLine("Number of deleted unreachable objects: " + removed);
+
+                    PdfPages pages = document.Pages;
+                    Debug.Assert(pages != null);
+
+                    document._irefTable.CheckConsistence();
+                    document._irefTable.Renumber();
+                    document._irefTable.CheckConsistence();
+                }
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine(ex.Message);
+                throw;
+            }
+            return document;
+        }
+
+        public static PdfDocument Open(Stream stream)
+        {
+            return Open(stream, PdfDocumentOpenMode.Modify);
+        }
+    }
+    public class PdfReaderException : PdfSharpException
+    {
+        public PdfReaderException()
+        { }
+
+        public PdfReaderException(string message)
+            : base(message)
+        { }
+
+        public PdfReaderException(string message, Exception innerException)
+            :
+            base(message, innerException)
+        { }
+    }
+    internal class PdfWriter
+    {
+        public PdfWriter(Stream pdfStream, PdfStandardSecurityHandler securityHandler)
+        {
+            _stream = pdfStream;
+            _securityHandler = securityHandler;
+
+        }
+
+        public void Close(bool closeUnderlyingStream)
+        {
+            if (_stream != null && closeUnderlyingStream)
+            {
+
+                _stream.Close();
+
+            }
+            _stream = null;
+        }
+
+        public void Close()
+        {
+            Close(true);
+        }
+
+        public int Position
+        {
+            get { return (int)_stream.Position; }
+        }
+
+        public PdfWriterLayout Layout
+        {
+            get { return _layout; }
+            set { _layout = value; }
+        }
+        PdfWriterLayout _layout;
+
+        public PdfWriterOptions Options
+        {
+            get { return _options; }
+            set { _options = value; }
+        }
+        PdfWriterOptions _options;
+
+        public void Write(bool value)
+        {
+            WriteSeparator(CharCat.Character);
+            WriteRaw(value ? bool.TrueString : bool.FalseString);
+            _lastCat = CharCat.Character;
+        }
+
+        public void Write(PdfBoolean value)
+        {
+            WriteSeparator(CharCat.Character);
+            WriteRaw(value.Value ? "true" : "false");
+            _lastCat = CharCat.Character;
+        }
+
+        public void Write(int value)
+        {
+            WriteSeparator(CharCat.Character);
+            WriteRaw(value.ToString(CultureInfo.InvariantCulture));
+            _lastCat = CharCat.Character;
+        }
+
+        public void Write(uint value)
+        {
+            WriteSeparator(CharCat.Character);
+            WriteRaw(value.ToString(CultureInfo.InvariantCulture));
+            _lastCat = CharCat.Character;
+        }
+
+        public void Write(PdfInteger value)
+        {
+            WriteSeparator(CharCat.Character);
+            _lastCat = CharCat.Character;
+            WriteRaw(value.Value.ToString(CultureInfo.InvariantCulture));
+        }
+
+        public void Write(PdfUInteger value)
+        {
+            WriteSeparator(CharCat.Character);
+            _lastCat = CharCat.Character;
+            WriteRaw(value.Value.ToString(CultureInfo.InvariantCulture));
+        }
+
+        public void Write(double value)
+        {
+            WriteSeparator(CharCat.Character);
+            WriteRaw(value.ToString(Config.SignificantFigures7, CultureInfo.InvariantCulture));
+            _lastCat = CharCat.Character;
+        }
+
+        public void Write(PdfReal value)
+        {
+            WriteSeparator(CharCat.Character);
+            WriteRaw(value.Value.ToString(Config.SignificantFigures7, CultureInfo.InvariantCulture));
+            _lastCat = CharCat.Character;
+        }
+
+        public void Write(PdfString value)
+        {
+            WriteSeparator(CharCat.Delimiter);
+#if true
+            PdfStringEncoding encoding = (PdfStringEncoding)(value.Flags & PdfStringFlags.EncodingMask);
+            string pdf = (value.Flags & PdfStringFlags.HexLiteral) == 0 ?
+                PdfEncoders.ToStringLiteral(value.Value, encoding, SecurityHandler) :
+                PdfEncoders.ToHexStringLiteral(value.Value, encoding, SecurityHandler);
+            WriteRaw(pdf);
+
+#endif
+            _lastCat = CharCat.Delimiter;
+        }
+
+        public void Write(PdfName value)
+        {
+            WriteSeparator(CharCat.Delimiter, '/');
+            string name = value.Value;
+
+            StringBuilder pdf = new StringBuilder("/");
+            for (int idx = 1; idx < name.Length; idx++)
+            {
+                char ch = name[idx];
+                Debug.Assert(ch < 256);
+                if (ch > ' ')
+                    switch (ch)
+                    {
+                        case '%':
+                        case '/':
+                        case '<':
+                        case '>':
+                        case '(':
+                        case ')':
+                        case '[':
+                        case ']':
+                        case '#':
+                            break;
+
+                        default:
+                            pdf.Append(name[idx]);
+                            continue;
+                    }
+                pdf.AppendFormat("#{0:X2}", (int)name[idx]);
+            }
+            WriteRaw(pdf.ToString());
+            _lastCat = CharCat.Character;
+        }
+
+        public void Write(PdfLiteral value)
+        {
+            WriteSeparator(CharCat.Character);
+            WriteRaw(value.Value);
+            _lastCat = CharCat.Character;
+        }
+
+        public void Write(PdfRectangle rect)
+        {
+            const string format = Config.SignificantFigures3;
+            WriteSeparator(CharCat.Delimiter, '/');
+            WriteRaw(PdfEncoders.Format("[{0:" + format + "} {1:" + format + "} {2:" + format + "} {3:" + format + "}]", rect.X1, rect.Y1, rect.X2, rect.Y2));
+            _lastCat = CharCat.Delimiter;
+        }
+
+        public void Write(PdfReference iref)
+        {
+            WriteSeparator(CharCat.Character);
+            WriteRaw(iref.ToString());
+            _lastCat = CharCat.Character;
+        }
+
+        public void WriteDocString(string text, bool unicode)
+        {
+            WriteSeparator(CharCat.Delimiter);
+            byte[] bytes;
+            if (!unicode)
+                bytes = PdfEncoders.DocEncoding.GetBytes(text);
+            else
+                bytes = PdfEncoders.UnicodeEncoding.GetBytes(text);
+            bytes = PdfEncoders.FormatStringLiteral(bytes, unicode, true, false, _securityHandler);
+            Write(bytes);
+            _lastCat = CharCat.Delimiter;
+        }
+
+        public void WriteDocString(string text)
+        {
+            WriteSeparator(CharCat.Delimiter);
+            byte[] bytes = PdfEncoders.DocEncoding.GetBytes(text);
+            bytes = PdfEncoders.FormatStringLiteral(bytes, false, false, false, _securityHandler);
+            Write(bytes);
+            _lastCat = CharCat.Delimiter;
+        }
+
+        public void WriteDocStringHex(string text)
+        {
+            WriteSeparator(CharCat.Delimiter);
+            byte[] bytes = PdfEncoders.DocEncoding.GetBytes(text);
+            bytes = PdfEncoders.FormatStringLiteral(bytes, false, false, true, _securityHandler);
+            _stream.Write(bytes, 0, bytes.Length);
+            _lastCat = CharCat.Delimiter;
+        }
+
+        public void WriteBeginObject(PdfObject obj)
+        {
+            bool indirect = obj.IsIndirect;
+            if (indirect)
+            {
+                WriteObjectAddress(obj);
+                if (_securityHandler != null)
+                    _securityHandler.SetHashKey(obj.ObjectID);
+            }
+            _stack.Add(new StackItem(obj));
+            if (indirect)
+            {
+                if (obj is PdfArray)
+                    WriteRaw("[\n");
+                else if (obj is PdfDictionary)
+                    WriteRaw("<<\n");
+                _lastCat = CharCat.NewLine;
+            }
+            else
+            {
+                if (obj is PdfArray)
+                {
+                    WriteSeparator(CharCat.Delimiter);
+                    WriteRaw('[');
+                    _lastCat = CharCat.Delimiter;
+                }
+                else if (obj is PdfDictionary)
+                {
+                    NewLine();
+                    WriteSeparator(CharCat.Delimiter);
+                    WriteRaw("<<\n");
+                    _lastCat = CharCat.NewLine;
+                }
+            }
+            if (_layout == PdfWriterLayout.Verbose)
+                IncreaseIndent();
+        }
+
+        public void WriteEndObject()
+        {
+            int count = _stack.Count;
+            Debug.Assert(count > 0, "PdfWriter stack underflow.");
+
+            StackItem stackItem = _stack[count - 1];
+            _stack.RemoveAt(count - 1);
+
+            PdfObject value = stackItem.Object;
+            bool indirect = value.IsIndirect;
+            if (_layout == PdfWriterLayout.Verbose)
+                DecreaseIndent();
+            if (value is PdfArray)
+            {
+                if (indirect)
+                {
+                    WriteRaw("\n]\n");
+                    _lastCat = CharCat.NewLine;
+                }
+                else
+                {
+                    WriteRaw("]");
+                    _lastCat = CharCat.Delimiter;
+                }
+            }
+            else if (value is PdfDictionary)
+            {
+                if (indirect)
+                {
+                    if (!stackItem.HasStream)
+                        WriteRaw(_lastCat == CharCat.NewLine ? ">>\n" : " >>\n");
+                }
+                else
+                {
+                    Debug.Assert(!stackItem.HasStream, "Direct object with stream??");
+                    WriteSeparator(CharCat.NewLine);
+                    WriteRaw(">>\n");
+                    _lastCat = CharCat.NewLine;
+                }
+            }
+            if (indirect)
+            {
+                NewLine();
+                WriteRaw("endobj\n");
+                if (_layout == PdfWriterLayout.Verbose)
+                    WriteRaw("%--------------------------------------------------------------------------------------------------\n");
+            }
+        }
+
+        public void WriteStream(PdfDictionary value, bool omitStream)
+        {
+            StackItem stackItem = _stack[_stack.Count - 1];
+            Debug.Assert(stackItem.Object is PdfDictionary);
+            Debug.Assert(stackItem.Object.IsIndirect);
+            stackItem.HasStream = true;
+
+            WriteRaw(_lastCat == CharCat.NewLine ? ">>\nstream\n" : " >>\nstream\n");
+
+            if (omitStream)
+            {
+                WriteRaw("  «...stream content omitted...»\n");
+            }
+            else
+            {
+                byte[] bytes = value.Stream.Value;
+                if (bytes.Length != 0)
+                {
+                    if (_securityHandler != null)
+                    {
+                        bytes = (byte[])bytes.Clone();
+                        bytes = _securityHandler.EncryptBytes(bytes);
+                    }
+                    Write(bytes);
+                    if (_lastCat != CharCat.NewLine)
+                        WriteRaw('\n');
+                }
+            }
+            WriteRaw("endstream\n");
+        }
+
+        public void WriteRaw(string rawString)
+        {
+            if (String.IsNullOrEmpty(rawString))
+                return;
+
+            byte[] bytes = PdfEncoders.RawEncoding.GetBytes(rawString);
+            _stream.Write(bytes, 0, bytes.Length);
+            _lastCat = GetCategory((char)bytes[bytes.Length - 1]);
+        }
+
+        public void WriteRaw(char ch)
+        {
+            Debug.Assert(ch < 256, "Raw character greater than 255 detected.");
+
+            _stream.WriteByte((byte)ch);
+            _lastCat = GetCategory(ch);
+        }
+
+        public void Write(byte[] bytes)
+        {
+            if (bytes == null || bytes.Length == 0)
+                return;
+
+            _stream.Write(bytes, 0, bytes.Length);
+            _lastCat = GetCategory((char)bytes[bytes.Length - 1]);
+        }
+
+        void WriteObjectAddress(PdfObject value)
+        {
+            if (_layout == PdfWriterLayout.Verbose)
+                WriteRaw(String.Format("{0} {1} obj   % {2}\n",
+                    value.ObjectID.ObjectNumber, value.ObjectID.GenerationNumber,
+                    value.GetType().FullName));
+            else
+                WriteRaw(String.Format("{0} {1} obj\n", value.ObjectID.ObjectNumber, value.ObjectID.GenerationNumber));
+        }
+
+        public void WriteFileHeader(PdfDocument document)
+        {
+            StringBuilder header = new StringBuilder("%PDF-");
+            int version = document._version;
+            header.Append((version / 10).ToString(CultureInfo.InvariantCulture) + "." +
+              (version % 10).ToString(CultureInfo.InvariantCulture) + "\n%\xD3\xF4\xCC\xE1\n");
+            WriteRaw(header.ToString());
+
+            if (_layout == PdfWriterLayout.Verbose)
+            {
+                WriteRaw(String.Format("% PDFsharp Version {0} (verbose mode)\n", VersionInfo.Version));
+                _commentPosition = (int)_stream.Position + 2;
+                WriteRaw("%                                                \n");
+                WriteRaw("%                                                \n");
+                WriteRaw("%                                                \n");
+                WriteRaw("%                                                \n");
+                WriteRaw("%                                                \n");
+                WriteRaw("%--------------------------------------------------------------------------------------------------\n");
+            }
+        }
+
+        public void WriteEof(PdfDocument document, int startxref)
+        {
+            WriteRaw("startxref\n");
+            WriteRaw(startxref.ToString(CultureInfo.InvariantCulture));
+            WriteRaw("\n%%EOF\n");
+            int fileSize = (int)_stream.Position;
+            if (_layout == PdfWriterLayout.Verbose)
+            {
+                TimeSpan duration = DateTime.Now - document._creation;
+
+                _stream.Position = _commentPosition;
+                WriteRaw("Creation date: " + document._creation.ToString("G", CultureInfo.InvariantCulture));
+                _stream.Position = _commentPosition + 50;
+                WriteRaw("Creation time: " + duration.TotalSeconds.ToString("0.000", CultureInfo.InvariantCulture) + " seconds");
+                _stream.Position = _commentPosition + 100;
+                WriteRaw("File size: " + fileSize.ToString(CultureInfo.InvariantCulture) + " bytes");
+                _stream.Position = _commentPosition + 150;
+                WriteRaw("Pages: " + document.Pages.Count.ToString(CultureInfo.InvariantCulture));
+                _stream.Position = _commentPosition + 200;
+                WriteRaw("Objects: " + document._irefTable.ObjectTable.Count.ToString(CultureInfo.InvariantCulture));
+            }
+        }
+
+        internal int Indent
+        {
+            get { return _indent; }
+            set { _indent = value; }
+        }
+        int _indent = 2;
+        int _writeIndent;
+
+        void IncreaseIndent()
+        {
+            _writeIndent += _indent;
+        }
+
+        void DecreaseIndent()
+        {
+            _writeIndent -= _indent;
+        }
+
+        string IndentBlanks
+        {
+            get { return new string(' ', _writeIndent); }
+        }
+
+        void WriteIndent()
+        {
+            WriteRaw(IndentBlanks);
+        }
+
+        void WriteSeparator(CharCat cat, char ch)
+        {
+            switch (_lastCat)
+            {
+                case CharCat.NewLine:
+                    if (_layout == PdfWriterLayout.Verbose)
+                        WriteIndent();
+                    break;
+
+                case CharCat.Delimiter:
+                    break;
+
+                case CharCat.Character:
+                    if (_layout == PdfWriterLayout.Verbose)
+                    {
+                        _stream.WriteByte((byte)' ');
+                    }
+                    else
+                    {
+                        if (cat == CharCat.Character)
+                            _stream.WriteByte((byte)' ');
+                    }
+                    break;
+            }
+        }
+
+        void WriteSeparator(CharCat cat)
+        {
+            WriteSeparator(cat, '\0');
+        }
+
+        public void NewLine()
+        {
+            if (_lastCat != CharCat.NewLine)
+                WriteRaw('\n');
+        }
+
+        CharCat GetCategory(char ch)
+        {
+            if (Lexer.IsDelimiter(ch))
+                return CharCat.Delimiter;
+            if (ch == Chars.LF)
+                return CharCat.NewLine;
+            return CharCat.Character;
+        }
+
+        enum CharCat
+        {
+            NewLine,
+            Character,
+            Delimiter,
+        }
+        CharCat _lastCat;
+
+        internal Stream Stream
+        {
+            get { return _stream; }
+        }
+        Stream _stream;
+
+        internal PdfStandardSecurityHandler SecurityHandler
+        {
+            get { return _securityHandler; }
+            set { _securityHandler = value; }
+        }
+        PdfStandardSecurityHandler _securityHandler;
+
+        class StackItem
+        {
+            public StackItem(PdfObject value)
+            {
+                Object = value;
+            }
+
+            public readonly PdfObject Object;
+            public bool HasStream;
+        }
+
+        readonly List<StackItem> _stack = new List<StackItem>();
+        int _commentPosition;
+    }
+    internal class ShiftStack
+    {
+        public ShiftStack()
+        {
+            _items = new List<PdfItem>();
+        }
+
+        public PdfItem[] ToArray(int start, int length)
+        {
+            PdfItem[] items = new PdfItem[length];
+            for (int i = 0, j = start; i < length; i++, j++)
+                items[i] = _items[j];
+            return items;
+        }
+
+        public int SP
+        {
+            get { return _sp; }
+        }
+
+        public PdfItem this[int index]
+        {
+            get
+            {
+                if (index >= _sp)
+                    throw new ArgumentOutOfRangeException("index", index, "Value greater than stack index.");
+                return _items[index];
+            }
+        }
+
+        public PdfItem GetItem(int relativeIndex)
+        {
+            if (relativeIndex >= 0 || -relativeIndex > _sp)
+                throw new ArgumentOutOfRangeException("relativeIndex", relativeIndex, "Value out of stack range.");
+            return _items[_sp + relativeIndex];
+        }
+
+        public int GetInteger(int relativeIndex)
+        {
+            if (relativeIndex >= 0 || -relativeIndex > _sp)
+                throw new ArgumentOutOfRangeException("relativeIndex", relativeIndex, "Value out of stack range.");
+            return ((PdfInteger)_items[_sp + relativeIndex]).Value;
+        }
+
+        public void Shift(PdfItem item)
+        {
+            Debug.Assert(item != null);
+            _items.Add(item);
+            _sp++;
+        }
+
+        public void Reduce(int count)
+        {
+            if (count > _sp)
+                throw new ArgumentException("count causes stack underflow.");
+            _items.RemoveRange(_sp - count, count);
+            _sp -= count;
+        }
+
+        public void Reduce(PdfItem item, int count)
+        {
+            Debug.Assert(item != null);
+            Reduce(count);
+            _items.Add(item);
+            _sp++;
+        }
+
+        int _sp;
+
+        readonly List<PdfItem> _items;
+    }
+
+
+
+
+
+
+
 
 
 
