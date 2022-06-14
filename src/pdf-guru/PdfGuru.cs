@@ -362,6 +362,38 @@ using System.Collections;
 using System;
 using System;
 using System;
+using System;
+using System.Globalization;
+using System.Diagnostics;
+using System.Text;
+using System.IO;
+using System.IO;
+using System;
+using System;
+using System.Diagnostics;
+using System.IO;
+using System.IO;
+using System;
+using System;
+using System.Collections.Generic;
+using System.Diagnostics;
+using System.Collections;
+using System.Globalization;
+using System.IO;
+using System.Text;
+using System;
+using System;
+using System;
+using System.Diagnostics;
+using System.IO;
+using System;
+using System.IO;
+
+
+
+
+
+
 
 
 
@@ -33927,6 +33959,2720 @@ namespace pdf_guru
             get { return Keys.Meta; }
         }
     }
+    public enum CSymbol
+    {
+        None,
+        Comment,
+        Integer,
+        Real,
+        String,
+        HexString,
+        UnicodeString,
+        UnicodeHexString,
+        Name,
+        Operator,
+        BeginArray,
+        EndArray,
+        Dictionary,
+        Eof,
+        Error = -1,
+    }
+    internal static class Chars
+    {
+        public const char EOF = (char)65535;
+        public const char NUL = '\0';
+        public const char CR = '\x0D';
+        public const char LF = '\x0A';
+        public const char BEL = '\a';
+        public const char BS = '\b';
+        public const char FF = '\f';
+        public const char HT = '\t';
+        public const char VT = '\v';
+        public const char NonBreakableSpace = (char)160;
+
+        public const char SP = ' ';
+        public const char QuoteDbl = '"';
+        public const char QuoteSingle = '\'';
+        public const char ParenLeft = '(';
+        public const char ParenRight = ')';
+        public const char BraceLeft = '{';
+        public const char BraceRight = '}';
+        public const char BracketLeft = '[';
+        public const char BracketRight = ']';
+        public const char Less = '<';
+        public const char Greater = '>';
+        public const char Equal = '=';
+        public const char Period = '.';
+        public const char Semicolon = ';';
+        public const char Colon = ':';
+        public const char Slash = '/';
+        public const char Bar = '|';
+        public const char BackSlash = '\\';
+        public const char Percent = '%';
+        public const char Dollar = '$';
+        public const char At = '@';
+        public const char NumberSign = '#';
+        public const char Asterisk = '*';
+        public const char Question = '?';
+        public const char Hyphen = '-';
+        public const char SoftHyphen = '­';
+        public const char Currency = '¤';
+    }
+    public class CLexer
+    {
+        public CLexer(byte[] content)
+        {
+            _content = content;
+            _charIndex = 0;
+        }
+
+        public CLexer(MemoryStream content)
+        {
+            _content = content.ToArray();
+            _charIndex = 0;
+        }
+
+        public CSymbol ScanNextToken()
+        {
+        Again:
+            ClearToken();
+            char ch = MoveToNonWhiteSpace();
+            switch (ch)
+            {
+                case '%':
+                    ScanComment();
+                    goto Again;
+
+                case '/':
+                    return _symbol = ScanName();
+
+                case '+':
+                case '-':
+                    return _symbol = ScanNumber();
+
+                case '[':
+                    ScanNextChar();
+                    return _symbol = CSymbol.BeginArray;
+
+                case ']':
+                    ScanNextChar();
+                    return _symbol = CSymbol.EndArray;
+
+                case '(':
+                    return _symbol = ScanLiteralString();
+
+                case '<':
+                    if (_nextChar == '<')
+                        return _symbol = ScanDictionary();
+                    return _symbol = ScanHexadecimalString();
+
+                case '.':
+                    return _symbol = ScanNumber();
+
+                case '"':
+                case '\'':
+                    return _symbol = ScanOperator();
+            }
+            if (char.IsDigit(ch))
+                return _symbol = ScanNumber();
+
+            if (char.IsLetter(ch))
+                return _symbol = ScanOperator();
+
+            if (ch == Chars.EOF)
+                return _symbol = CSymbol.Eof;
+
+            ContentReaderDiagnostics.HandleUnexpectedCharacter(ch);
+            return _symbol = CSymbol.None;
+        }
+
+        public CSymbol ScanComment()
+        {
+            Debug.Assert(_currChar == Chars.Percent);
+
+            ClearToken();
+            char ch;
+            while ((ch = AppendAndScanNextChar()) != Chars.LF && ch != Chars.EOF) { }
+            return _symbol = CSymbol.Comment;
+        }
+
+        public CSymbol ScanInlineImage()
+        {
+            bool ascii85 = false;
+            do
+            {
+                ScanNextToken();
+                if (!ascii85 && _symbol == CSymbol.Name && (Token == "/ASCII85Decode" || Token == "/A85"))
+                    ascii85 = true;
+            } while (_symbol != CSymbol.Operator || Token != "ID");
+
+            if (ascii85)
+            {
+                while (_currChar != Chars.EOF && (_currChar != '~' || _nextChar != '>'))
+                    ScanNextChar();
+                if (_currChar == Chars.EOF)
+                    ContentReaderDiagnostics.HandleUnexpectedCharacter(_currChar);
+            }
+
+            while (_currChar != Chars.EOF)
+            {
+                if (IsWhiteSpace(_currChar))
+                {
+                    if (ScanNextChar() == 'E')
+                        if (ScanNextChar() == 'I')
+                            if (IsWhiteSpace(ScanNextChar()))
+                                break;
+                }
+                else
+                    ScanNextChar();
+            }
+            if (_currChar == Chars.EOF)
+                ContentReaderDiagnostics.HandleUnexpectedCharacter(_currChar);
+
+            return CSymbol.None;
+        }
+
+        public CSymbol ScanName()
+        {
+            Debug.Assert(_currChar == Chars.Slash);
+
+            ClearToken();
+            while (true)
+            {
+                char ch = AppendAndScanNextChar();
+                if (IsWhiteSpace(ch) || IsDelimiter(ch))
+                    return _symbol = CSymbol.Name;
+
+                if (ch == '#')
+                {
+                    ScanNextChar();
+                    char[] hex = new char[2];
+                    hex[0] = _currChar;
+                    hex[1] = _nextChar;
+                    ScanNextChar();
+                    ch = (char)(ushort)int.Parse(new string(hex), NumberStyles.AllowHexSpecifier);
+                    _currChar = ch;
+                }
+            }
+        }
+
+        protected CSymbol ScanDictionary()
+        {
+            ClearToken();
+            _token.Append(_currChar);
+            _token.Append(ScanNextChar());
+
+            bool inString = false, inHexString = false;
+            int nestedDict = 0, nestedStringParen = 0;
+            char ch;
+            while (true)
+            {
+                _token.Append(ch = ScanNextChar());
+                if (ch == '<')
+                {
+                    if (_nextChar == '<')
+                    {
+                        _token.Append(ScanNextChar());
+                        ++nestedDict;
+                    }
+                    else
+                        inHexString = true;
+                }
+                else if (!inHexString && ch == '(')
+                {
+                    if (inString)
+                        ++nestedStringParen;
+                    else
+                    {
+                        inString = true;
+                        nestedStringParen = 0;
+                    }
+                }
+                else if (inString && ch == ')')
+                {
+                    if (nestedStringParen > 0)
+                        --nestedStringParen;
+                    else
+                        inString = false;
+                }
+                else if (inString && ch == '\\')
+                    _token.Append(ScanNextChar());
+                else if (ch == '>')
+                {
+                    if (inHexString)
+                        inHexString = false;
+                    else if (_nextChar == '>')
+                    {
+                        _token.Append(ScanNextChar());
+                        if (nestedDict > 0)
+                            --nestedDict;
+                        else
+                        {
+                            ScanNextChar();
+
+#if true
+                            return CSymbol.Dictionary;
+
+#endif
+                        }
+                    }
+                }
+                else if (ch == Chars.EOF)
+                    ContentReaderDiagnostics.HandleUnexpectedCharacter(ch);
+            }
+        }
+
+        public CSymbol ScanNumber()
+        {
+            long value = 0;
+            int decimalDigits = 0;
+            bool period = false;
+            bool negative = false;
+
+            ClearToken();
+            char ch = _currChar;
+            if (ch == '+' || ch == '-')
+            {
+                if (ch == '-')
+                    negative = true;
+                _token.Append(ch);
+                ch = ScanNextChar();
+            }
+            while (true)
+            {
+                if (char.IsDigit(ch))
+                {
+                    _token.Append(ch);
+                    if (decimalDigits < 10)
+                    {
+                        value = 10 * value + ch - '0';
+                        if (period)
+                            decimalDigits++;
+                    }
+                }
+                else if (ch == '.')
+                {
+                    if (period)
+                        ContentReaderDiagnostics.ThrowContentReaderException("More than one period in number.");
+
+                    period = true;
+                    _token.Append(ch);
+                }
+                else
+                    break;
+                ch = ScanNextChar();
+            }
+
+            if (negative)
+                value = -value;
+            if (period)
+            {
+                if (decimalDigits > 0)
+                {
+                    _tokenAsReal = value / PowersOf10[decimalDigits];
+                }
+                else
+                {
+                    _tokenAsReal = value;
+                    _tokenAsLong = value;
+                }
+                return CSymbol.Real;
+            }
+            _tokenAsLong = value;
+            _tokenAsReal = Convert.ToDouble(value);
+
+            Debug.Assert(Int64.Parse(_token.ToString(), CultureInfo.InvariantCulture) == value);
+
+            if (value >= Int32.MinValue && value < Int32.MaxValue)
+                return CSymbol.Integer;
+
+            ContentReaderDiagnostics.ThrowNumberOutOfIntegerRange(value);
+            return CSymbol.Error;
+        }
+        static readonly double[] PowersOf10 = { 1, 10, 100, 1000, 10000, 100000, 1000000, 10000000, 100000000, 1000000000, 10000000000 };
+
+        public CSymbol ScanOperator()
+        {
+            ClearToken();
+            char ch = _currChar;
+            while (IsOperatorChar(ch))
+                ch = AppendAndScanNextChar();
+
+            return _symbol = CSymbol.Operator;
+        }
+
+        public CSymbol ScanLiteralString()
+        {
+            Debug.Assert(_currChar == Chars.ParenLeft);
+
+            ClearToken();
+            int parenLevel = 0;
+            char ch = ScanNextChar();
+            if (ch == '\xFE' && _nextChar == '\xFF')
+            {
+                ScanNextChar();
+                char chHi = ScanNextChar();
+                if (chHi == ')')
+                {
+                    ScanNextChar();
+                    return _symbol = CSymbol.String;
+                }
+                char chLo = ScanNextChar();
+                ch = (char)(chHi * 256 + chLo);
+                while (true)
+                {
+                SkipChar:
+                    switch (ch)
+                    {
+                        case '(':
+                            parenLevel++;
+                            break;
+
+                        case ')':
+                            if (parenLevel == 0)
+                            {
+                                ScanNextChar();
+                                return _symbol = CSymbol.String;
+                            }
+                            parenLevel--;
+                            break;
+
+                        case '\\':
+                            {
+                                ch = ScanNextChar();
+                                switch (ch)
+                                {
+                                    case 'n':
+                                        ch = Chars.LF;
+                                        break;
+
+                                    case 'r':
+                                        ch = Chars.CR;
+                                        break;
+
+                                    case 't':
+                                        ch = Chars.HT;
+                                        break;
+
+                                    case 'b':
+                                        ch = Chars.BS;
+                                        break;
+
+                                    case 'f':
+                                        ch = Chars.FF;
+                                        break;
+
+                                    case '(':
+                                        ch = Chars.ParenLeft;
+                                        break;
+
+                                    case ')':
+                                        ch = Chars.ParenRight;
+                                        break;
+
+                                    case '\\':
+                                        ch = Chars.BackSlash;
+                                        break;
+
+                                    case Chars.LF:
+                                        ch = ScanNextChar();
+                                        goto SkipChar;
+
+                                    default:
+                                        if (char.IsDigit(ch))
+                                        {
+                                            int n = ch - '0';
+                                            if (char.IsDigit(_nextChar))
+                                            {
+                                                n = n * 8 + ScanNextChar() - '0';
+                                                if (char.IsDigit(_nextChar))
+                                                    n = n * 8 + ScanNextChar() - '0';
+                                            }
+                                            ch = (char)n;
+                                        }
+                                        break;
+                                }
+                                break;
+                            }
+
+                        default:
+                            break;
+                    }
+                    _token.Append(ch);
+                    chHi = ScanNextChar();
+                    if (chHi == ')')
+                    {
+                        ScanNextChar();
+                        return _symbol = CSymbol.String;
+                    }
+                    chLo = ScanNextChar();
+                    ch = (char)(chHi * 256 + chLo);
+                }
+            }
+            else
+            {
+                while (true)
+                {
+                SkipChar:
+                    switch (ch)
+                    {
+                        case '(':
+                            parenLevel++;
+                            break;
+
+                        case ')':
+                            if (parenLevel == 0)
+                            {
+                                ScanNextChar();
+                                return _symbol = CSymbol.String;
+                            }
+                            parenLevel--;
+                            break;
+
+                        case '\\':
+                            {
+                                ch = ScanNextChar();
+                                switch (ch)
+                                {
+                                    case 'n':
+                                        ch = Chars.LF;
+                                        break;
+
+                                    case 'r':
+                                        ch = Chars.CR;
+                                        break;
+
+                                    case 't':
+                                        ch = Chars.HT;
+                                        break;
+
+                                    case 'b':
+                                        ch = Chars.BS;
+                                        break;
+
+                                    case 'f':
+                                        ch = Chars.FF;
+                                        break;
+
+                                    case '(':
+                                        ch = Chars.ParenLeft;
+                                        break;
+
+                                    case ')':
+                                        ch = Chars.ParenRight;
+                                        break;
+
+                                    case '\\':
+                                        ch = Chars.BackSlash;
+                                        break;
+
+                                    case Chars.LF:
+                                        ch = ScanNextChar();
+                                        goto SkipChar;
+
+                                    default:
+                                        if (char.IsDigit(ch))
+                                        {
+                                            int n = ch - '0';
+                                            if (char.IsDigit(_nextChar))
+                                            {
+                                                n = n * 8 + ScanNextChar() - '0';
+                                                if (char.IsDigit(_nextChar))
+                                                    n = n * 8 + ScanNextChar() - '0';
+                                            }
+                                            ch = (char)n;
+                                        }
+                                        break;
+                                }
+                                break;
+                            }
+
+                        default:
+                            break;
+                    }
+                    _token.Append(ch);
+                    ch = ScanNextChar();
+                }
+            }
+        }
+
+        public CSymbol ScanHexadecimalString()
+        {
+            Debug.Assert(_currChar == Chars.Less);
+
+            ClearToken();
+            char[] hex = new char[2];
+            ScanNextChar();
+            while (true)
+            {
+                MoveToNonWhiteSpace();
+                if (_currChar == '>')
+                {
+                    ScanNextChar();
+                    break;
+                }
+                if (char.IsLetterOrDigit(_currChar))
+                {
+                    hex[0] = char.ToUpper(_currChar);
+                    hex[1] = char.ToUpper(_nextChar);
+                    int ch = int.Parse(new string(hex), NumberStyles.AllowHexSpecifier);
+                    _token.Append(Convert.ToChar(ch));
+                    ScanNextChar();
+                    ScanNextChar();
+                }
+            }
+            string chars = _token.ToString();
+            int count = chars.Length;
+            if (count > 2 && chars[0] == (char)0xFE && chars[1] == (char)0xFF)
+            {
+                Debug.Assert(count % 2 == 0);
+                _token.Length = 0;
+                for (int idx = 2; idx < count; idx += 2)
+                    _token.Append((char)(chars[idx] * 256 + chars[idx + 1]));
+            }
+            return _symbol = CSymbol.HexString;
+        }
+
+        internal char ScanNextChar()
+        {
+            if (ContLength <= _charIndex)
+            {
+                _currChar = Chars.EOF;
+                if (IsOperatorChar(_nextChar))
+                    _token.Append(_nextChar);
+                _nextChar = Chars.EOF;
+            }
+            else
+            {
+                _currChar = _nextChar;
+                _nextChar = (char)_content[_charIndex++];
+                if (_currChar == Chars.CR)
+                {
+                    if (_nextChar == Chars.LF)
+                    {
+                        _currChar = _nextChar;
+                        if (ContLength <= _charIndex)
+                            _nextChar = Chars.EOF;
+                        else
+                            _nextChar = (char)_content[_charIndex++];
+                    }
+                    else
+                    {
+                        _currChar = Chars.LF;
+                    }
+                }
+            }
+            return _currChar;
+        }
+
+        void ClearToken()
+        {
+            _token.Length = 0;
+            _tokenAsLong = 0;
+            _tokenAsReal = 0;
+        }
+
+        internal char AppendAndScanNextChar()
+        {
+            _token.Append(_currChar);
+            return ScanNextChar();
+        }
+
+        public char MoveToNonWhiteSpace()
+        {
+            while (_currChar != Chars.EOF)
+            {
+                switch (_currChar)
+                {
+                    case Chars.NUL:
+                    case Chars.HT:
+                    case Chars.LF:
+                    case Chars.FF:
+                    case Chars.CR:
+                    case Chars.SP:
+                        ScanNextChar();
+                        break;
+
+                    default:
+                        return _currChar;
+                }
+            }
+            return _currChar;
+        }
+
+        public CSymbol Symbol
+        {
+            get { return _symbol; }
+            set { _symbol = value; }
+        }
+
+        public string Token
+        {
+            get { return _token.ToString(); }
+        }
+
+        internal int TokenToInteger
+        {
+            get
+            {
+                Debug.Assert(_tokenAsLong == int.Parse(_token.ToString(), CultureInfo.InvariantCulture));
+                return (int)_tokenAsLong;
+            }
+        }
+
+        internal double TokenToReal
+        {
+            get
+            {
+                Debug.Assert(_tokenAsReal == double.Parse(_token.ToString(), CultureInfo.InvariantCulture));
+                return _tokenAsReal;
+            }
+        }
+
+        internal static bool IsWhiteSpace(char ch)
+        {
+            switch (ch)
+            {
+                case Chars.NUL:
+                case Chars.HT:
+                case Chars.LF:
+                case Chars.FF:
+                case Chars.CR:
+                case Chars.SP:
+                    return true;
+            }
+            return false;
+        }
+
+        internal static bool IsOperatorChar(char ch)
+        {
+            if (char.IsLetter(ch))
+                return true;
+            switch (ch)
+            {
+                case Chars.Asterisk:
+                case Chars.QuoteSingle:
+                case Chars.QuoteDbl:
+                    return true;
+            }
+            return false;
+        }
+
+        internal static bool IsDelimiter(char ch)
+        {
+            switch (ch)
+            {
+                case '(':
+                case ')':
+                case '<':
+                case '>':
+                case '[':
+                case ']':
+                case '/':
+                case '%':
+                    return true;
+            }
+            return false;
+        }
+
+        public int ContLength
+        {
+            get { return _content.Length; }
+        }
+
+        public int Position
+        {
+            get { return _charIndex; }
+            set
+            {
+                _charIndex = value;
+                _currChar = (char)_content[_charIndex - 1];
+                _nextChar = (char)_content[_charIndex - 1];
+            }
+        }
+
+        readonly byte[] _content;
+        int _charIndex;
+        char _currChar;
+        char _nextChar;
+
+        readonly StringBuilder _token = new StringBuilder();
+        long _tokenAsLong;
+        double _tokenAsReal;
+        CSymbol _symbol = CSymbol.None;
+    }
+    public static class ContentReader
+    {
+        static public CSequence ReadContent(PdfPage page)
+        {
+            CParser parser = new CParser(page);
+            CSequence sequence = parser.ReadContent();
+
+            return sequence;
+        }
+
+        static public CSequence ReadContent(byte[] content)
+        {
+            CParser parser = new CParser(content);
+            CSequence sequence = parser.ReadContent();
+            return sequence;
+        }
+
+        static public CSequence ReadContent(MemoryStream content)
+        {
+            CParser parser = new CParser(content);
+            CSequence sequence = parser.ReadContent();
+            return sequence;
+        }
+    }
+    public class ContentReaderException : PdfSharpException
+    {
+        public ContentReaderException()
+        { }
+
+        public ContentReaderException(string message)
+            : base(message)
+        { }
+
+        public ContentReaderException(string message, Exception innerException) :
+            base(message, innerException)
+        { }
+    }
+    internal class ContentWriter
+    {
+        public ContentWriter(Stream contentStream)
+        {
+            _stream = contentStream;
+#if DEBUG
+#endif
+        }
+
+        public void Close(bool closeUnderlyingStream)
+        {
+            if (_stream != null && closeUnderlyingStream)
+            {
+#if UWP
+#else
+                _stream.Close();
+#endif
+                _stream = null;
+            }
+        }
+
+        public void Close()
+        {
+            Close(true);
+        }
+
+        public int Position
+        {
+            get { return (int)_stream.Position; }
+        }
+
+        public void Write(bool value)
+        {
+        }
+
+        public void WriteRaw(string rawString)
+        {
+            if (String.IsNullOrEmpty(rawString))
+                return;
+            byte[] bytes = PdfEncoders.RawEncoding.GetBytes(rawString);
+            _stream.Write(bytes, 0, bytes.Length);
+            _lastCat = GetCategory((char)bytes[bytes.Length - 1]);
+        }
+
+        public void WriteLineRaw(string rawString)
+        {
+            if (String.IsNullOrEmpty(rawString))
+                return;
+            byte[] bytes = PdfEncoders.RawEncoding.GetBytes(rawString);
+            _stream.Write(bytes, 0, bytes.Length);
+            _stream.Write(new byte[] { (byte)'\n' }, 0, 1);
+            _lastCat = GetCategory((char)bytes[bytes.Length - 1]);
+        }
+
+        public void WriteRaw(char ch)
+        {
+            Debug.Assert(ch < 256, "Raw character greater than 255 detected.");
+            _stream.WriteByte((byte)ch);
+            _lastCat = GetCategory(ch);
+        }
+
+        internal int Indent
+        {
+            get { return _indent; }
+            set { _indent = value; }
+        }
+        protected int _indent = 2;
+        protected int _writeIndent = 0;
+
+        void IncreaseIndent()
+        {
+            _writeIndent += _indent;
+        }
+
+        void DecreaseIndent()
+        {
+            _writeIndent -= _indent;
+        }
+
+        string IndentBlanks
+        {
+            get { return new string(' ', _writeIndent); }
+        }
+
+        void WriteIndent()
+        {
+            WriteRaw(IndentBlanks);
+        }
+
+        void WriteSeparator(CharCat cat, char ch)
+        {
+            switch (_lastCat)
+            {
+                case CharCat.Delimiter:
+                    break;
+
+            }
+        }
+
+        void WriteSeparator(CharCat cat)
+        {
+            WriteSeparator(cat, '\0');
+        }
+
+        public void NewLine()
+        {
+            if (_lastCat != CharCat.NewLine)
+                WriteRaw('\n');
+        }
+
+        CharCat GetCategory(char ch)
+        {
+            return CharCat.Character;
+        }
+
+        enum CharCat
+        {
+            NewLine,
+            Character,
+            Delimiter,
+        }
+        CharCat _lastCat;
+
+        internal Stream Stream
+        {
+            get { return _stream; }
+        }
+        Stream _stream;
+    }
+    public sealed class CParser
+    {
+        public CParser(PdfPage page)
+        {
+            _page = page;
+            PdfContent content = page.Contents.CreateSingleContent();
+            byte[] bytes = content.Stream.Value;
+            _lexer = new CLexer(bytes);
+        }
+
+        public CParser(byte[] content)
+        {
+            _lexer = new CLexer(content);
+        }
+
+        public CParser(MemoryStream content)
+        {
+            _lexer = new CLexer(content.ToArray());
+        }
+
+
+        public CParser(CLexer lexer)
+        {
+            _lexer = lexer;
+        }
+
+        public CSymbol Symbol
+        {
+            get { return _lexer.Symbol; }
+        }
+
+        public CSequence ReadContent()
+        {
+            CSequence sequence = new CSequence();
+            ParseObject(sequence, CSymbol.Eof);
+
+            return sequence;
+        }
+
+        void ParseObject(CSequence sequence, CSymbol stop)
+        {
+            CSymbol symbol;
+            while ((symbol = ScanNextToken()) != CSymbol.Eof)
+            {
+                if (symbol == stop)
+                    return;
+
+                CString s;
+                COperator op;
+                switch (symbol)
+                {
+                    case CSymbol.Comment:
+                        break;
+
+                    case CSymbol.Integer:
+                        CInteger n = new CInteger();
+                        n.Value = _lexer.TokenToInteger;
+                        _operands.Add(n);
+                        break;
+
+                    case CSymbol.Real:
+                        CReal r = new CReal();
+                        r.Value = _lexer.TokenToReal;
+                        _operands.Add(r);
+                        break;
+
+                    case CSymbol.String:
+                    case CSymbol.HexString:
+                    case CSymbol.UnicodeString:
+                    case CSymbol.UnicodeHexString:
+                        s = new CString();
+                        s.Value = _lexer.Token;
+                        _operands.Add(s);
+                        break;
+
+                    case CSymbol.Dictionary:
+                        s = new CString();
+                        s.Value = _lexer.Token;
+                        s.CStringType = CStringType.Dictionary;
+                        _operands.Add(s);
+                        op = CreateOperator(OpCodeName.Dictionary);
+                        sequence.Add(op);
+
+                        break;
+
+                    case CSymbol.Name:
+                        CName name = new CName();
+                        name.Name = _lexer.Token;
+                        _operands.Add(name);
+                        break;
+
+                    case CSymbol.Operator:
+                        op = CreateOperator();
+                        sequence.Add(op);
+                        break;
+
+                    case CSymbol.BeginArray:
+                        CArray array = new CArray();
+                        if (_operands.Count != 0)
+                            ContentReaderDiagnostics.ThrowContentReaderException("Array within array...");
+
+                        ParseObject(array, CSymbol.EndArray);
+                        array.Add(_operands);
+                        _operands.Clear();
+                        _operands.Add((CObject)array);
+                        break;
+
+                    case CSymbol.EndArray:
+                        ContentReaderDiagnostics.HandleUnexpectedCharacter(']');
+                        break;
+
+                }
+            }
+        }
+
+        COperator CreateOperator()
+        {
+            string name = _lexer.Token;
+            COperator op = OpCodes.OperatorFromName(name);
+            return CreateOperator(op);
+        }
+
+        COperator CreateOperator(OpCodeName nameop)
+        {
+            string name = nameop.ToString();
+            COperator op = OpCodes.OperatorFromName(name);
+            return CreateOperator(op);
+        }
+
+        COperator CreateOperator(COperator op)
+        {
+            if (op.OpCode.OpCodeName == OpCodeName.BI)
+            {
+                _lexer.ScanInlineImage();
+            }
+            op.Operands.Add(_operands);
+            _operands.Clear();
+            return op;
+        }
+
+        CSymbol ScanNextToken()
+        {
+            return _lexer.ScanNextToken();
+        }
+
+        CSymbol ScanNextToken(out string token)
+        {
+            CSymbol symbol = _lexer.ScanNextToken();
+            token = _lexer.Token;
+            return symbol;
+        }
+
+        CSymbol ReadSymbol(CSymbol symbol)
+        {
+            CSymbol current = _lexer.ScanNextToken();
+            if (symbol != current)
+                ContentReaderDiagnostics.ThrowContentReaderException(PSSR.UnexpectedToken(_lexer.Token));
+            return current;
+        }
+
+        readonly CSequence _operands = new CSequence();
+        PdfPage _page;
+        readonly CLexer _lexer;
+    }
+    public enum OpCodeFlags
+    {
+        None,
+
+        TextOut = 0x0001,
+    }
+    public enum OpCodeName
+    {
+        Dictionary,
+
+        b,
+
+        B,
+
+        bx,
+
+        Bx,
+
+        BDC,
+
+        BI,
+
+        BMC,
+
+        BT,
+
+        BX,
+
+        c,
+        cm,
+        CS,
+        cs,
+        d,
+        d0,
+        d1,
+        Do,
+
+        DP,
+
+        EI,
+
+        EMC,
+
+        ET,
+
+        EX,
+
+        f,
+        F,
+        fx,
+        G,
+        g,
+        gs,
+        h,
+        i,
+        ID,
+        j,
+        J,
+        K,
+        k,
+        l,
+        m,
+        M,
+
+        MP,
+
+        n,
+        q,
+        Q,
+        re,
+        RG,
+        rg,
+        ri,
+        s,
+        S,
+        SC,
+        sc,
+        SCN,
+        scn,
+        sh,
+        Tx,
+        Tc,
+        Td,
+        TD,
+        Tf,
+        Tj,
+        TJ,
+        TL,
+        Tm,
+        Tr,
+        Ts,
+        Tw,
+        Tz,
+        v,
+        w,
+        W,
+        Wx,
+        y,
+
+        QuoteSingle,
+
+        QuoteDbl,
+    }
+    public abstract class CObject : ICloneable
+    {
+        protected CObject()
+        { }
+
+        object ICloneable.Clone()
+        {
+            return Copy();
+        }
+
+        public CObject Clone()
+        {
+            return Copy();
+        }
+
+        protected virtual CObject Copy()
+        {
+            return (CObject)MemberwiseClone();
+        }
+
+        internal abstract void WriteObject(ContentWriter writer);
+    }
+
+    [DebuggerDisplay("({Text})")]
+    public class CComment : CObject
+    {
+        public new CComment Clone()
+        {
+            return (CComment)Copy();
+        }
+
+        protected override CObject Copy()
+        {
+            CObject obj = base.Copy();
+            return obj;
+        }
+
+        public string Text
+        {
+            get { return _text; }
+            set { _text = value; }
+        }
+        string _text;
+
+        public override string ToString()
+        {
+            return "% " + _text;
+        }
+
+        internal override void WriteObject(ContentWriter writer)
+        {
+            writer.WriteLineRaw(ToString());
+        }
+    }
+
+    [DebuggerDisplay("(count={Count})")]
+    public class CSequence : CObject, IList<CObject>
+    {
+        public new CSequence Clone()
+        {
+            return (CSequence)Copy();
+        }
+
+        protected override CObject Copy()
+        {
+            CObject obj = base.Copy();
+            _items = new List<CObject>(_items);
+            for (int idx = 0; idx < _items.Count; idx++)
+                _items[idx] = _items[idx].Clone();
+            return obj;
+        }
+
+        public void Add(CSequence sequence)
+        {
+            int count = sequence.Count;
+            for (int idx = 0; idx < count; idx++)
+                _items.Add(sequence[idx]);
+        }
+
+        public void Add(CObject value)
+        {
+            _items.Add(value);
+        }
+
+        public void Clear()
+        {
+            _items.Clear();
+        }
+
+        public bool Contains(CObject value)
+        {
+            return _items.Contains(value);
+        }
+
+        public int IndexOf(CObject value)
+        {
+            return _items.IndexOf(value);
+        }
+
+        public void Insert(int index, CObject value)
+        {
+            _items.Insert(index, value);
+        }
+
+        public bool Remove(CObject value)
+        {
+            return _items.Remove(value);
+        }
+
+        public void RemoveAt(int index)
+        {
+            _items.RemoveAt(index);
+        }
+
+        public CObject this[int index]
+        {
+            get { return (CObject)_items[index]; }
+            set { _items[index] = value; }
+        }
+        public void CopyTo(CObject[] array, int index)
+        {
+            _items.CopyTo(array, index);
+        }
+
+
+        public int Count
+        {
+            get { return _items.Count; }
+        }
+
+        public IEnumerator<CObject> GetEnumerator()
+        {
+            return _items.GetEnumerator();
+        }
+
+        public byte[] ToContent()
+        {
+            Stream stream = new MemoryStream();
+            ContentWriter writer = new ContentWriter(stream);
+            WriteObject(writer);
+            writer.Close(false);
+
+            stream.Position = 0;
+            int count = (int)stream.Length;
+            byte[] bytes = new byte[count];
+            stream.Read(bytes, 0, count);
+#if !UWP
+            stream.Close();
+#endif
+            return bytes;
+        }
+
+        public override string ToString()
+        {
+            StringBuilder s = new StringBuilder();
+
+            for (int idx = 0; idx < _items.Count; idx++)
+                s.Append(_items[idx]);
+
+            return s.ToString();
+        }
+
+        IEnumerator IEnumerable.GetEnumerator()
+        {
+            return GetEnumerator();
+        }
+
+        internal override void WriteObject(ContentWriter writer)
+        {
+            for (int idx = 0; idx < _items.Count; idx++)
+                _items[idx].WriteObject(writer);
+        }
+
+        int IList<CObject>.IndexOf(CObject item)
+        {
+            throw new NotImplementedException();
+        }
+
+        void IList<CObject>.Insert(int index, CObject item)
+        {
+            throw new NotImplementedException();
+        }
+
+        void IList<CObject>.RemoveAt(int index)
+        {
+            throw new NotImplementedException();
+        }
+
+        CObject IList<CObject>.this[int index]
+        {
+            get
+            {
+                throw new NotImplementedException();
+            }
+            set
+            {
+                throw new NotImplementedException();
+            }
+        }
+
+        void ICollection<CObject>.Add(CObject item)
+        {
+            throw new NotImplementedException();
+        }
+
+        void ICollection<CObject>.Clear()
+        {
+            throw new NotImplementedException();
+        }
+
+        bool ICollection<CObject>.Contains(CObject item)
+        {
+            throw new NotImplementedException();
+        }
+
+        void ICollection<CObject>.CopyTo(CObject[] array, int arrayIndex)
+        {
+            throw new NotImplementedException();
+        }
+
+        int ICollection<CObject>.Count
+        {
+            get { throw new NotImplementedException(); }
+        }
+
+        bool ICollection<CObject>.IsReadOnly
+        {
+            get { throw new NotImplementedException(); }
+        }
+
+        bool ICollection<CObject>.Remove(CObject item)
+        {
+            throw new NotImplementedException();
+        }
+
+        IEnumerator<CObject> IEnumerable<CObject>.GetEnumerator()
+        {
+            throw new NotImplementedException();
+        }
+
+        List<CObject> _items = new List<CObject>();
+    }
+
+    public abstract class CNumber : CObject
+    {
+        public new CNumber Clone()
+        {
+            return (CNumber)Copy();
+        }
+
+        protected override CObject Copy()
+        {
+            CObject obj = base.Copy();
+            return obj;
+        }
+
+    }
+
+    [DebuggerDisplay("({Value})")]
+    public class CInteger : CNumber
+    {
+        public new CInteger Clone()
+        {
+            return (CInteger)Copy();
+        }
+
+        protected override CObject Copy()
+        {
+            CObject obj = base.Copy();
+            return obj;
+        }
+
+        public int Value
+        {
+            get { return _value; }
+            set { _value = value; }
+        }
+        int _value;
+
+        public override string ToString()
+        {
+            return _value.ToString(CultureInfo.InvariantCulture);
+        }
+
+        internal override void WriteObject(ContentWriter writer)
+        {
+            writer.WriteRaw(ToString() + " ");
+        }
+    }
+
+    [DebuggerDisplay("({Value})")]
+    public class CReal : CNumber
+    {
+        public new CReal Clone()
+        {
+            return (CReal)Copy();
+        }
+
+        protected override CObject Copy()
+        {
+            CObject obj = base.Copy();
+            return obj;
+        }
+
+        public double Value
+        {
+            get { return _value; }
+            set { _value = value; }
+        }
+        double _value;
+
+        public override string ToString()
+        {
+            const string format = Config.SignificantFigures1Plus9;
+            return _value.ToString(format, CultureInfo.InvariantCulture);
+        }
+
+        internal override void WriteObject(ContentWriter writer)
+        {
+            writer.WriteRaw(ToString() + " ");
+        }
+    }
+
+    public enum CStringType
+    {
+        String,
+
+        HexString,
+
+        UnicodeString,
+
+        UnicodeHexString,
+
+        Dictionary,
+    }
+
+    [DebuggerDisplay("({Value})")]
+    public class CString : CObject
+    {
+        public new CString Clone()
+        {
+            return (CString)Copy();
+        }
+
+        protected override CObject Copy()
+        {
+            CObject obj = base.Copy();
+            return obj;
+        }
+
+        public string Value
+        {
+            get { return _value; }
+            set { _value = value; }
+        }
+        string _value;
+
+        public CStringType CStringType
+        {
+            get { return _cStringType; }
+            set { _cStringType = value; }
+        }
+        CStringType _cStringType;
+
+        public override string ToString()
+        {
+            StringBuilder s = new StringBuilder();
+            switch (CStringType)
+            {
+                case CStringType.String:
+                    s.Append("(");
+                    int length = _value.Length;
+                    for (int ich = 0; ich < length; ich++)
+                    {
+                        char ch = _value[ich];
+                        switch (ch)
+                        {
+                            case Chars.LF:
+                                s.Append("\\n");
+                                break;
+
+                            case Chars.CR:
+                                s.Append("\\r");
+                                break;
+
+                            case Chars.HT:
+                                s.Append("\\t");
+                                break;
+
+                            case Chars.BS:
+                                s.Append("\\b");
+                                break;
+
+                            case Chars.FF:
+                                s.Append("\\f");
+                                break;
+
+                            case Chars.ParenLeft:
+                                s.Append("\\(");
+                                break;
+
+                            case Chars.ParenRight:
+                                s.Append("\\)");
+                                break;
+
+                            case Chars.BackSlash:
+                                s.Append("\\\\");
+                                break;
+
+                            default:
+
+                                s.Append(ch);
+                                break;
+                        }
+                    }
+                    s.Append(')');
+                    break;
+
+
+                case CStringType.HexString:
+                    throw new NotImplementedException();
+                case CStringType.UnicodeString:
+                    throw new NotImplementedException();
+                case CStringType.UnicodeHexString:
+                    throw new NotImplementedException();
+                case CStringType.Dictionary:
+                    s.Append(_value);
+                    break;
+
+                default:
+                    throw new ArgumentOutOfRangeException();
+            }
+            return s.ToString();
+        }
+
+        internal override void WriteObject(ContentWriter writer)
+        {
+            writer.WriteRaw(ToString());
+        }
+    }
+
+    [DebuggerDisplay("({Name})")]
+    public class CName : CObject
+    {
+        public CName()
+        {
+            _name = "/";
+        }
+
+        public CName(string name)
+        {
+            Name = name;
+        }
+
+        public new CName Clone()
+        {
+            return (CName)Copy();
+        }
+
+        protected override CObject Copy()
+        {
+            CObject obj = base.Copy();
+            return obj;
+        }
+
+        public string Name
+        {
+            get { return _name; }
+            set
+            {
+                if (String.IsNullOrEmpty(_name))
+                    throw new ArgumentNullException(nameof(value));
+                if (_name[0] != '/')
+                    throw new ArgumentException(PSSR.NameMustStartWithSlash);
+                _name = value;
+            }
+        }
+        string _name;
+
+        public override string ToString()
+        {
+            return _name;
+        }
+
+        internal override void WriteObject(ContentWriter writer)
+        {
+            writer.WriteRaw(ToString() + " ");
+        }
+    }
+
+    [DebuggerDisplay("(count={Count})")]
+    public class CArray : CSequence
+    {
+        public new CArray Clone()
+        {
+            return (CArray)Copy();
+        }
+
+        protected override CObject Copy()
+        {
+            CObject obj = base.Copy();
+            return obj;
+        }
+
+        public override string ToString()
+        {
+            return "[" + base.ToString() + "]";
+        }
+
+        internal override void WriteObject(ContentWriter writer)
+        {
+            writer.WriteRaw(ToString());
+        }
+    }
+
+    [DebuggerDisplay("({Name}, operands={Operands.Count})")]
+    public class COperator : CObject
+    {
+        protected COperator()
+        { }
+
+        internal COperator(OpCode opcode)
+        {
+            _opcode = opcode;
+        }
+
+        public new COperator Clone()
+        {
+            return (COperator)Copy();
+        }
+
+        protected override CObject Copy()
+        {
+            CObject obj = base.Copy();
+            return obj;
+        }
+
+        public virtual string Name
+        {
+            get { return _opcode.Name; }
+        }
+
+        public CSequence Operands
+        {
+            get { return _seqence ?? (_seqence = new CSequence()); }
+        }
+        CSequence _seqence;
+
+        public OpCode OpCode
+        {
+            get { return _opcode; }
+        }
+        readonly OpCode _opcode;
+
+
+        public override string ToString()
+        {
+            if (_opcode.OpCodeName == OpCodeName.Dictionary)
+                return " ";
+
+            return Name;
+        }
+
+        internal override void WriteObject(ContentWriter writer)
+        {
+            int count = _seqence != null ? _seqence.Count : 0;
+            for (int idx = 0; idx < count; idx++)
+            {
+                _seqence[idx].WriteObject(writer);
+            }
+            writer.WriteLineRaw(ToString());
+        }
+    }
+    public sealed class OpCode
+    {
+        internal OpCode(string name, OpCodeName opcodeName, int operands, string postscript, OpCodeFlags flags, string description)
+        {
+            Name = name;
+            OpCodeName = opcodeName;
+            Operands = operands;
+            Postscript = postscript;
+            Flags = flags;
+            Description = description;
+        }
+
+        public readonly string Name;
+
+        public readonly OpCodeName OpCodeName;
+
+        public readonly int Operands;
+
+        public readonly OpCodeFlags Flags;
+
+        public readonly string Postscript;
+
+        public readonly string Description;
+    }
+
+    public static class OpCodes
+    {
+        public static COperator OperatorFromName(string name)
+        {
+            COperator op = null;
+            OpCode opcode = StringToOpCode[name];
+            if (opcode != null)
+            {
+                op = new COperator(opcode);
+            }
+            else
+            {
+                Debug.Assert(false, "Unknown operator in PDF content stream.");
+            }
+            return op;
+        }
+
+        static OpCodes()
+        {
+            StringToOpCode = new Dictionary<string, OpCode>();
+            for (int idx = 0; idx < ops.Length; idx++)
+            {
+                OpCode op = ops[idx];
+                StringToOpCode.Add(op.Name, op);
+            }
+        }
+        static readonly Dictionary<string, OpCode> StringToOpCode;
+
+        static readonly OpCode Dictionary = new OpCode("Dictionary", OpCodeName.Dictionary, -1, "name, dictionary", OpCodeFlags.None,
+            "E.g.: /Name << ... >>");
+
+        static readonly OpCode b = new OpCode("b", OpCodeName.b, 0, "closepath, fill, stroke", OpCodeFlags.None,
+            "Close, fill, and stroke path using nonzero winding number");
+
+        static readonly OpCode B = new OpCode("B", OpCodeName.B, 0, "fill, stroke", OpCodeFlags.None,
+            "Fill and stroke path using nonzero winding number rule");
+
+        static readonly OpCode bx = new OpCode("b*", OpCodeName.bx, 0, "closepath, eofill, stroke", OpCodeFlags.None,
+            "Close, fill, and stroke path using even-odd rule");
+
+        static readonly OpCode Bx = new OpCode("B*", OpCodeName.Bx, 0, "eofill, stroke", OpCodeFlags.None,
+            "Fill and stroke path using even-odd rule");
+
+        static readonly OpCode BDC = new OpCode("BDC", OpCodeName.BDC, -1, null, OpCodeFlags.None,
+            "(PDF 1.2) Begin marked-content sequence with property list");
+
+        static readonly OpCode BI = new OpCode("BI", OpCodeName.BI, 0, null, OpCodeFlags.None,
+            "Begin inline image object");
+
+        static readonly OpCode BMC = new OpCode("BMC", OpCodeName.BMC, 1, null, OpCodeFlags.None,
+            "(PDF 1.2) Begin marked-content sequence");
+
+        static readonly OpCode BT = new OpCode("BT", OpCodeName.BT, 0, null, OpCodeFlags.None,
+            "Begin text object");
+
+        static readonly OpCode BX = new OpCode("BX", OpCodeName.BX, 0, null, OpCodeFlags.None,
+            "(PDF 1.1) Begin compatibility section");
+
+        static readonly OpCode c = new OpCode("c", OpCodeName.c, 6, "curveto", OpCodeFlags.None,
+            "Append curved segment to path (three control points)");
+
+        static readonly OpCode cm = new OpCode("cm", OpCodeName.cm, 6, "concat", OpCodeFlags.None,
+            "Concatenate matrix to current transformation matrix");
+
+        static readonly OpCode CS = new OpCode("CS", OpCodeName.CS, 1, "setcolorspace", OpCodeFlags.None,
+            "(PDF 1.1) Set color space for stroking operations");
+
+        static readonly OpCode cs = new OpCode("cs", OpCodeName.cs, 1, "setcolorspace", OpCodeFlags.None,
+            "(PDF 1.1) Set color space for nonstroking operations");
+
+        static readonly OpCode d = new OpCode("d", OpCodeName.d, 2, "setdash", OpCodeFlags.None,
+            "Set line dash pattern");
+
+        static readonly OpCode d0 = new OpCode("d0", OpCodeName.d0, 2, "setcharwidth", OpCodeFlags.None,
+            "Set glyph width in Type 3 font");
+
+        static readonly OpCode d1 = new OpCode("d1", OpCodeName.d1, 6, "setcachedevice", OpCodeFlags.None,
+            "Set glyph width and bounding box in Type 3 font");
+
+        static readonly OpCode Do = new OpCode("Do", OpCodeName.Do, 1, null, OpCodeFlags.None,
+            "Invoke named XObject");
+
+        static readonly OpCode DP = new OpCode("DP", OpCodeName.DP, 2, null, OpCodeFlags.None,
+            "(PDF 1.2) Define marked-content point with property list");
+
+        static readonly OpCode EI = new OpCode("EI", OpCodeName.EI, 0, null, OpCodeFlags.None,
+            "End inline image object");
+
+        static readonly OpCode EMC = new OpCode("EMC", OpCodeName.EMC, 0, null, OpCodeFlags.None,
+            "(PDF 1.2) End marked-content sequence");
+
+        static readonly OpCode ET = new OpCode("ET", OpCodeName.ET, 0, null, OpCodeFlags.None,
+            "End text object");
+
+        static readonly OpCode EX = new OpCode("EX", OpCodeName.EX, 0, null, OpCodeFlags.None,
+            "(PDF 1.1) End compatibility section");
+
+        static readonly OpCode f = new OpCode("f", OpCodeName.f, 0, "fill", OpCodeFlags.None,
+            "Fill path using nonzero winding number rule");
+
+        static readonly OpCode F = new OpCode("F", OpCodeName.F, 0, "fill", OpCodeFlags.None,
+            "Fill path using nonzero winding number rule (obsolete)");
+
+        static readonly OpCode fx = new OpCode("f*", OpCodeName.fx, 0, "eofill", OpCodeFlags.None,
+            "Fill path using even-odd rule");
+
+        static readonly OpCode G = new OpCode("G", OpCodeName.G, 1, "setgray", OpCodeFlags.None,
+            "Set gray level for stroking operations");
+
+        static readonly OpCode g = new OpCode("g", OpCodeName.g, 1, "setgray", OpCodeFlags.None,
+            "Set gray level for nonstroking operations");
+
+        static readonly OpCode gs = new OpCode("gs", OpCodeName.gs, 1, null, OpCodeFlags.None,
+            "(PDF 1.2) Set parameters from graphics state parameter dictionary");
+
+        static readonly OpCode h = new OpCode("h", OpCodeName.h, 0, "closepath", OpCodeFlags.None,
+            "Close subpath");
+
+        static readonly OpCode i = new OpCode("i", OpCodeName.i, 1, "setflat", OpCodeFlags.None,
+            "Set flatness tolerance");
+
+        static readonly OpCode ID = new OpCode("ID", OpCodeName.ID, 0, null, OpCodeFlags.None,
+            "Begin inline image data");
+
+        static readonly OpCode j = new OpCode("j", OpCodeName.j, 1, "setlinejoin", OpCodeFlags.None,
+            "Set line join style");
+
+        static readonly OpCode J = new OpCode("J", OpCodeName.J, 1, "setlinecap", OpCodeFlags.None,
+            "Set line cap style");
+
+        static readonly OpCode K = new OpCode("K", OpCodeName.K, 4, "setcmykcolor", OpCodeFlags.None,
+            "Set CMYK color for stroking operations");
+
+        static readonly OpCode k = new OpCode("k", OpCodeName.k, 4, "setcmykcolor", OpCodeFlags.None,
+            "Set CMYK color for nonstroking operations");
+
+        static readonly OpCode l = new OpCode("l", OpCodeName.l, 2, "lineto", OpCodeFlags.None,
+            "Append straight line segment to path");
+
+        static readonly OpCode m = new OpCode("m", OpCodeName.m, 2, "moveto", OpCodeFlags.None,
+            "Begin new subpath");
+
+        static readonly OpCode M = new OpCode("M", OpCodeName.M, 1, "setmiterlimit", OpCodeFlags.None,
+            "Set miter limit");
+
+        static readonly OpCode MP = new OpCode("MP", OpCodeName.MP, 1, null, OpCodeFlags.None,
+            "(PDF 1.2) Define marked-content point");
+
+        static readonly OpCode n = new OpCode("n", OpCodeName.n, 0, null, OpCodeFlags.None,
+            "End path without filling or stroking");
+
+        static readonly OpCode q = new OpCode("q", OpCodeName.q, 0, "gsave", OpCodeFlags.None,
+            "Save graphics state");
+
+        static readonly OpCode Q = new OpCode("Q", OpCodeName.Q, 0, "grestore", OpCodeFlags.None,
+            "Restore graphics state");
+
+        static readonly OpCode re = new OpCode("re", OpCodeName.re, 4, null, OpCodeFlags.None,
+            "Append rectangle to path");
+
+        static readonly OpCode RG = new OpCode("RG", OpCodeName.RG, 3, "setrgbcolor", OpCodeFlags.None,
+            "Set RGB color for stroking operations");
+
+        static readonly OpCode rg = new OpCode("rg", OpCodeName.rg, 3, "setrgbcolor", OpCodeFlags.None,
+            "Set RGB color for nonstroking operations");
+
+        static readonly OpCode ri = new OpCode("ri", OpCodeName.ri, 1, null, OpCodeFlags.None,
+            "Set color rendering intent");
+
+        static readonly OpCode s = new OpCode("s", OpCodeName.s, 0, "closepath,stroke", OpCodeFlags.None,
+            "Close and stroke path");
+
+        static readonly OpCode S = new OpCode("S", OpCodeName.S, 0, "stroke", OpCodeFlags.None,
+            "Stroke path");
+
+        static readonly OpCode SC = new OpCode("SC", OpCodeName.SC, -1, "setcolor", OpCodeFlags.None,
+            "(PDF 1.1) Set color for stroking operations");
+
+        static readonly OpCode sc = new OpCode("sc", OpCodeName.sc, -1, "setcolor", OpCodeFlags.None,
+            "(PDF 1.1) Set color for nonstroking operations");
+
+        static readonly OpCode SCN = new OpCode("SCN", OpCodeName.SCN, -1, "setcolor", OpCodeFlags.None,
+            "(PDF 1.2) Set color for stroking operations (ICCBased and special color spaces)");
+
+        static readonly OpCode scn = new OpCode("scn", OpCodeName.scn, -1, "setcolor", OpCodeFlags.None,
+            "(PDF 1.2) Set color for nonstroking operations (ICCBased and special color spaces)");
+
+        static readonly OpCode sh = new OpCode("sh", OpCodeName.sh, 1, "shfill", OpCodeFlags.None,
+            "(PDF 1.3) Paint area defined by shading pattern");
+
+        static readonly OpCode Tx = new OpCode("T*", OpCodeName.Tx, 0, null, OpCodeFlags.None,
+            "Move to start of next text line");
+
+        static readonly OpCode Tc = new OpCode("Tc", OpCodeName.Tc, 1, null, OpCodeFlags.None,
+            "Set character spacing");
+
+        static readonly OpCode Td = new OpCode("Td", OpCodeName.Td, 2, null, OpCodeFlags.None,
+            "Move text position");
+
+        static readonly OpCode TD = new OpCode("TD", OpCodeName.TD, 2, null, OpCodeFlags.None,
+            "Move text position and set leading");
+
+        static readonly OpCode Tf = new OpCode("Tf", OpCodeName.Tf, 2, "selectfont", OpCodeFlags.None,
+            "Set text font and size");
+
+        static readonly OpCode Tj = new OpCode("Tj", OpCodeName.Tj, 1, "show", OpCodeFlags.TextOut,
+            "Show text");
+
+        static readonly OpCode TJ = new OpCode("TJ", OpCodeName.TJ, 1, null, OpCodeFlags.TextOut,
+            "Show text, allowing individual glyph positioning");
+
+        static readonly OpCode TL = new OpCode("TL", OpCodeName.TL, 1, null, OpCodeFlags.None,
+            "Set text leading");
+
+        static readonly OpCode Tm = new OpCode("Tm", OpCodeName.Tm, 6, null, OpCodeFlags.None,
+            "Set text matrix and text line matrix");
+
+        static readonly OpCode Tr = new OpCode("Tr", OpCodeName.Tr, 1, null, OpCodeFlags.None,
+            "Set text rendering mode");
+
+        static readonly OpCode Ts = new OpCode("Ts", OpCodeName.Ts, 1, null, OpCodeFlags.None,
+            "Set text rise");
+
+        static readonly OpCode Tw = new OpCode("Tw", OpCodeName.Tw, 1, null, OpCodeFlags.None,
+            "Set word spacing");
+
+        static readonly OpCode Tz = new OpCode("Tz", OpCodeName.Tz, 1, null, OpCodeFlags.None,
+            "Set horizontal text scaling");
+
+        static readonly OpCode v = new OpCode("v", OpCodeName.v, 4, "curveto", OpCodeFlags.None,
+            "Append curved segment to path (initial point replicated)");
+
+        static readonly OpCode w = new OpCode("w", OpCodeName.w, 1, "setlinewidth", OpCodeFlags.None,
+            "Set line width");
+
+        static readonly OpCode W = new OpCode("W", OpCodeName.W, 0, "clip", OpCodeFlags.None,
+            "Set clipping path using nonzero winding number rule");
+
+        static readonly OpCode Wx = new OpCode("W*", OpCodeName.Wx, 0, "eoclip", OpCodeFlags.None,
+            "Set clipping path using even-odd rule");
+
+        static readonly OpCode y = new OpCode("y", OpCodeName.y, 4, "curveto", OpCodeFlags.None,
+            "Append curved segment to path (final point replicated)");
+
+        static readonly OpCode QuoteSingle = new OpCode("'", OpCodeName.QuoteSingle, 1, null, OpCodeFlags.TextOut,
+            "Move to next line and show text");
+
+        static readonly OpCode QuoteDbl = new OpCode("\"", OpCodeName.QuoteDbl, 3, null, OpCodeFlags.TextOut,
+            "Set word and character spacing, move to next line, and show text");
+
+        static readonly OpCode[] ops =
+            {
+                Dictionary,
+                b, B, bx, Bx, BDC, BI, BMC, BT, BX, c, cm, CS, cs, d, d0, d1, Do,
+                DP, EI, EMC, ET, EX, f, F, fx, G, g, gs, h, i, ID, j, J, K, k, l, m, M, MP,
+                n, q, Q, re, RG, rg, ri, s, S, SC, sc, SCN, scn, sh,
+                Tx, Tc, Td, TD, Tf, Tj, TJ, TL, Tm, Tr, Ts, Tw, Tz, v, w, W, Wx, y,
+                QuoteSingle, QuoteDbl
+            };
+    }
+    public class Ascii85Decode : Filter
+    {
+        public override byte[] Encode(byte[] data)
+        {
+            if (data == null)
+                throw new ArgumentNullException("data");
+
+            int length = data.Length;
+            int words = length / 4;
+            int rest = length - (words * 4);
+            byte[] result = new byte[words * 5 + (rest == 0 ? 0 : rest + 1) + 2];
+
+            int idxIn = 0, idxOut = 0;
+            int wCount = 0;
+            while (wCount < words)
+            {
+                uint val = ((uint)data[idxIn++] << 24) + ((uint)data[idxIn++] << 16) + ((uint)data[idxIn++] << 8) + data[idxIn++];
+                if (val == 0)
+                {
+                    result[idxOut++] = (byte)'z';
+                }
+                else
+                {
+                    byte c5 = (byte)(val % 85 + '!');
+                    val /= 85;
+                    byte c4 = (byte)(val % 85 + '!');
+                    val /= 85;
+                    byte c3 = (byte)(val % 85 + '!');
+                    val /= 85;
+                    byte c2 = (byte)(val % 85 + '!');
+                    val /= 85;
+                    byte c1 = (byte)(val + '!');
+
+                    result[idxOut++] = c1;
+                    result[idxOut++] = c2;
+                    result[idxOut++] = c3;
+                    result[idxOut++] = c4;
+                    result[idxOut++] = c5;
+                }
+                wCount++;
+            }
+            if (rest == 1)
+            {
+                uint val = (uint)data[idxIn] << 24;
+                val /= 85 * 85 * 85;
+                byte c2 = (byte)(val % 85 + '!');
+                val /= 85;
+                byte c1 = (byte)(val + '!');
+
+                result[idxOut++] = c1;
+                result[idxOut++] = c2;
+            }
+            else if (rest == 2)
+            {
+                uint val = ((uint)data[idxIn++] << 24) + ((uint)data[idxIn] << 16);
+                val /= 85 * 85;
+                byte c3 = (byte)(val % 85 + '!');
+                val /= 85;
+                byte c2 = (byte)(val % 85 + '!');
+                val /= 85;
+                byte c1 = (byte)(val + '!');
+
+                result[idxOut++] = c1;
+                result[idxOut++] = c2;
+                result[idxOut++] = c3;
+            }
+            else if (rest == 3)
+            {
+                uint val = ((uint)data[idxIn++] << 24) + ((uint)data[idxIn++] << 16) + ((uint)data[idxIn] << 8);
+                val /= 85;
+                byte c4 = (byte)(val % 85 + '!');
+                val /= 85;
+                byte c3 = (byte)(val % 85 + '!');
+                val /= 85;
+                byte c2 = (byte)(val % 85 + '!');
+                val /= 85;
+                byte c1 = (byte)(val + '!');
+
+                result[idxOut++] = c1;
+                result[idxOut++] = c2;
+                result[idxOut++] = c3;
+                result[idxOut++] = c4;
+            }
+            result[idxOut++] = (byte)'~';
+            result[idxOut++] = (byte)'>';
+
+            if (idxOut < result.Length)
+                Array.Resize(ref result, idxOut);
+
+            return result;
+        }
+
+        public override byte[] Decode(byte[] data, FilterParms parms)
+        {
+            if (data == null)
+                throw new ArgumentNullException("data");
+
+            int idx;
+            int length = data.Length;
+            int zCount = 0;
+            int idxOut = 0;
+            for (idx = 0; idx < length; idx++)
+            {
+                char ch = (char)data[idx];
+                if (ch >= '!' && ch <= 'u')
+                    data[idxOut++] = (byte)ch;
+                else if (ch == 'z')
+                {
+                    data[idxOut++] = (byte)ch;
+                    zCount++;
+                }
+                else if (ch == '~')
+                {
+                    if ((char)data[idx + 1] != '>')
+                        throw new ArgumentException("Illegal character.", "data");
+                    break;
+                }
+            }
+            if (idx == length)
+                throw new ArgumentException("Illegal character.", "data");
+
+            length = idxOut;
+            int nonZero = length - zCount;
+            int byteCount = 4 * (zCount + (nonZero / 5));
+
+            int remainder = nonZero % 5;
+            if (remainder == 1)
+                throw new InvalidOperationException("Illegal character.");
+
+            if (remainder != 0)
+                byteCount += remainder - 1;
+
+            byte[] output = new byte[byteCount];
+
+            idxOut = 0;
+            idx = 0;
+            while (idx + 4 < length)
+            {
+                char ch = (char)data[idx];
+                if (ch == 'z')
+                {
+                    idx++;
+                    idxOut += 4;
+                }
+                else
+                {
+                    long value =
+                      (long)(data[idx++] - '!') * (85 * 85 * 85 * 85) +
+                      (uint)(data[idx++] - '!') * (85 * 85 * 85) +
+                      (uint)(data[idx++] - '!') * (85 * 85) +
+                      (uint)(data[idx++] - '!') * 85 +
+                      (uint)(data[idx++] - '!');
+
+                    if (value > UInt32.MaxValue)
+                        throw new InvalidOperationException("Value of group greater than 2 power 32 - 1.");
+
+                    output[idxOut++] = (byte)(value >> 24);
+                    output[idxOut++] = (byte)(value >> 16);
+                    output[idxOut++] = (byte)(value >> 8);
+                    output[idxOut++] = (byte)value;
+                }
+            }
+
+            if (remainder == 2)
+            {
+                uint value =
+                  (uint)(data[idx++] - '!') * (85 * 85 * 85 * 85) +
+                  (uint)(data[idx] - '!') * (85 * 85 * 85);
+
+                if (value != 0)
+                    value += 0x01000000;
+
+                output[idxOut] = (byte)(value >> 24);
+            }
+            else if (remainder == 3)
+            {
+                int idxIn = idx;
+                uint value =
+                  (uint)(data[idx++] - '!') * (85 * 85 * 85 * 85) +
+                  (uint)(data[idx++] - '!') * (85 * 85 * 85) +
+                  (uint)(data[idx] - '!') * (85 * 85);
+
+                if (value != 0)
+                {
+                    value &= 0xFFFF0000;
+                    uint val = value / (85 * 85);
+                    byte c3 = (byte)(val % 85 + '!');
+                    val /= 85;
+                    byte c2 = (byte)(val % 85 + '!');
+                    val /= 85;
+                    byte c1 = (byte)(val + '!');
+                    if (c1 != data[idxIn] || c2 != data[idxIn + 1] || c3 != data[idxIn + 2])
+                    {
+                        value += 0x00010000;
+                    }
+                }
+                output[idxOut++] = (byte)(value >> 24);
+                output[idxOut] = (byte)(value >> 16);
+            }
+            else if (remainder == 4)
+            {
+                int idxIn = idx;
+                uint value =
+                  (uint)(data[idx++] - '!') * (85 * 85 * 85 * 85) +
+                  (uint)(data[idx++] - '!') * (85 * 85 * 85) +
+                  (uint)(data[idx++] - '!') * (85 * 85) +
+                  (uint)(data[idx] - '!') * 85;
+
+                if (value != 0)
+                {
+                    value &= 0xFFFFFF00;
+                    uint val = value / 85;
+                    byte c4 = (byte)(val % 85 + '!');
+                    val /= 85;
+                    byte c3 = (byte)(val % 85 + '!');
+                    val /= 85;
+                    byte c2 = (byte)(val % 85 + '!');
+                    val /= 85;
+                    byte c1 = (byte)(val + '!');
+                    if (c1 != data[idxIn] || c2 != data[idxIn + 1] || c3 != data[idxIn + 2] || c4 != data[idxIn + 3])
+                    {
+                        value += 0x00000100;
+                    }
+                }
+                output[idxOut++] = (byte)(value >> 24);
+                output[idxOut++] = (byte)(value >> 16);
+                output[idxOut] = (byte)(value >> 8);
+            }
+            return output;
+        }
+    }
+    public class AsciiHexDecode : Filter
+    {
+        public override byte[] Encode(byte[] data)
+        {
+            if (data == null)
+                throw new ArgumentNullException("data");
+
+            int count = data.Length;
+            byte[] bytes = new byte[2 * count];
+            for (int i = 0, j = 0; i < count; i++)
+            {
+                byte b = data[i];
+                bytes[j++] = (byte)((b >> 4) + ((b >> 4) < 10 ? (byte)'0' : (byte)('A' - 10)));
+                bytes[j++] = (byte)((b & 0xF) + ((b & 0xF) < 10 ? (byte)'0' : (byte)('A' - 10)));
+            }
+            return bytes;
+        }
+
+        public override byte[] Decode(byte[] data, FilterParms parms)
+        {
+            if (data == null)
+                throw new ArgumentNullException("data");
+
+            data = RemoveWhiteSpace(data);
+            int count = data.Length;
+            if (count > 0 && data[count - 1] == '>')
+                --count;
+            if (count % 2 == 1)
+            {
+                count++;
+                byte[] temp = data;
+                data = new byte[count];
+                temp.CopyTo(data, 0);
+            }
+            count >>= 1;
+            byte[] bytes = new byte[count];
+            for (int i = 0, j = 0; i < count; i++)
+            {
+                byte hi = data[j++];
+                byte lo = data[j++];
+                if (hi >= 'a' && hi <= 'f')
+                    hi -= 32;
+                if (lo >= 'a' && lo <= 'f')
+                    lo -= 32;
+                bytes[i] = (byte)((hi > '9' ? hi - '7' : hi - '0') * 16 + (lo > '9' ? lo - '7' : lo - '0'));
+            }
+            return bytes;
+        }
+    }
+    public class FilterParms
+    {
+    }
+
+    public abstract class Filter
+    {
+        public abstract byte[] Encode(byte[] data);
+
+        public virtual byte[] Encode(string rawString)
+        {
+            byte[] bytes = PdfEncoders.RawEncoding.GetBytes(rawString);
+            bytes = Encode(bytes);
+            return bytes;
+        }
+
+        public abstract byte[] Decode(byte[] data, FilterParms parms);
+
+        public byte[] Decode(byte[] data)
+        {
+            return Decode(data, null);
+        }
+
+        public virtual string DecodeToString(byte[] data, FilterParms parms)
+        {
+            byte[] bytes = Decode(data, parms);
+            string text = PdfEncoders.RawEncoding.GetString(bytes, 0, bytes.Length);
+            return text;
+        }
+
+        public string DecodeToString(byte[] data)
+        {
+            return DecodeToString(data, null);
+        }
+
+        protected byte[] RemoveWhiteSpace(byte[] data)
+        {
+            int count = data.Length;
+            int j = 0;
+            for (int i = 0; i < count; i++, j++)
+            {
+                switch (data[i])
+                {
+                    case (byte)Chars.NUL:
+                    case (byte)Chars.HT:
+                    case (byte)Chars.LF:
+                    case (byte)Chars.FF:
+                    case (byte)Chars.CR:
+                    case (byte)Chars.SP:
+                        j--;
+                        break;
+
+                    default:
+                        if (i != j)
+                            data[j] = data[i];
+                        break;
+                }
+            }
+            if (j < count)
+            {
+                byte[] temp = data;
+                data = new byte[j];
+                for (int idx = 0; idx < j; idx++)
+                    data[idx] = temp[idx];
+            }
+            return data;
+        }
+    }
+    public static class Filtering
+    {
+        public static Filter GetFilter(string filterName)
+        {
+            if (filterName.StartsWith("/"))
+                filterName = filterName.Substring(1);
+
+            switch (filterName)
+            {
+                case "ASCIIHexDecode":
+                case "AHx":
+                    return _asciiHexDecode ?? (_asciiHexDecode = new AsciiHexDecode());
+
+                case "ASCII85Decode":
+                case "A85":
+                    return _ascii85Decode ?? (_ascii85Decode = new Ascii85Decode());
+
+                case "LZWDecode":
+                case "LZW":
+                    return _lzwDecode ?? (_lzwDecode = new LzwDecode());
+
+                case "FlateDecode":
+                case "Fl":
+                    return _flateDecode ?? (_flateDecode = new FlateDecode());
+
+                case "RunLengthDecode":
+                case "CCITTFaxDecode":
+                case "JBIG2Decode":
+                case "DCTDecode":
+                case "JPXDecode":
+                case "Crypt":
+                    Debug.WriteLine("Filter not implemented: " + filterName);
+                    return null;
+            }
+            throw new NotImplementedException("Unknown filter: " + filterName);
+        }
+
+        public static AsciiHexDecode ASCIIHexDecode
+        {
+            get { return _asciiHexDecode ?? (_asciiHexDecode = new AsciiHexDecode()); }
+        }
+        static AsciiHexDecode _asciiHexDecode;
+
+        public static Ascii85Decode ASCII85Decode
+        {
+            get { return _ascii85Decode ?? (_ascii85Decode = new Ascii85Decode()); }
+        }
+        static Ascii85Decode _ascii85Decode;
+
+        public static LzwDecode LzwDecode
+        {
+            get { return _lzwDecode ?? (_lzwDecode = new LzwDecode()); }
+        }
+        static LzwDecode _lzwDecode;
+
+        public static FlateDecode FlateDecode
+        {
+            get { return _flateDecode ?? (_flateDecode = new FlateDecode()); }
+        }
+        static FlateDecode _flateDecode;
+
+        public static byte[] Encode(byte[] data, string filterName)
+        {
+            Filter filter = GetFilter(filterName);
+            if (filter != null)
+                return filter.Encode(data);
+            return null;
+        }
+
+        public static byte[] Encode(string rawString, string filterName)
+        {
+            Filter filter = GetFilter(filterName);
+            if (filter != null)
+                return filter.Encode(rawString);
+            return null;
+        }
+
+        public static byte[] Decode(byte[] data, string filterName, FilterParms parms)
+        {
+            Filter filter = GetFilter(filterName);
+            if (filter != null)
+                return filter.Decode(data, parms);
+            return null;
+        }
+
+        public static byte[] Decode(byte[] data, string filterName)
+        {
+            Filter filter = GetFilter(filterName);
+            if (filter != null)
+                return filter.Decode(data, null);
+            return null;
+        }
+
+        public static byte[] Decode(byte[] data, PdfItem filterItem)
+        {
+            byte[] result = null;
+            if (filterItem is PdfName)
+            {
+                Filter filter = GetFilter(filterItem.ToString());
+                if (filter != null)
+                    result = filter.Decode(data);
+            }
+            else if (filterItem is PdfArray)
+            {
+                PdfArray array = (PdfArray)filterItem;
+                foreach (PdfItem item in array)
+                    data = Decode(data, item);
+                result = data;
+            }
+            return result;
+        }
+
+        public static string DecodeToString(byte[] data, string filterName, FilterParms parms)
+        {
+            Filter filter = GetFilter(filterName);
+            if (filter != null)
+                return filter.DecodeToString(data, parms);
+            return null;
+        }
+
+        public static string DecodeToString(byte[] data, string filterName)
+        {
+            Filter filter = GetFilter(filterName);
+            if (filter != null)
+                return filter.DecodeToString(data, null);
+            return null;
+        }
+    }
+    public class FlateDecode : Filter
+    {
+        public override byte[] Encode(byte[] data)
+        {
+            return Encode(data, PdfFlateEncodeMode.Default);
+        }
+
+        public byte[] Encode(byte[] data, PdfFlateEncodeMode mode)
+        {
+            MemoryStream ms = new MemoryStream();
+
+
+            int level = Deflater.DEFAULT_COMPRESSION;
+            switch (mode)
+            {
+                case PdfFlateEncodeMode.BestCompression:
+                    level = Deflater.BEST_COMPRESSION;
+                    break;
+                case PdfFlateEncodeMode.BestSpeed:
+                    level = Deflater.BEST_SPEED;
+                    break;
+            }
+            DeflaterOutputStream zip = new DeflaterOutputStream(ms, new Deflater(level, false));
+            zip.Write(data, 0, data.Length);
+            zip.Finish();
+
+#if !NETFX_CORE && !UWP
+            ms.Capacity = (int)ms.Length;
+            return ms.GetBuffer();
+#endif
+        }
+
+        public override byte[] Decode(byte[] data, FilterParms parms)
+        {
+            MemoryStream msInput = new MemoryStream(data);
+            MemoryStream msOutput = new MemoryStream();
+#if NET_ZIP
+            
+#else
+            InflaterInputStream iis = new InflaterInputStream(msInput, new Inflater(false));
+            int cbRead;
+            byte[] abResult = new byte[32768];
+            do
+            {
+                cbRead = iis.Read(abResult, 0, abResult.Length);
+                if (cbRead > 0)
+                    msOutput.Write(abResult, 0, cbRead);
+            }
+            while (cbRead > 0);
+#if UWP
+            
+#else
+            iis.Close();
+#endif
+            msOutput.Flush();
+            if (msOutput.Length >= 0)
+            {
+#if NETFX_CORE || UWP
+                
+#else
+                msOutput.Capacity = (int)msOutput.Length;
+                return msOutput.GetBuffer();
+#endif
+            }
+            return null;
+#endif
+        }
+    }
+    public class LzwDecode : Filter
+    {
+        public override byte[] Encode(byte[] data)
+        {
+            throw new NotImplementedException("PDFsharp does not support LZW encoding.");
+        }
+
+        public override byte[] Decode(byte[] data, FilterParms parms)
+        {
+            if (data[0] == 0x00 && data[1] == 0x01)
+                throw new Exception("LZW flavour not supported.");
+
+            MemoryStream outputStream = new MemoryStream();
+
+            InitializeDictionary();
+
+            _data = data;
+            _bytePointer = 0;
+            _nextData = 0;
+            _nextBits = 0;
+            int code, oldCode = 0;
+            byte[] str;
+
+            while ((code = NextCode) != 257)
+            {
+                if (code == 256)
+                {
+                    InitializeDictionary();
+                    code = NextCode;
+                    if (code == 257)
+                    {
+                        break;
+                    }
+                    outputStream.Write(_stringTable[code], 0, _stringTable[code].Length);
+                    oldCode = code;
+
+                }
+                else
+                {
+                    if (code < _tableIndex)
+                    {
+                        str = _stringTable[code];
+                        outputStream.Write(str, 0, str.Length);
+                        AddEntry(_stringTable[oldCode], str[0]);
+                        oldCode = code;
+                    }
+                    else
+                    {
+                        str = _stringTable[oldCode];
+                        outputStream.Write(str, 0, str.Length);
+                        AddEntry(str, str[0]);
+                        oldCode = code;
+                    }
+                }
+            }
+
+            if (outputStream.Length >= 0)
+            {
+#if !NETFX_CORE && !UWP
+                outputStream.Capacity = (int)outputStream.Length;
+                return outputStream.GetBuffer();
+#endif
+            }
+            return null;
+        }
+
+        void InitializeDictionary()
+        {
+            _stringTable = new byte[8192][];
+
+            for (int i = 0; i < 256; i++)
+            {
+                _stringTable[i] = new byte[1];
+                _stringTable[i][0] = (byte)i;
+            }
+
+            _tableIndex = 258;
+            _bitsToGet = 9;
+        }
+
+        void AddEntry(byte[] oldstring, byte newstring)
+        {
+            int length = oldstring.Length;
+            byte[] str = new byte[length + 1];
+            Array.Copy(oldstring, 0, str, 0, length);
+            str[length] = newstring;
+
+            _stringTable[_tableIndex++] = str;
+
+            if (_tableIndex == 511)
+                _bitsToGet = 10;
+            else if (_tableIndex == 1023)
+                _bitsToGet = 11;
+            else if (_tableIndex == 2047)
+                _bitsToGet = 12;
+        }
+
+        int NextCode
+        {
+            get
+            {
+                try
+                {
+                    _nextData = (_nextData << 8) | (_data[_bytePointer++] & 0xff);
+                    _nextBits += 8;
+
+                    if (_nextBits < _bitsToGet)
+                    {
+                        _nextData = (_nextData << 8) | (_data[_bytePointer++] & 0xff);
+                        _nextBits += 8;
+                    }
+
+                    int code = (_nextData >> (_nextBits - _bitsToGet)) & _andTable[_bitsToGet - 9];
+                    _nextBits -= _bitsToGet;
+
+                    return code;
+                }
+                catch
+                {
+                    return 257;
+                }
+            }
+        }
+
+        readonly int[] _andTable = { 511, 1023, 2047, 4095 };
+        byte[][] _stringTable;
+        byte[] _data;
+        int _tableIndex, _bitsToGet = 9;
+        int _bytePointer;
+        int _nextData = 0;
+        int _nextBits = 0;
+    }
+
+
+
+
+
+
 
 
 
