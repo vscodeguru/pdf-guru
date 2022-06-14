@@ -202,7 +202,89 @@ using System;
 using System.Runtime.InteropServices;
 using System;
 using System.Globalization;
-
+using System;
+using System;
+using System;
+using System;
+using System;
+using System;
+using System;
+using System.Diagnostics;
+using System.Collections.Generic;
+using System.Reflection;
+using System;
+using System.Collections.Generic;
+using System.Diagnostics;
+using System.Collections;
+using System.Globalization;
+using System.Text;
+using System.Diagnostics;
+using System.Diagnostics;
+using System;
+using System;
+using System.Diagnostics;
+using System;
+using System.Diagnostics;
+using System.Collections;
+using System.Collections.Generic;
+using System.Globalization;
+using System.Reflection;
+using System.Text;
+using System;
+using System.Diagnostics;
+using System.IO;
+using System;
+using System;
+using System.Diagnostics;
+using System.Globalization;
+using System.Diagnostics;
+using System.Globalization;
+using System;
+using System;
+using System;
+using System.Collections.Generic;
+using System.Diagnostics;
+using System;
+using System.Diagnostics;
+using System;
+using System.Diagnostics;
+using System;
+using System.Diagnostics;
+using System.Globalization;
+using System;
+using System.Diagnostics;
+using System.Globalization;
+using System;
+using System.Collections.Generic;
+using System.Collections;
+using System;
+using System.Diagnostics;
+using System.Globalization;
+using System.ComponentModel;
+using System;
+using System.Collections.Generic;
+using System.Diagnostics;
+using System.Collections;
+using System.Diagnostics;
+using System.Globalization;
+using System.Globalization;
+using System;
+using System.Diagnostics;
+using System.Globalization;
+using System;
+using System.Diagnostics;
+using System.Collections;
+using System.Collections.Generic;
+using System;
+using System.Diagnostics;
+using System.Text;
+using System.Diagnostics;
+using System;
+using System.Diagnostics;
+using System.Globalization;
+using System.Diagnostics;
+using System.Globalization;
+using System.Diagnostics;
 
 
 
@@ -19777,6 +19859,6847 @@ namespace pdf_guru
         string _str;
         int _strLen;
     }
+    enum DocumentState
+    {
+        Created = 0x0001,
+
+        Imported = 0x0002,
+
+        Disposed = 0x8000,
+    }
+    public enum PdfColorMode
+    {
+        Undefined,
+
+        Rgb,
+
+        Cmyk,
+    }
+    public enum PdfCustomValueCompressionMode
+    {
+        Default,
+
+        Uncompressed,
+
+        Compressed,
+    }
+    public enum PdfFlateEncodeMode
+    {
+        Default,
+
+        BestSpeed,
+
+        BestCompression,
+    }
+    public enum PdfFontEmbedding
+    {
+        Always,
+
+        [Obsolete("Fonts must always be embedded.")]
+        None,
+
+        [Obsolete("Fonts must always be embedded.")]
+        Default,
+
+        [Obsolete("Fonts must always be embedded.")]
+        Automatic,
+    }
+    public enum PdfFontEncoding
+    {
+        WinAnsi = 0,
+
+        Unicode = 1,
+
+        [Obsolete("Use WinAnsi or Unicode")]
+        Automatic = 1,
+
+    }
+    public enum PdfOutlineStyle
+    {
+        Regular = 0,
+
+        Italic = 1,
+
+        Bold = 2,
+
+        BoldItalic = 3,
+    }
+    public enum PdfPageDestinationType
+    {
+        Xyz,
+
+        Fit,
+
+        FitH,
+
+        FitV,
+
+        FitR,
+
+        FitB,
+
+        FitBH,
+
+        FitBV,
+    }
+    public enum PdfPageLayout
+    {
+        SinglePage,
+
+        OneColumn,
+
+        TwoColumnLeft,
+
+        TwoColumnRight,
+
+        TwoPageLeft,
+
+        TwoPageRight,
+    }
+    public enum PdfPageMode
+    {
+        UseNone,
+
+        UseOutlines,
+
+        UseThumbs,
+
+        FullScreen,
+
+        UseOC,
+
+        UseAttachments,
+    }
+    public enum PdfReadingDirection
+    {
+        LeftToRight,
+
+        RightToLeft,
+    }
+    public enum PdfTextStringEncoding
+    {
+        PDFDocEncoding = 0,
+
+        Unicode = 1,
+    }
+    public enum PdfUseFlateDecoderForJpegImages
+    {
+        Automatic,
+
+        Never,
+
+        Always,
+    }
+    internal enum KeyType
+    {
+        Name = 0x00000001,
+        String = 0x00000002,
+        Boolean = 0x00000003,
+        Integer = 0x00000004,
+        Real = 0x00000005,
+        Date = 0x00000006,
+        Rectangle = 0x00000007,
+        Array = 0x00000008,
+        Dictionary = 0x00000009,
+        Stream = 0x0000000A,
+        NumberTree = 0x0000000B,
+        Function = 0x0000000C,
+        TextString = 0x0000000D,
+        ByteString = 0x0000000E,
+
+        NameOrArray = 0x00000010,
+        NameOrDictionary = 0x00000020,
+        ArrayOrDictionary = 0x00000030,
+        StreamOrArray = 0x00000040,
+        StreamOrName = 0x00000050,
+        ArrayOrNameOrString = 0x00000060,
+        FunctionOrName = 0x000000070,
+        Various = 0x000000080,
+
+        TypeMask = 0x000000FF,
+
+        Optional = 0x00000100,
+        Required = 0x00000200,
+        Inheritable = 0x00000400,
+        MustBeIndirect = 0x00001000,
+        MustNotBeIndirect = 0x00002000,
+    }
+    internal class KeyInfoAttribute : Attribute
+    {
+        public KeyInfoAttribute()
+        { }
+
+        public KeyInfoAttribute(KeyType keyType)
+        {
+            KeyType = keyType;
+        }
+
+        public KeyInfoAttribute(string version, KeyType keyType)
+        {
+            _version = version;
+            KeyType = keyType;
+        }
+
+        public KeyInfoAttribute(KeyType keyType, Type objectType)
+        {
+            KeyType = keyType;
+            _objectType = objectType;
+        }
+
+        public KeyInfoAttribute(string version, KeyType keyType, Type objectType)
+        {
+            KeyType = keyType;
+            _objectType = objectType;
+        }
+
+        public string Version
+        {
+            get { return _version; }
+            set { _version = value; }
+        }
+        string _version = "1.0";
+
+        public KeyType KeyType
+        {
+            get { return _entryType; }
+            set { _entryType = value; }
+        }
+        KeyType _entryType;
+
+        public Type ObjectType
+        {
+            get { return _objectType; }
+            set { _objectType = value; }
+        }
+        Type _objectType;
+
+        public string FixedValue
+        {
+            get { return _fixedValue; }
+            set { _fixedValue = value; }
+        }
+        string _fixedValue;
+    }
+    public class KeysBase
+    {
+        internal static DictionaryMeta CreateMeta(Type type)
+        {
+            return new DictionaryMeta(type);
+        }
+    }
+    internal sealed class KeyDescriptor
+    {
+        public KeyDescriptor(KeyInfoAttribute attribute)
+        {
+            _version = attribute.Version;
+            _keyType = attribute.KeyType;
+            _fixedValue = attribute.FixedValue;
+            _objectType = attribute.ObjectType;
+
+            if (_version == "")
+                _version = "1.0";
+        }
+
+        public string Version
+        {
+            get { return _version; }
+            set { _version = value; }
+        }
+        string _version;
+
+        public KeyType KeyType
+        {
+            get { return _keyType; }
+            set { _keyType = value; }
+        }
+        KeyType _keyType;
+
+        public string KeyValue
+        {
+            get { return _keyValue; }
+            set { _keyValue = value; }
+        }
+        string _keyValue;
+
+        public string FixedValue
+        {
+            get { return _fixedValue; }
+        }
+        readonly string _fixedValue;
+
+        public Type ObjectType
+        {
+            get { return _objectType; }
+            set { _objectType = value; }
+        }
+        Type _objectType;
+
+        public bool CanBeIndirect
+        {
+            get { return (_keyType & KeyType.MustNotBeIndirect) == 0; }
+        }
+
+        public Type GetValueType()
+        {
+            Type type = _objectType;
+            if (type == null)
+            {
+                switch (_keyType & KeyType.TypeMask)
+                {
+                    case KeyType.Name:
+                        type = typeof(PdfName);
+                        break;
+
+                    case KeyType.String:
+                        type = typeof(PdfString);
+                        break;
+
+                    case KeyType.Boolean:
+                        type = typeof(PdfBoolean);
+                        break;
+
+                    case KeyType.Integer:
+                        type = typeof(PdfInteger);
+                        break;
+
+                    case KeyType.Real:
+                        type = typeof(PdfReal);
+                        break;
+
+                    case KeyType.Date:
+                        type = typeof(PdfDate);
+                        break;
+
+                    case KeyType.Rectangle:
+                        type = typeof(PdfRectangle);
+                        break;
+
+                    case KeyType.Array:
+                        type = typeof(PdfArray);
+                        break;
+
+                    case KeyType.Dictionary:
+                        type = typeof(PdfDictionary);
+                        break;
+
+                    case KeyType.Stream:
+                        type = typeof(PdfDictionary);
+                        break;
+
+                    case KeyType.NumberTree:
+                        throw new NotImplementedException("KeyType.NumberTree");
+
+                    case KeyType.NameOrArray:
+                        throw new NotImplementedException("KeyType.NameOrArray");
+
+                    case KeyType.ArrayOrDictionary:
+                        throw new NotImplementedException("KeyType.ArrayOrDictionary");
+
+                    case KeyType.StreamOrArray:
+                        throw new NotImplementedException("KeyType.StreamOrArray");
+
+                    case KeyType.ArrayOrNameOrString:
+                        return null;
+                    default:
+                        Debug.Assert(false, "Invalid KeyType: " + _keyType);
+                        break;
+                }
+            }
+            return type;
+        }
+    }
+    internal class DictionaryMeta
+    {
+        public DictionaryMeta(Type type)
+        {
+#if !NETFX_CORE && !UWP
+            FieldInfo[] fields = type.GetFields(BindingFlags.Public | BindingFlags.Static | BindingFlags.FlattenHierarchy);
+            foreach (FieldInfo field in fields)
+            {
+                object[] attributes = field.GetCustomAttributes(typeof(KeyInfoAttribute), false);
+                if (attributes.Length == 1)
+                {
+                    KeyInfoAttribute attribute = (KeyInfoAttribute)attributes[0];
+                    KeyDescriptor descriptor = new KeyDescriptor(attribute);
+                    descriptor.KeyValue = (string)field.GetValue(null);
+                    _keyDescriptors[descriptor.KeyValue] = descriptor;
+                }
+            }
+#endif
+        }
+
+        public KeyDescriptor this[string key]
+        {
+            get
+            {
+                KeyDescriptor keyDescriptor;
+                _keyDescriptors.TryGetValue(key, out keyDescriptor);
+                return keyDescriptor;
+            }
+        }
+
+        readonly Dictionary<string, KeyDescriptor> _keyDescriptors = new Dictionary<string, KeyDescriptor>();
+    }
+    public class PdfArray : PdfObject, IEnumerable<PdfItem>
+    {
+        public PdfArray()
+        { }
+
+        public PdfArray(PdfDocument document)
+            : base(document)
+        { }
+
+        public PdfArray(PdfDocument document, params PdfItem[] items)
+            : base(document)
+        {
+            foreach (PdfItem item in items)
+                Elements.Add(item);
+        }
+
+        protected PdfArray(PdfArray array)
+            : base(array)
+        {
+            if (array._elements != null)
+                array._elements.ChangeOwner(this);
+        }
+
+        public new PdfArray Clone()
+        {
+            return (PdfArray)Copy();
+        }
+
+        protected override object Copy()
+        {
+            PdfArray array = (PdfArray)base.Copy();
+            if (array._elements != null)
+            {
+                array._elements = array._elements.Clone();
+                int count = array._elements.Count;
+                for (int idx = 0; idx < count; idx++)
+                {
+                    PdfItem item = array._elements[idx];
+                    if (item is PdfObject)
+                        array._elements[idx] = item.Clone();
+                }
+            }
+            return array;
+        }
+
+        public ArrayElements Elements
+        {
+            get { return _elements ?? (_elements = new ArrayElements(this)); }
+        }
+
+        public virtual IEnumerator<PdfItem> GetEnumerator()
+        {
+            return Elements.GetEnumerator();
+        }
+
+        IEnumerator IEnumerable.GetEnumerator()
+        {
+            return GetEnumerator();
+        }
+
+        public override string ToString()
+        {
+            StringBuilder pdf = new StringBuilder();
+            pdf.Append("[ ");
+            int count = Elements.Count;
+            for (int idx = 0; idx < count; idx++)
+                pdf.Append(Elements[idx] + " ");
+            pdf.Append("]");
+            return pdf.ToString();
+        }
+
+        internal override void WriteObject(PdfWriter writer)
+        {
+            writer.WriteBeginObject(this);
+            int count = Elements.Count;
+            for (int idx = 0; idx < count; idx++)
+            {
+                PdfItem value = Elements[idx];
+                value.WriteObject(writer);
+            }
+            writer.WriteEndObject();
+        }
+
+        public sealed class ArrayElements : IList<PdfItem>, ICloneable
+        {
+            internal ArrayElements(PdfArray array)
+            {
+                _elements = new List<PdfItem>();
+                _ownerArray = array;
+            }
+
+            object ICloneable.Clone()
+            {
+                ArrayElements elements = (ArrayElements)MemberwiseClone();
+                elements._elements = new List<PdfItem>(elements._elements);
+                elements._ownerArray = null;
+                return elements;
+            }
+
+            public ArrayElements Clone()
+            {
+                return (ArrayElements)((ICloneable)this).Clone();
+            }
+
+            internal void ChangeOwner(PdfArray array)
+            {
+                if (_ownerArray != null)
+                {
+                }
+
+                _ownerArray = array;
+
+                array._elements = this;
+            }
+
+            public bool GetBoolean(int index)
+            {
+                if (index < 0 || index >= Count)
+                    throw new ArgumentOutOfRangeException("index", index, PSSR.IndexOutOfRange);
+
+                object obj = this[index];
+                if (obj == null)
+                    return false;
+
+                PdfBoolean boolean = obj as PdfBoolean;
+                if (boolean != null)
+                    return boolean.Value;
+
+                PdfBooleanObject booleanObject = obj as PdfBooleanObject;
+                if (booleanObject != null)
+                    return booleanObject.Value;
+
+                throw new InvalidCastException("GetBoolean: Object is not a boolean.");
+            }
+
+            public int GetInteger(int index)
+            {
+                if (index < 0 || index >= Count)
+                    throw new ArgumentOutOfRangeException("index", index, PSSR.IndexOutOfRange);
+
+                object obj = this[index];
+                if (obj == null)
+                    return 0;
+
+                PdfInteger integer = obj as PdfInteger;
+                if (integer != null)
+                    return integer.Value;
+
+                PdfIntegerObject integerObject = obj as PdfIntegerObject;
+                if (integerObject != null)
+                    return integerObject.Value;
+
+                throw new InvalidCastException("GetInteger: Object is not an integer.");
+            }
+
+            public double GetReal(int index)
+            {
+                if (index < 0 || index >= Count)
+                    throw new ArgumentOutOfRangeException("index", index, PSSR.IndexOutOfRange);
+
+                object obj = this[index];
+                if (obj == null)
+                    return 0;
+
+                PdfReal real = obj as PdfReal;
+                if (real != null)
+                    return real.Value;
+
+                PdfRealObject realObject = obj as PdfRealObject;
+                if (realObject != null)
+                    return realObject.Value;
+
+                PdfInteger integer = obj as PdfInteger;
+                if (integer != null)
+                    return integer.Value;
+
+                PdfIntegerObject integerObject = obj as PdfIntegerObject;
+                if (integerObject != null)
+                    return integerObject.Value;
+
+                throw new InvalidCastException("GetReal: Object is not a number.");
+            }
+
+            public double? GetNullableReal(int index)
+            {
+                if (index < 0 || index >= Count)
+                    throw new ArgumentOutOfRangeException("index", index, PSSR.IndexOutOfRange);
+
+                object obj = this[index];
+                if (obj == null)
+                    return null;
+
+                PdfNull @null = obj as PdfNull;
+                if (@null != null)
+                    return null;
+
+                PdfNullObject nullObject = obj as PdfNullObject;
+                if (nullObject != null)
+                    return null;
+
+                PdfReal real = obj as PdfReal;
+                if (real != null)
+                    return real.Value;
+
+                PdfRealObject realObject = obj as PdfRealObject;
+                if (realObject != null)
+                    return realObject.Value;
+
+                PdfInteger integer = obj as PdfInteger;
+                if (integer != null)
+                    return integer.Value;
+
+                PdfIntegerObject integerObject = obj as PdfIntegerObject;
+                if (integerObject != null)
+                    return integerObject.Value;
+
+                throw new InvalidCastException("GetReal: Object is not a number.");
+            }
+
+            public string GetString(int index)
+            {
+                if (index < 0 || index >= Count)
+                    throw new ArgumentOutOfRangeException("index", index, PSSR.IndexOutOfRange);
+
+                object obj = this[index];
+                if (obj == null)
+                    return String.Empty;
+
+                PdfString str = obj as PdfString;
+                if (str != null)
+                    return str.Value;
+
+                PdfStringObject strObject = obj as PdfStringObject;
+                if (strObject != null)
+                    return strObject.Value;
+
+                throw new InvalidCastException("GetString: Object is not a string.");
+            }
+
+            public string GetName(int index)
+            {
+                if (index < 0 || index >= Count)
+                    throw new ArgumentOutOfRangeException("index", index, PSSR.IndexOutOfRange);
+
+                object obj = this[index];
+                if (obj == null)
+                    return String.Empty;
+
+                PdfName name = obj as PdfName;
+                if (name != null)
+                    return name.Value;
+
+                PdfNameObject nameObject = obj as PdfNameObject;
+                if (nameObject != null)
+                    return nameObject.Value;
+
+                throw new InvalidCastException("GetName: Object is not a name.");
+            }
+
+            [Obsolete("Use GetObject, GetDictionary, GetArray, or GetReference")]
+            public PdfObject GetIndirectObject(int index)
+            {
+                if (index < 0 || index >= Count)
+                    throw new ArgumentOutOfRangeException("index", index, PSSR.IndexOutOfRange);
+
+                PdfReference reference = this[index] as PdfReference;
+                if (reference != null)
+                    return reference.Value;
+
+                return null;
+            }
+
+            public PdfObject GetObject(int index)
+            {
+                if (index < 0 || index >= Count)
+                    throw new ArgumentOutOfRangeException("index", index, PSSR.IndexOutOfRange);
+
+                PdfItem item = this[index];
+                PdfReference reference = item as PdfReference;
+                if (reference != null)
+                    return reference.Value;
+
+                return item as PdfObject;
+            }
+
+            public PdfDictionary GetDictionary(int index)
+            {
+                return GetObject(index) as PdfDictionary;
+            }
+
+            public PdfArray GetArray(int index)
+            {
+                return GetObject(index) as PdfArray;
+            }
+
+            public PdfReference GetReference(int index)
+            {
+                PdfItem item = this[index];
+                return item as PdfReference;
+            }
+
+            public PdfItem[] Items
+            {
+                get { return _elements.ToArray(); }
+            }
+
+            public bool IsReadOnly
+            {
+                get { return false; }
+            }
+
+            public PdfItem this[int index]
+            {
+                get { return _elements[index]; }
+                set
+                {
+                    if (value == null)
+                        throw new ArgumentNullException("value");
+                    _elements[index] = value;
+                }
+            }
+
+            public void RemoveAt(int index)
+            {
+                _elements.RemoveAt(index);
+            }
+
+            public bool Remove(PdfItem item)
+            {
+                return _elements.Remove(item);
+            }
+
+            public void Insert(int index, PdfItem value)
+            {
+                _elements.Insert(index, value);
+            }
+
+            public bool Contains(PdfItem value)
+            {
+                return _elements.Contains(value);
+            }
+
+            public void Clear()
+            {
+                _elements.Clear();
+            }
+
+            public int IndexOf(PdfItem value)
+            {
+                return _elements.IndexOf(value);
+            }
+
+            public void Add(PdfItem value)
+            {
+                PdfObject obj = value as PdfObject;
+                if (obj != null && obj.IsIndirect)
+                    _elements.Add(obj.Reference);
+                else
+                    _elements.Add(value);
+            }
+
+            public bool IsFixedSize
+            {
+                get { return false; }
+            }
+
+            public bool IsSynchronized
+            {
+                get { return false; }
+            }
+
+            public int Count
+            {
+                get { return _elements.Count; }
+            }
+
+            public void CopyTo(PdfItem[] array, int index)
+            {
+                _elements.CopyTo(array, index);
+            }
+
+            public object SyncRoot
+            {
+                get { return null; }
+            }
+
+            public IEnumerator<PdfItem> GetEnumerator()
+            {
+                return _elements.GetEnumerator();
+            }
+
+            IEnumerator IEnumerable.GetEnumerator()
+            {
+                return _elements.GetEnumerator();
+            }
+
+            List<PdfItem> _elements;
+
+            PdfArray _ownerArray;
+        }
+
+        ArrayElements _elements;
+
+        string DebuggerDisplay
+        {
+            get
+            {
+#if true
+                return String.Format(CultureInfo.InvariantCulture, "array({0},[{1}])", ObjectID.DebuggerDisplay, _elements == null ? 0 : _elements.Count);
+#endif
+            }
+        }
+    }
+    public sealed class PdfBoolean : PdfItem
+    {
+        public PdfBoolean()
+        { }
+
+        public PdfBoolean(bool value)
+        {
+            _value = value;
+        }
+
+        public bool Value
+        {
+            get { return _value; }
+        }
+        readonly bool _value;
+
+        public static readonly PdfBoolean True = new PdfBoolean(true);
+
+        public static readonly PdfBoolean False = new PdfBoolean(false);
+
+        public override string ToString()
+        {
+            return _value ? bool.TrueString : bool.FalseString;
+        }
+
+        internal override void WriteObject(PdfWriter writer)
+        {
+            writer.Write(this);
+        }
+    }
+    public sealed class PdfBooleanObject : PdfObject
+    {
+        public PdfBooleanObject()
+        { }
+
+        public PdfBooleanObject(bool value)
+        {
+            _value = value;
+        }
+
+        public PdfBooleanObject(PdfDocument document, bool value)
+            : base(document)
+        {
+            _value = value;
+        }
+
+        public bool Value
+        {
+            get { return _value; }
+        }
+
+        readonly bool _value;
+
+        public override string ToString()
+        {
+            return _value ? bool.TrueString : bool.FalseString;
+        }
+
+        internal override void WriteObject(PdfWriter writer)
+        {
+            writer.WriteBeginObject(this);
+            writer.Write(_value);
+            writer.WriteEndObject();
+        }
+    }
+    public class PdfCustomValue : PdfDictionary
+    {
+        public PdfCustomValue()
+        {
+            CreateStream(new byte[] { });
+        }
+
+        public PdfCustomValue(byte[] bytes)
+        {
+            CreateStream(bytes);
+        }
+
+        internal PdfCustomValue(PdfDocument document)
+            : base(document)
+        {
+            CreateStream(new byte[] { });
+        }
+
+        internal PdfCustomValue(PdfDictionary dict)
+            : base(dict)
+        {
+        }
+
+        public PdfCustomValueCompressionMode CompressionMode;
+
+        public byte[] Value
+        {
+            get { return Stream.Value; }
+            set { Stream.Value = value; }
+        }
+    }
+    public class PdfCustomValues : PdfDictionary
+    {
+        internal PdfCustomValues()
+        { }
+
+        internal PdfCustomValues(PdfDocument document)
+            : base(document)
+        { }
+
+        internal PdfCustomValues(PdfDictionary dict)
+            : base(dict)
+        { }
+
+        public PdfCustomValueCompressionMode CompressionMode
+        {
+            set { throw new NotImplementedException(); }
+        }
+
+        public bool Contains(string key)
+        {
+            return Elements.ContainsKey(key);
+        }
+
+        public PdfCustomValue this[string key]
+        {
+            get
+            {
+                PdfDictionary dict = Elements.GetDictionary(key);
+                if (dict == null)
+                    return null;
+                PdfCustomValue cust = dict as PdfCustomValue;
+                if (cust == null)
+                    cust = new PdfCustomValue(dict);
+                return cust;
+            }
+            set
+            {
+                if (value == null)
+                {
+                    Elements.Remove(key);
+                }
+                else
+                {
+                    Owner.Internals.AddObject(value);
+                    Elements.SetReference(key, value);
+                }
+            }
+        }
+
+        public static void ClearAllCustomValues(PdfDocument document)
+        {
+            document.CustomValues = null;
+            foreach (PdfPage page in document.Pages)
+                page.CustomValues = null;
+        }
+
+        internal static PdfCustomValues Get(DictionaryElements elem)
+        {
+            string key = elem.Owner.Owner.Internals.CustomValueKey;
+            PdfCustomValues customValues;
+            PdfDictionary dict = elem.GetDictionary(key);
+            if (dict == null)
+            {
+                customValues = new PdfCustomValues();
+                elem.Owner.Owner.Internals.AddObject(customValues);
+                elem.Add(key, customValues);
+            }
+            else
+            {
+                customValues = dict as PdfCustomValues;
+                if (customValues == null)
+                    customValues = new PdfCustomValues(dict);
+            }
+            return customValues;
+        }
+
+        internal static void Remove(DictionaryElements elem)
+        {
+            elem.Remove(elem.Owner.Owner.Internals.CustomValueKey);
+        }
+    }
+    public sealed class PdfDate : PdfItem
+    {
+        public PdfDate()
+        { }
+
+        public PdfDate(string value)
+        {
+            _value = Parser.ParseDateTime(value, DateTime.MinValue);
+        }
+
+        public PdfDate(DateTime value)
+        {
+            _value = value;
+        }
+
+        public DateTime Value
+        {
+            get { return _value; }
+        }
+        DateTime _value;
+
+        public override string ToString()
+        {
+            string delta = _value.ToString("zzz").Replace(':', '\'');
+            return String.Format("D:{0:yyyyMMddHHmmss}{1}'", _value, delta);
+        }
+
+        internal override void WriteObject(PdfWriter writer)
+        {
+            writer.WriteDocString(ToString());
+        }
+    }
+    public enum VCF
+    {
+        None,
+
+        Create,
+
+        CreateIndirect,
+    }
+
+    [DebuggerDisplay("{DebuggerDisplay}")]
+    public class PdfDictionary : PdfObject, IEnumerable<KeyValuePair<string, PdfItem>>
+    {
+        public PdfDictionary()
+        { }
+
+        public PdfDictionary(PdfDocument document)
+            : base(document)
+        { }
+
+        protected PdfDictionary(PdfDictionary dict)
+            : base(dict)
+        {
+            if (dict._elements != null)
+                dict._elements.ChangeOwner(this);
+            if (dict._stream != null)
+                dict._stream.ChangeOwner(this);
+        }
+
+        public new PdfDictionary Clone()
+        {
+            return (PdfDictionary)Copy();
+        }
+
+        protected override object Copy()
+        {
+            PdfDictionary dict = (PdfDictionary)base.Copy();
+            if (dict._elements != null)
+            {
+                dict._elements = dict._elements.Clone();
+                dict._elements.ChangeOwner(dict);
+                PdfName[] names = dict._elements.KeyNames;
+                foreach (PdfName name in names)
+                {
+                    PdfObject obj = dict._elements[name] as PdfObject;
+                    if (obj != null)
+                    {
+                        obj = obj.Clone();
+                        dict._elements[name] = obj;
+                    }
+                }
+            }
+            if (dict._stream != null)
+            {
+                dict._stream = dict._stream.Clone();
+                dict._stream.ChangeOwner(dict);
+            }
+            return dict;
+        }
+
+        public DictionaryElements Elements
+        {
+            get { return _elements ?? (_elements = new DictionaryElements(this)); }
+        }
+
+        internal DictionaryElements _elements;
+
+        public IEnumerator<KeyValuePair<string, PdfItem>> GetEnumerator()
+        {
+            return Elements.GetEnumerator();
+        }
+
+        IEnumerator IEnumerable.GetEnumerator()
+        {
+            return GetEnumerator();
+        }
+
+        public override string ToString()
+        {
+            PdfName[] keys = Elements.KeyNames;
+            List<PdfName> list = new List<PdfName>(keys);
+            list.Sort(PdfName.Comparer);
+            list.CopyTo(keys, 0);
+
+            StringBuilder pdf = new StringBuilder();
+            pdf.Append("<< ");
+            foreach (PdfName key in keys)
+                pdf.Append(key + " " + Elements[key] + " ");
+            pdf.Append(">>");
+
+            return pdf.ToString();
+        }
+
+        internal override void WriteObject(PdfWriter writer)
+        {
+            writer.WriteBeginObject(this);
+            PdfName[] keys = Elements.KeyNames;
+
+            foreach (PdfName key in keys)
+                WriteDictionaryElement(writer, key);
+            if (Stream != null)
+                WriteDictionaryStream(writer);
+            writer.WriteEndObject();
+        }
+
+        internal virtual void WriteDictionaryElement(PdfWriter writer, PdfName key)
+        {
+            if (key == null)
+                throw new ArgumentNullException("key");
+            PdfItem item = Elements[key];
+            key.WriteObject(writer);
+            item.WriteObject(writer);
+            writer.NewLine();
+        }
+
+        internal virtual void WriteDictionaryStream(PdfWriter writer)
+        {
+            writer.WriteStream(this, (writer.Options & PdfWriterOptions.OmitStream) == PdfWriterOptions.OmitStream);
+        }
+
+        public PdfStream Stream
+        {
+            get { return _stream; }
+            set { _stream = value; }
+        }
+        PdfStream _stream;
+
+        public PdfStream CreateStream(byte[] value)
+        {
+            if (_stream != null)
+                throw new InvalidOperationException("The dictionary already has a stream.");
+
+            _stream = new PdfStream(value, this);
+            Elements[PdfStream.Keys.Length] = new PdfInteger(_stream.Length);
+            return _stream;
+        }
+
+        internal virtual DictionaryMeta Meta
+        {
+            get { return null; }
+        }
+
+        [DebuggerDisplay("{DebuggerDisplay}")]
+        public sealed class DictionaryElements : IDictionary<string, PdfItem>, ICloneable
+        {
+            internal DictionaryElements(PdfDictionary ownerDictionary)
+            {
+                _elements = new Dictionary<string, PdfItem>();
+                _ownerDictionary = ownerDictionary;
+            }
+
+            object ICloneable.Clone()
+            {
+                DictionaryElements dictionaryElements = (DictionaryElements)MemberwiseClone();
+                dictionaryElements._elements = new Dictionary<string, PdfItem>(dictionaryElements._elements);
+                dictionaryElements._ownerDictionary = null;
+                return dictionaryElements;
+            }
+
+            public DictionaryElements Clone()
+            {
+                return (DictionaryElements)((ICloneable)this).Clone();
+            }
+
+            internal void ChangeOwner(PdfDictionary ownerDictionary)
+            {
+                if (_ownerDictionary != null)
+                {
+                }
+
+                _ownerDictionary = ownerDictionary;
+
+                ownerDictionary._elements = this;
+            }
+
+            internal PdfDictionary Owner
+            {
+                get { return _ownerDictionary; }
+            }
+
+            public bool GetBoolean(string key, bool create)
+            {
+                object obj = this[key];
+                if (obj == null)
+                {
+                    if (create)
+                        this[key] = new PdfBoolean();
+                    return false;
+                }
+
+                if (obj is PdfReference)
+                    obj = ((PdfReference)obj).Value;
+
+                PdfBoolean boolean = obj as PdfBoolean;
+                if (boolean != null)
+                    return boolean.Value;
+
+                PdfBooleanObject booleanObject = obj as PdfBooleanObject;
+                if (booleanObject != null)
+                    return booleanObject.Value;
+                throw new InvalidCastException("GetBoolean: Object is not a boolean.");
+            }
+
+            public bool GetBoolean(string key)
+            {
+                return GetBoolean(key, false);
+            }
+
+            public void SetBoolean(string key, bool value)
+            {
+                this[key] = new PdfBoolean(value);
+            }
+
+            public int GetInteger(string key, bool create)
+            {
+                object obj = this[key];
+                if (obj == null)
+                {
+                    if (create)
+                        this[key] = new PdfInteger();
+                    return 0;
+                }
+                PdfReference reference = obj as PdfReference;
+                if (reference != null)
+                    obj = reference.Value;
+
+                PdfInteger integer = obj as PdfInteger;
+                if (integer != null)
+                    return integer.Value;
+
+                PdfIntegerObject integerObject = obj as PdfIntegerObject;
+                if (integerObject != null)
+                    return integerObject.Value;
+
+                throw new InvalidCastException("GetInteger: Object is not an integer.");
+            }
+
+            public int GetInteger(string key)
+            {
+                return GetInteger(key, false);
+            }
+
+            public void SetInteger(string key, int value)
+            {
+                this[key] = new PdfInteger(value);
+            }
+
+            public double GetReal(string key, bool create)
+            {
+                object obj = this[key];
+                if (obj == null)
+                {
+                    if (create)
+                        this[key] = new PdfReal();
+                    return 0;
+                }
+
+                PdfReference reference = obj as PdfReference;
+                if (reference != null)
+                    obj = reference.Value;
+
+                PdfReal real = obj as PdfReal;
+                if (real != null)
+                    return real.Value;
+
+                PdfRealObject realObject = obj as PdfRealObject;
+                if (realObject != null)
+                    return realObject.Value;
+
+                PdfInteger integer = obj as PdfInteger;
+                if (integer != null)
+                    return integer.Value;
+
+                PdfIntegerObject integerObject = obj as PdfIntegerObject;
+                if (integerObject != null)
+                    return integerObject.Value;
+
+                throw new InvalidCastException("GetReal: Object is not a number.");
+            }
+
+            public double GetReal(string key)
+            {
+                return GetReal(key, false);
+            }
+
+            public void SetReal(string key, double value)
+            {
+                this[key] = new PdfReal(value);
+            }
+
+            public string GetString(string key, bool create)
+            {
+                object obj = this[key];
+                if (obj == null)
+                {
+                    if (create)
+                        this[key] = new PdfString();
+                    return "";
+                }
+
+                PdfReference reference = obj as PdfReference;
+                if (reference != null)
+                    obj = reference.Value;
+
+                PdfString str = obj as PdfString;
+                if (str != null)
+                    return str.Value;
+
+                PdfStringObject strObject = obj as PdfStringObject;
+                if (strObject != null)
+                    return strObject.Value;
+
+                PdfName name = obj as PdfName;
+                if (name != null)
+                    return name.Value;
+
+                PdfNameObject nameObject = obj as PdfNameObject;
+                if (nameObject != null)
+                    return nameObject.Value;
+
+                throw new InvalidCastException("GetString: Object is not a string.");
+            }
+
+            public string GetString(string key)
+            {
+                return GetString(key, false);
+            }
+
+            public bool TryGetString(string key, out string value)
+            {
+                value = null;
+                object obj = this[key];
+                if (obj == null)
+                    return false;
+
+                PdfReference reference = obj as PdfReference;
+                if (reference != null)
+                    obj = reference.Value;
+
+                PdfString str = obj as PdfString;
+                if (str != null)
+                {
+                    value = str.Value;
+                    return true;
+                }
+
+                PdfStringObject strObject = obj as PdfStringObject;
+                if (strObject != null)
+                {
+                    value = strObject.Value;
+                    return true;
+                }
+
+                PdfName name = obj as PdfName;
+                if (name != null)
+                {
+                    value = name.Value;
+                    return true;
+                }
+
+                PdfNameObject nameObject = obj as PdfNameObject;
+                if (nameObject != null)
+                {
+                    value = nameObject.Value;
+                    return true;
+                }
+
+                return false;
+            }
+
+            public void SetString(string key, string value)
+            {
+                this[key] = new PdfString(value);
+            }
+
+            public string GetName(string key)
+            {
+                object obj = this[key];
+                if (obj == null)
+                {
+                    return String.Empty;
+                }
+
+                PdfReference reference = obj as PdfReference;
+                if (reference != null)
+                    obj = reference.Value;
+
+                PdfName name = obj as PdfName;
+                if (name != null)
+                    return name.Value;
+
+                PdfNameObject nameObject = obj as PdfNameObject;
+                if (nameObject != null)
+                    return nameObject.Value;
+
+                throw new InvalidCastException("GetName: Object is not a name.");
+            }
+
+            public void SetName(string key, string value)
+            {
+                if (value == null)
+                    throw new ArgumentNullException("value");
+
+                if (value.Length == 0 || value[0] != '/')
+                    value = "/" + value;
+
+                this[key] = new PdfName(value);
+            }
+
+            public PdfRectangle GetRectangle(string key, bool create)
+            {
+                PdfRectangle value = new PdfRectangle();
+                object obj = this[key];
+                if (obj == null)
+                {
+                    if (create)
+                        this[key] = value = new PdfRectangle();
+                    return value;
+                }
+                if (obj is PdfReference)
+                    obj = ((PdfReference)obj).Value;
+
+                PdfArray array = obj as PdfArray;
+                if (array != null && array.Elements.Count == 4)
+                {
+                    value = new PdfRectangle(array.Elements.GetReal(0), array.Elements.GetReal(1),
+                      array.Elements.GetReal(2), array.Elements.GetReal(3));
+                    this[key] = value;
+                }
+                else
+                    value = (PdfRectangle)obj;
+                return value;
+            }
+
+            public PdfRectangle GetRectangle(string key)
+            {
+                return GetRectangle(key, false);
+            }
+
+            public void SetRectangle(string key, PdfRectangle rect)
+            {
+                _elements[key] = rect;
+            }
+
+            public XMatrix GetMatrix(string key, bool create)
+            {
+                XMatrix value = new XMatrix();
+                object obj = this[key];
+                if (obj == null)
+                {
+                    if (create)
+                        this[key] = new PdfLiteral("[1 0 0 1 0 0]");
+                    return value;
+                }
+                PdfReference reference = obj as PdfReference;
+                if (reference != null)
+                    obj = reference.Value;
+
+                PdfArray array = obj as PdfArray;
+                if (array != null && array.Elements.Count == 6)
+                {
+                    value = new XMatrix(array.Elements.GetReal(0), array.Elements.GetReal(1), array.Elements.GetReal(2),
+                      array.Elements.GetReal(3), array.Elements.GetReal(4), array.Elements.GetReal(5));
+                }
+                else if (obj is PdfLiteral)
+                {
+                    throw new NotImplementedException("Parsing matrix from literal.");
+                }
+                else
+                    throw new InvalidCastException("Element is not an array with 6 values.");
+                return value;
+            }
+
+            public XMatrix GetMatrix(string key)
+            {
+                return GetMatrix(key, false);
+            }
+
+            public void SetMatrix(string key, XMatrix matrix)
+            {
+                _elements[key] = PdfLiteral.FromMatrix(matrix);
+            }
+
+            public DateTime GetDateTime(string key, DateTime defaultValue)
+            {
+                object obj = this[key];
+                if (obj == null)
+                {
+                    return defaultValue;
+                }
+
+                PdfReference reference = obj as PdfReference;
+                if (reference != null)
+                    obj = reference.Value;
+
+                PdfDate date = obj as PdfDate;
+                if (date != null)
+                    return date.Value;
+
+                string strDate;
+                PdfString pdfString = obj as PdfString;
+                if (pdfString != null)
+                    strDate = pdfString.Value;
+                else
+                {
+                    PdfStringObject stringObject = obj as PdfStringObject;
+                    if (stringObject != null)
+                        strDate = stringObject.Value;
+                    else
+                        throw new InvalidCastException("GetName: Object is not a name.");
+                }
+
+                if (strDate != "")
+                {
+                    try
+                    {
+                        defaultValue = Parser.ParseDateTime(strDate, defaultValue);
+                    }
+                    catch { }
+                }
+                return defaultValue;
+            }
+
+            public void SetDateTime(string key, DateTime value)
+            {
+                _elements[key] = new PdfDate(value);
+            }
+
+            internal int GetEnumFromName(string key, object defaultValue, bool create)
+            {
+                if (!(defaultValue is Enum))
+                    throw new ArgumentException("defaultValue");
+
+                object obj = this[key];
+                if (obj == null)
+                {
+                    if (create)
+                        this[key] = new PdfName(defaultValue.ToString());
+
+                    return (int)defaultValue;
+                }
+                Debug.Assert(obj is Enum);
+                return (int)Enum.Parse(defaultValue.GetType(), obj.ToString().Substring(1), false);
+            }
+
+            internal int GetEnumFromName(string key, object defaultValue)
+            {
+                return GetEnumFromName(key, defaultValue, false);
+            }
+
+            internal void SetEnumAsName(string key, object value)
+            {
+                if (!(value is Enum))
+                    throw new ArgumentException("value");
+                _elements[key] = new PdfName("/" + value);
+            }
+
+            public PdfItem GetValue(string key, VCF options)
+            {
+                PdfObject obj;
+                PdfDictionary dict;
+                PdfArray array;
+                PdfReference iref;
+                PdfItem value = this[key];
+                if (value == null ||
+                    value is PdfNull ||
+                    value is PdfReference && ((PdfReference)value).Value is PdfNullObject)
+                {
+                    if (options != VCF.None)
+                    {
+                        Type type = GetValueType(key);
+                        if (type != null)
+                        {
+#if !NETFX_CORE
+                            Debug.Assert(typeof(PdfItem).IsAssignableFrom(type), "Type not allowed.");
+                            if (typeof(PdfDictionary).IsAssignableFrom(type))
+                            {
+                                value = obj = CreateDictionary(type, null);
+                            }
+                            else if (typeof(PdfArray).IsAssignableFrom(type))
+                            {
+                                value = obj = CreateArray(type, null);
+                            }
+                            else
+                                throw new NotImplementedException("Type other than array or dictionary.");
+#endif
+                            if (options == VCF.CreateIndirect)
+                            {
+                                _ownerDictionary.Owner._irefTable.Add(obj);
+                                this[key] = obj.Reference;
+                            }
+                            else
+                                this[key] = obj;
+                        }
+                        else
+                            throw new NotImplementedException("Cannot create value for key: " + key);
+                    }
+                }
+                else
+                {
+                    if ((iref = value as PdfReference) != null)
+                    {
+                        value = iref.Value;
+                        if (value == null)
+                        {
+                            throw new InvalidOperationException("Indirect reference without value.");
+                        }
+
+                        if (true)
+                        {
+                            Type type = GetValueType(key);
+                            Debug.Assert(type != null, "No value type specified in meta information. Please send this file to PDFsharp support.");
+
+#if !NETFX_CORE
+                            if (type != null && type != value.GetType())
+                            {
+                                if (typeof(PdfDictionary).IsAssignableFrom(type))
+                                {
+                                    Debug.Assert(value is PdfDictionary, "Bug in PDFsharp. Please send this file to PDFsharp support.");
+                                    value = CreateDictionary(type, (PdfDictionary)value);
+                                }
+                                else if (typeof(PdfArray).IsAssignableFrom(type))
+                                {
+                                    Debug.Assert(value is PdfArray, "Bug in PDFsharp. Please send this file to PDFsharp support.");
+                                    value = CreateArray(type, (PdfArray)value);
+                                }
+                                else
+                                    throw new NotImplementedException("Type other than array or dictionary.");
+                            }
+#endif
+                        }
+                        return value;
+                    }
+
+                    if (true)
+                    {
+                        if ((dict = value as PdfDictionary) != null)
+                        {
+                            Debug.Assert(!dict.IsIndirect);
+
+                            Type type = GetValueType(key);
+                            Debug.Assert(type != null, "No value type specified in meta information. Please send this file to PDFsharp support.");
+                            if (dict.GetType() != type)
+                                dict = CreateDictionary(type, dict);
+                            return dict;
+                        }
+
+                        if ((array = value as PdfArray) != null)
+                        {
+                            Debug.Assert(!array.IsIndirect);
+
+                            Type type = GetValueType(key);
+                            if (type != null && type != array.GetType())
+                                array = CreateArray(type, array);
+                            return array;
+                        }
+                    }
+                }
+                return value;
+            }
+
+            public PdfItem GetValue(string key)
+            {
+                return GetValue(key, VCF.None);
+            }
+
+            Type GetValueType(string key)
+            {
+                Type type = null;
+                DictionaryMeta meta = _ownerDictionary.Meta;
+                if (meta != null)
+                {
+                    KeyDescriptor kd = meta[key];
+                    if (kd != null)
+                        type = kd.GetValueType();
+                }
+                return type;
+            }
+
+            PdfArray CreateArray(Type type, PdfArray oldArray)
+            {
+#if !NETFX_CORE && !UWP
+                ConstructorInfo ctorInfo;
+                PdfArray array;
+                if (oldArray == null)
+                {
+                    ctorInfo = type.GetConstructor(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic,
+                        null, new Type[] { typeof(PdfDocument) }, null);
+                    Debug.Assert(ctorInfo != null, "No appropriate constructor found for type: " + type.Name);
+                    array = ctorInfo.Invoke(new object[] { _ownerDictionary.Owner }) as PdfArray;
+                }
+                else
+                {
+                    ctorInfo = type.GetConstructor(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic,
+                        null, new Type[] { typeof(PdfArray) }, null);
+                    Debug.Assert(ctorInfo != null, "No appropriate constructor found for type: " + type.Name);
+                    array = ctorInfo.Invoke(new object[] { oldArray }) as PdfArray;
+                }
+                return array;
+#endif
+            }
+
+            PdfDictionary CreateDictionary(Type type, PdfDictionary oldDictionary)
+            {
+#if !NETFX_CORE && !UWP
+                ConstructorInfo ctorInfo;
+                PdfDictionary dict;
+                if (oldDictionary == null)
+                {
+                    ctorInfo = type.GetConstructor(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic,
+                        null, new Type[] { typeof(PdfDocument) }, null);
+                    Debug.Assert(ctorInfo != null, "No appropriate constructor found for type: " + type.Name);
+                    dict = ctorInfo.Invoke(new object[] { _ownerDictionary.Owner }) as PdfDictionary;
+                }
+                else
+                {
+                    ctorInfo = type.GetConstructor(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic,
+                      null, new Type[] { typeof(PdfDictionary) }, null);
+                    Debug.Assert(ctorInfo != null, "No appropriate constructor found for type: " + type.Name);
+                    dict = ctorInfo.Invoke(new object[] { oldDictionary }) as PdfDictionary;
+                }
+                return dict;
+#endif
+            }
+
+            PdfItem CreateValue(Type type, PdfDictionary oldValue)
+            {
+#if !NETFX_CORE && !UWP
+                ConstructorInfo ctorInfo = type.GetConstructor(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic,
+                    null, new Type[] { typeof(PdfDocument) }, null);
+                PdfObject obj = ctorInfo.Invoke(new object[] { _ownerDictionary.Owner }) as PdfObject;
+                if (oldValue != null)
+                {
+                    obj.Reference = oldValue.Reference;
+                    obj.Reference.Value = obj;
+                    if (obj is PdfDictionary)
+                    {
+                        PdfDictionary dict = (PdfDictionary)obj;
+                        dict._elements = oldValue._elements;
+                    }
+                }
+                return obj;
+#endif
+            }
+
+            public void SetValue(string key, PdfItem value)
+            {
+                Debug.Assert((value is PdfObject && ((PdfObject)value).Reference == null) | !(value is PdfObject),
+                    "You try to set an indirect object directly into a dictionary.");
+
+                _elements[key] = value;
+            }
+
+            public PdfObject GetObject(string key)
+            {
+                PdfItem item = this[key];
+                PdfReference reference = item as PdfReference;
+                if (reference != null)
+                    return reference.Value;
+                return item as PdfObject;
+            }
+
+            public PdfDictionary GetDictionary(string key)
+            {
+                return GetObject(key) as PdfDictionary;
+            }
+
+            public PdfArray GetArray(string key)
+            {
+                return GetObject(key) as PdfArray;
+            }
+
+            public PdfReference GetReference(string key)
+            {
+                PdfItem item = this[key];
+                return item as PdfReference;
+            }
+
+            public void SetObject(string key, PdfObject obj)
+            {
+                if (obj.Reference != null)
+                    throw new ArgumentException("PdfObject must not be an indirect object.", "obj");
+                this[key] = obj;
+            }
+
+            public void SetReference(string key, PdfObject obj)
+            {
+                if (obj.Reference == null)
+                    throw new ArgumentException("PdfObject must be an indirect object.", "obj");
+                this[key] = obj.Reference;
+            }
+
+            public void SetReference(string key, PdfReference iref)
+            {
+                if (iref == null)
+                    throw new ArgumentNullException("iref");
+                this[key] = iref;
+            }
+
+            public bool IsReadOnly
+            {
+                get { return false; }
+            }
+
+            public IEnumerator<KeyValuePair<string, PdfItem>> GetEnumerator()
+            {
+                return _elements.GetEnumerator();
+            }
+
+            IEnumerator IEnumerable.GetEnumerator()
+            {
+                return ((ICollection)_elements).GetEnumerator();
+            }
+
+            public PdfItem this[string key]
+            {
+                get
+                {
+                    PdfItem item;
+                    _elements.TryGetValue(key, out item);
+                    return item;
+                }
+                set
+                {
+                    if (value == null)
+                        throw new ArgumentNullException("value");
+                    PdfObject obj = value as PdfObject;
+                    if (obj != null && obj.IsIndirect)
+                        value = obj.Reference;
+                    _elements[key] = value;
+                }
+            }
+
+            public PdfItem this[PdfName key]
+            {
+                get { return this[key.Value]; }
+                set
+                {
+                    if (value == null)
+                        throw new ArgumentNullException("value");
+
+                    PdfObject obj = value as PdfObject;
+                    if (obj != null && obj.IsIndirect)
+                        value = obj.Reference;
+                    _elements[key.Value] = value;
+                }
+            }
+
+            public bool Remove(string key)
+            {
+                return _elements.Remove(key);
+            }
+
+            public bool Remove(KeyValuePair<string, PdfItem> item)
+            {
+                throw new NotImplementedException();
+            }
+
+            public bool ContainsKey(string key)
+            {
+                return _elements.ContainsKey(key);
+            }
+
+            public bool Contains(KeyValuePair<string, PdfItem> item)
+            {
+                throw new NotImplementedException();
+            }
+
+            public void Clear()
+            {
+                _elements.Clear();
+            }
+
+            public void Add(string key, PdfItem value)
+            {
+                if (String.IsNullOrEmpty(key))
+                    throw new ArgumentNullException("key");
+
+                if (key[0] != '/')
+                    throw new ArgumentException("The key must start with a slash '/'.");
+
+                PdfObject obj = value as PdfObject;
+                if (obj != null && obj.IsIndirect)
+                    value = obj.Reference;
+
+                _elements.Add(key, value);
+            }
+
+            public void Add(KeyValuePair<string, PdfItem> item)
+            {
+                Add(item.Key, item.Value);
+            }
+
+            public PdfName[] KeyNames
+            {
+                get
+                {
+                    ICollection values = _elements.Keys;
+                    int count = values.Count;
+                    string[] strings = new string[count];
+                    values.CopyTo(strings, 0);
+                    PdfName[] names = new PdfName[count];
+                    for (int idx = 0; idx < count; idx++)
+                        names[idx] = new PdfName(strings[idx]);
+                    return names;
+                }
+            }
+
+            public ICollection<string> Keys
+            {
+                get
+                {
+                    ICollection values = _elements.Keys;
+                    int count = values.Count;
+                    string[] keys = new string[count];
+                    values.CopyTo(keys, 0);
+                    return keys;
+                }
+            }
+
+            public bool TryGetValue(string key, out PdfItem value)
+            {
+                return _elements.TryGetValue(key, out value);
+            }
+
+            public ICollection<PdfItem> Values
+            {
+                get
+                {
+                    ICollection values = _elements.Values;
+                    PdfItem[] items = new PdfItem[values.Count];
+                    values.CopyTo(items, 0);
+                    return items;
+                }
+            }
+
+            public bool IsFixedSize
+            {
+                get { return false; }
+            }
+
+            public bool IsSynchronized
+            {
+                get { return false; }
+            }
+
+            public int Count
+            {
+                get { return _elements.Count; }
+            }
+
+            public void CopyTo(KeyValuePair<string, PdfItem>[] array, int arrayIndex)
+            {
+                throw new NotImplementedException();
+            }
+
+            public object SyncRoot
+            {
+                get { return null; }
+            }
+
+            internal string DebuggerDisplay
+            {
+                get
+                {
+                    StringBuilder sb = new StringBuilder();
+                    sb.AppendFormat(CultureInfo.InvariantCulture, "key={0}:(", _elements.Count);
+                    bool addSpace = false;
+                    ICollection<string> keys = _elements.Keys;
+                    foreach (string key in keys)
+                    {
+                        if (addSpace)
+                            sb.Append(' ');
+                        addSpace = true;
+                        sb.Append(key);
+                    }
+                    sb.Append(")");
+                    return sb.ToString();
+                }
+            }
+
+            Dictionary<string, PdfItem> _elements;
+
+            PdfDictionary _ownerDictionary;
+        }
+
+        public sealed class PdfStream
+        {
+            internal PdfStream(PdfDictionary ownerDictionary)
+            {
+                if (ownerDictionary == null)
+                    throw new ArgumentNullException("ownerDictionary");
+                _ownerDictionary = ownerDictionary;
+            }
+
+            internal PdfStream(byte[] value, PdfDictionary owner)
+                : this(owner)
+            {
+                _value = value;
+            }
+
+            public PdfStream Clone()
+            {
+                PdfStream stream = (PdfStream)MemberwiseClone();
+                stream._ownerDictionary = null;
+                if (stream._value != null)
+                {
+                    stream._value = new byte[stream._value.Length];
+                    _value.CopyTo(stream._value, 0);
+                }
+                return stream;
+            }
+
+            internal void ChangeOwner(PdfDictionary dict)
+            {
+                if (_ownerDictionary != null)
+                {
+                }
+
+                _ownerDictionary = dict;
+
+                _ownerDictionary._stream = this;
+            }
+
+            PdfDictionary _ownerDictionary;
+
+            public int Length
+            {
+                get { return _value != null ? _value.Length : 0; }
+            }
+
+            internal bool HasDecodeParams
+            {
+                get
+                {
+                    PdfDictionary dictionary = _ownerDictionary.Elements.GetDictionary(Keys.DecodeParms);
+                    if (dictionary != null)
+                    {
+                        return true;
+                    }
+                    return false;
+                }
+            }
+
+            internal int DecodePredictor
+            {
+                get
+                {
+                    PdfDictionary dictionary = _ownerDictionary.Elements.GetDictionary(Keys.DecodeParms);
+                    if (dictionary != null)
+                    {
+                        return dictionary.Elements.GetInteger("/Predictor");
+                    }
+                    return 0;
+                }
+            }
+
+            internal int DecodeColumns
+            {
+                get
+                {
+                    PdfDictionary dictionary = _ownerDictionary.Elements.GetDictionary(Keys.DecodeParms);
+                    if (dictionary != null)
+                    {
+                        return dictionary.Elements.GetInteger("/Columns");
+                    }
+                    return 0;
+                }
+            }
+
+            public byte[] Value
+            {
+                get { return _value; }
+                set
+                {
+                    if (value == null)
+                        throw new ArgumentNullException("value");
+                    _value = value;
+                    _ownerDictionary.Elements.SetInteger(Keys.Length, value.Length);
+                }
+            }
+            byte[] _value;
+
+            public byte[] UnfilteredValue
+            {
+                get
+                {
+                    byte[] bytes = null;
+                    if (_value != null)
+                    {
+                        PdfItem filter = _ownerDictionary.Elements["/Filter"];
+                        if (filter != null)
+                        {
+                            bytes = Filtering.Decode(_value, filter);
+                            if (bytes == null)
+                            {
+                                string message = String.Format("«Cannot decode filter '{0}'»", filter);
+                                bytes = PdfEncoders.RawEncoding.GetBytes(message);
+                            }
+                        }
+                        else
+                        {
+                            bytes = new byte[_value.Length];
+                            _value.CopyTo(bytes, 0);
+                        }
+                    }
+                    return bytes ?? new byte[0];
+                }
+            }
+
+            public bool TryUnfilter()
+            {
+                if (_value != null)
+                {
+                    PdfItem filter = _ownerDictionary.Elements["/Filter"];
+                    if (filter != null)
+                    {
+                        byte[] bytes = Filtering.Decode(_value, filter);
+                        if (bytes != null)
+                        {
+                            _ownerDictionary.Elements.Remove(Keys.Filter);
+                            Value = bytes;
+                        }
+                        else
+                            return false;
+                    }
+                }
+                return true;
+            }
+
+            public void Zip()
+            {
+                if (_value == null)
+                    return;
+
+                if (!_ownerDictionary.Elements.ContainsKey("/Filter"))
+                {
+                    _value = Filtering.FlateDecode.Encode(_value, _ownerDictionary._document.Options.FlateEncodeMode);
+                    _ownerDictionary.Elements["/Filter"] = new PdfName("/FlateDecode");
+                    _ownerDictionary.Elements["/Length"] = new PdfInteger(_value.Length);
+                }
+            }
+
+            public override string ToString()
+            {
+                if (_value == null)
+                    return "«null»";
+
+                string stream;
+                PdfItem filter = _ownerDictionary.Elements["/Filter"];
+                if (filter != null)
+                {
+#if true
+                    byte[] bytes = Filtering.Decode(_value, filter);
+                    if (bytes != null)
+                        stream = PdfEncoders.RawEncoding.GetString(bytes, 0, bytes.Length);
+#endif
+                    else
+                        throw new NotImplementedException("Unknown filter");
+                }
+                else
+                    stream = PdfEncoders.RawEncoding.GetString(_value, 0, _value.Length);
+
+                return stream;
+            }
+
+            public class Keys : KeysBase
+            {
+                [KeyInfo(KeyType.Integer | KeyType.Required)]
+                public const string Length = "/Length";
+
+                [KeyInfo(KeyType.NameOrArray | KeyType.Optional)]
+                public const string Filter = "/Filter";
+
+                [KeyInfo(KeyType.ArrayOrDictionary | KeyType.Optional)]
+                public const string DecodeParms = "/DecodeParms";
+
+                [KeyInfo("1.2", KeyType.String | KeyType.Optional)]
+                public const string F = "/F";
+
+                [KeyInfo("1.2", KeyType.NameOrArray | KeyType.Optional)]
+                public const string FFilter = "/FFilter";
+
+                [KeyInfo("1.2", KeyType.ArrayOrDictionary | KeyType.Optional)]
+                public const string FDecodeParms = "/FDecodeParms";
+
+                [KeyInfo("1.5", KeyType.Integer | KeyType.Optional)]
+                public const string DL = "/DL";
+
+            }
+        }
+
+        string DebuggerDisplay
+        {
+            get
+            {
+#if true
+                return String.Format(CultureInfo.InvariantCulture, "dictionary({0},[{1}])={2}",
+                    ObjectID.DebuggerDisplay,
+                    Elements.Count,
+                    _elements.DebuggerDisplay);
+#endif
+            }
+        }
+    }
+    public sealed class PdfDocument : PdfObject, IDisposable
+    {
+        internal DocumentState _state;
+        internal PdfDocumentOpenMode _openMode;
+
+        public PdfDocument()
+        {
+            _creation = DateTime.Now;
+            _state = DocumentState.Created;
+            _version = 14;
+            Initialize();
+            Info.CreationDate = _creation;
+        }
+
+        public PdfDocument(string filename)
+        {
+            _creation = DateTime.Now;
+            _state = DocumentState.Created;
+            _version = 14;
+            Initialize();
+            Info.CreationDate = _creation;
+
+#if !NETFX_CORE
+            _outStream = new FileStream(filename, FileMode.Create);
+#endif
+        }
+
+        public PdfDocument(Stream outputStream)
+        {
+            _creation = DateTime.Now;
+            _state = DocumentState.Created;
+            Initialize();
+            Info.CreationDate = _creation;
+
+            _outStream = outputStream;
+        }
+
+        internal PdfDocument(Lexer lexer)
+        {
+            _creation = DateTime.Now;
+            _state = DocumentState.Imported;
+
+            _irefTable = new PdfCrossReferenceTable(this);
+            _lexer = lexer;
+        }
+
+        void Initialize()
+        {
+            _fontTable = new PdfFontTable(this);
+            _imageTable = new PdfImageTable(this);
+            _trailer = new PdfTrailer(this);
+            _irefTable = new PdfCrossReferenceTable(this);
+            _trailer.CreateNewDocumentIDs();
+        }
+
+        public void Dispose()
+        {
+            Dispose(true);
+        }
+
+        void Dispose(bool disposing)
+        {
+            if (_state != DocumentState.Disposed)
+            {
+                if (disposing)
+                {
+                }
+            }
+            _state = DocumentState.Disposed;
+        }
+
+        public object Tag
+        {
+            get { return _tag; }
+            set { _tag = value; }
+        }
+        object _tag;
+
+        string Name
+        {
+            get { return _name; }
+            set { _name = value; }
+        }
+        string _name = NewName();
+
+        static string NewName()
+        {
+            return "Document " + _nameCount++;
+        }
+        static int _nameCount;
+
+        internal bool CanModify
+        {
+            get { return true; }
+        }
+
+        public void Close()
+        {
+            if (!CanModify)
+                throw new InvalidOperationException(PSSR.CannotModify);
+
+            if (_outStream != null)
+            {
+                PdfStandardSecurityHandler securityHandler = null;
+                if (SecuritySettings.DocumentSecurityLevel != PdfDocumentSecurityLevel.None)
+                    securityHandler = SecuritySettings.SecurityHandler;
+
+                PdfWriter writer = new PdfWriter(_outStream, securityHandler);
+                try
+                {
+                    DoSave(writer);
+                }
+                finally
+                {
+                    writer.Close();
+                }
+            }
+        }
+
+#if true 
+        public void Save(string path)
+        {
+            if (!CanModify)
+                throw new InvalidOperationException(PSSR.CannotModify);
+
+#if !NETFX_CORE
+            using (Stream stream = new FileStream(path, FileMode.Create, FileAccess.Write, FileShare.None))
+            {
+                Save(stream);
+            }
+#endif
+        }
+#endif
+        public void Save(Stream stream, bool closeStream)
+        {
+            if (!CanModify)
+                throw new InvalidOperationException(PSSR.CannotModify);
+
+            string message = "";
+            if (!CanSave(ref message))
+                throw new PdfSharpException(message);
+
+            PdfStandardSecurityHandler securityHandler = null;
+            if (SecuritySettings.DocumentSecurityLevel != PdfDocumentSecurityLevel.None)
+                securityHandler = SecuritySettings.SecurityHandler;
+
+            PdfWriter writer = null;
+            try
+            {
+                writer = new PdfWriter(stream, securityHandler);
+                DoSave(writer);
+            }
+            finally
+            {
+                if (stream != null)
+                {
+                    if (closeStream)
+#if UWP
+ 
+#else
+                        stream.Close();
+#endif
+                    else
+                    {
+                        if (stream.CanRead && stream.CanSeek)
+                            stream.Position = 0;
+                    }
+                }
+                if (writer != null)
+                    writer.Close(closeStream);
+            }
+        }
+
+        public void Save(Stream stream)
+        {
+            Save(stream, false);
+        }
+
+        void DoSave(PdfWriter writer)
+        {
+            if (_pages == null || _pages.Count == 0)
+            {
+                if (_outStream != null)
+                {
+                    throw new InvalidOperationException("Cannot save a PDF document with no pages. Do not use \"public PdfDocument(string filename)\" or \"public PdfDocument(Stream outputStream)\" if you want to open an existing PDF document from a file or stream; use PdfReader.Open() for that purpose.");
+                }
+                throw new InvalidOperationException("Cannot save a PDF document with no pages.");
+            }
+
+            try
+            {
+                if (_trailer is PdfCrossReferenceStream)
+                {
+                    PdfStandardSecurityHandler securityHandler = _securitySettings.SecurityHandler;
+                    _trailer = new PdfTrailer((PdfCrossReferenceStream)_trailer);
+                    _trailer._securityHandler = securityHandler;
+                }
+
+                bool encrypt = _securitySettings.DocumentSecurityLevel != PdfDocumentSecurityLevel.None;
+                if (encrypt)
+                {
+                    PdfStandardSecurityHandler securityHandler = _securitySettings.SecurityHandler;
+                    if (securityHandler.Reference == null)
+                        _irefTable.Add(securityHandler);
+                    else
+                        Debug.Assert(_irefTable.Contains(securityHandler.ObjectID));
+                    _trailer.Elements[PdfTrailer.Keys.Encrypt] = _securitySettings.SecurityHandler.Reference;
+                }
+                else
+                    _trailer.Elements.Remove(PdfTrailer.Keys.Encrypt);
+
+                PrepareForSave();
+
+                if (encrypt)
+                    _securitySettings.SecurityHandler.PrepareEncryption();
+
+                writer.WriteFileHeader(this);
+                PdfReference[] irefs = _irefTable.AllReferences;
+                int count = irefs.Length;
+                for (int idx = 0; idx < count; idx++)
+                {
+                    PdfReference iref = irefs[idx];
+                    iref.Position = writer.Position;
+                    iref.Value.WriteObject(writer);
+                }
+                int startxref = writer.Position;
+                _irefTable.WriteObject(writer);
+                writer.WriteRaw("trailer\n");
+                _trailer.Elements.SetInteger("/Size", count + 1);
+                _trailer.WriteObject(writer);
+                writer.WriteEof(this, startxref);
+
+            }
+            finally
+            {
+                if (writer != null)
+                {
+                    writer.Stream.Flush();
+                }
+            }
+        }
+
+        internal override void PrepareForSave()
+        {
+            PdfDocumentInformation info = Info;
+
+            string pdfSharpProducer = VersionInfo.Producer;
+            if (!ProductVersionInfo.VersionPatch.Equals("0"))
+                pdfSharpProducer = ProductVersionInfo.Producer2;
+
+            if (info.Elements[PdfDocumentInformation.Keys.Creator] == null)
+                info.Creator = pdfSharpProducer;
+
+            string producer = info.Producer;
+            if (producer.Length == 0)
+                producer = pdfSharpProducer;
+            else
+            {
+                if (!producer.StartsWith(VersionInfo.Title))
+                    producer = pdfSharpProducer + " (Original: " + producer + ")";
+            }
+            info.Elements.SetString(PdfDocumentInformation.Keys.Producer, producer);
+
+            if (_fontTable != null)
+                _fontTable.PrepareForSave();
+
+            Catalog.PrepareForSave();
+
+#if true
+            int removed = _irefTable.Compact();
+            if (removed != 0)
+                Debug.WriteLine("PrepareForSave: Number of deleted unreachable objects: " + removed);
+            _irefTable.Renumber();
+#endif
+        }
+
+        public bool CanSave(ref string message)
+        {
+            if (!SecuritySettings.CanSave(ref message))
+                return false;
+
+            return true;
+        }
+
+        internal bool HasVersion(string version)
+        {
+            return String.Compare(Catalog.Version, version) >= 0;
+        }
+
+        public PdfDocumentOptions Options
+        {
+            get
+            {
+                if (_options == null)
+                    _options = new PdfDocumentOptions(this);
+                return _options;
+            }
+        }
+        PdfDocumentOptions _options;
+
+        public PdfDocumentSettings Settings
+        {
+            get
+            {
+                if (_settings == null)
+                    _settings = new PdfDocumentSettings(this);
+                return _settings;
+            }
+        }
+        PdfDocumentSettings _settings;
+
+        internal bool EarlyWrite
+        {
+            get { return false; }
+        }
+
+        public int Version
+        {
+            get { return _version; }
+            set
+            {
+                if (!CanModify)
+                    throw new InvalidOperationException(PSSR.CannotModify);
+                if (value < 12 || value > 17)
+                    throw new ArgumentException(PSSR.InvalidVersionNumber, "value");
+                _version = value;
+            }
+        }
+        internal int _version;
+
+        public int PageCount
+        {
+            get
+            {
+                if (CanModify)
+                    return Pages.Count;
+                PdfDictionary pageTreeRoot = (PdfDictionary)Catalog.Elements.GetObject(PdfCatalog.Keys.Pages);
+                return pageTreeRoot.Elements.GetInteger(PdfPages.Keys.Count);
+            }
+        }
+
+        public long FileSize
+        {
+            get { return _fileSize; }
+        }
+        internal long _fileSize;
+
+        public string FullPath
+        {
+            get { return _fullPath; }
+        }
+        internal string _fullPath = String.Empty;
+
+        public Guid Guid
+        {
+            get { return _guid; }
+        }
+        Guid _guid = Guid.NewGuid();
+
+        internal DocumentHandle Handle
+        {
+            get
+            {
+                if (_handle == null)
+                    _handle = new DocumentHandle(this);
+                return _handle;
+            }
+        }
+        DocumentHandle _handle;
+
+        public bool IsImported
+        {
+            get { return (_state & DocumentState.Imported) != 0; }
+        }
+
+        public bool IsReadOnly
+        {
+            get { return (_openMode != PdfDocumentOpenMode.Modify); }
+        }
+
+        internal Exception DocumentNotImported()
+        {
+            return new InvalidOperationException("Document not imported.");
+        }
+
+        public PdfDocumentInformation Info
+        {
+            get
+            {
+                if (_info == null)
+                    _info = _trailer.Info;
+                return _info;
+            }
+        }
+        PdfDocumentInformation _info;
+
+        public PdfCustomValues CustomValues
+        {
+            get
+            {
+                if (_customValues == null)
+                    _customValues = PdfCustomValues.Get(Catalog.Elements);
+                return _customValues;
+            }
+            set
+            {
+                if (value != null)
+                    throw new ArgumentException("Only null is allowed to clear all custom values.");
+                PdfCustomValues.Remove(Catalog.Elements);
+                _customValues = null;
+            }
+        }
+        PdfCustomValues _customValues;
+
+        public PdfPages Pages
+        {
+            get
+            {
+                if (_pages == null)
+                    _pages = Catalog.Pages;
+                return _pages;
+            }
+        }
+        PdfPages _pages;
+
+        public PdfPageLayout PageLayout
+        {
+            get { return Catalog.PageLayout; }
+            set
+            {
+                if (!CanModify)
+                    throw new InvalidOperationException(PSSR.CannotModify);
+                Catalog.PageLayout = value;
+            }
+        }
+
+        public PdfPageMode PageMode
+        {
+            get { return Catalog.PageMode; }
+            set
+            {
+                if (!CanModify)
+                    throw new InvalidOperationException(PSSR.CannotModify);
+                Catalog.PageMode = value;
+            }
+        }
+
+        public PdfViewerPreferences ViewerPreferences
+        {
+            get { return Catalog.ViewerPreferences; }
+        }
+
+        public PdfOutlineCollection Outlines
+        {
+            get { return Catalog.Outlines; }
+        }
+
+        public PdfAcroForm AcroForm
+        {
+            get { return Catalog.AcroForm; }
+        }
+
+        public string Language
+        {
+            get { return Catalog.Language; }
+            set { Catalog.Language = value; }
+        }
+
+        public PdfSecuritySettings SecuritySettings
+        {
+            get { return _securitySettings ?? (_securitySettings = new PdfSecuritySettings(this)); }
+        }
+        internal PdfSecuritySettings _securitySettings;
+
+        internal PdfFontTable FontTable
+        {
+            get { return _fontTable ?? (_fontTable = new PdfFontTable(this)); }
+        }
+        PdfFontTable _fontTable;
+
+        internal PdfImageTable ImageTable
+        {
+            get
+            {
+                if (_imageTable == null)
+                    _imageTable = new PdfImageTable(this);
+                return _imageTable;
+            }
+        }
+        PdfImageTable _imageTable;
+
+        internal PdfFormXObjectTable FormTable
+        {
+            get { return _formTable ?? (_formTable = new PdfFormXObjectTable(this)); }
+        }
+        PdfFormXObjectTable _formTable;
+
+        internal PdfExtGStateTable ExtGStateTable
+        {
+            get { return _extGStateTable ?? (_extGStateTable = new PdfExtGStateTable(this)); }
+        }
+        PdfExtGStateTable _extGStateTable;
+
+        internal PdfCatalog Catalog
+        {
+            get { return _catalog ?? (_catalog = _trailer.Root); }
+        }
+        PdfCatalog _catalog;
+
+        public new PdfInternals Internals
+        {
+            get { return _internals ?? (_internals = new PdfInternals(this)); }
+        }
+        PdfInternals _internals;
+
+        public PdfPage AddPage()
+        {
+            if (!CanModify)
+                throw new InvalidOperationException(PSSR.CannotModify);
+            return Catalog.Pages.Add();
+        }
+
+        public PdfPage AddPage(PdfPage page)
+        {
+            if (!CanModify)
+                throw new InvalidOperationException(PSSR.CannotModify);
+            return Catalog.Pages.Add(page);
+        }
+
+        public PdfPage InsertPage(int index)
+        {
+            if (!CanModify)
+                throw new InvalidOperationException(PSSR.CannotModify);
+            return Catalog.Pages.Insert(index);
+        }
+
+        public PdfPage InsertPage(int index, PdfPage page)
+        {
+            if (!CanModify)
+                throw new InvalidOperationException(PSSR.CannotModify);
+            return Catalog.Pages.Insert(index, page);
+        }
+
+        public void Flatten()
+        {
+            for (int idx = 0; idx < AcroForm.Fields.Count; idx++)
+            {
+                AcroForm.Fields[idx].ReadOnly = true;
+            }
+        }
+
+        public PdfStandardSecurityHandler SecurityHandler
+        {
+            get { return _trailer.SecurityHandler; }
+        }
+
+        internal PdfTrailer _trailer;
+        internal PdfCrossReferenceTable _irefTable;
+        internal Stream _outStream;
+
+        internal Lexer _lexer;
+
+        internal DateTime _creation;
+
+        internal void OnExternalDocumentFinalized(PdfDocument.DocumentHandle handle)
+        {
+            if (tls != null)
+            {
+                tls.DetachDocument(handle);
+            }
+
+            if (_formTable != null)
+                _formTable.DetachDocument(handle);
+        }
+
+        internal static ThreadLocalStorage Tls
+        {
+            get { return tls ?? (tls = new ThreadLocalStorage()); }
+        }
+        [ThreadStatic]
+        static ThreadLocalStorage tls;
+
+        [DebuggerDisplay("(ID={ID}, alive={IsAlive})")]
+        internal class DocumentHandle
+        {
+            public DocumentHandle(PdfDocument document)
+            {
+                _weakRef = new WeakReference(document);
+                ID = document._guid.ToString("B").ToUpper();
+            }
+
+            public bool IsAlive
+            {
+                get { return _weakRef.IsAlive; }
+            }
+
+            public PdfDocument Target
+            {
+                get { return _weakRef.Target as PdfDocument; }
+            }
+            readonly WeakReference _weakRef;
+
+            public string ID;
+
+            public override bool Equals(object obj)
+            {
+                DocumentHandle handle = obj as DocumentHandle;
+                if (!ReferenceEquals(handle, null))
+                    return ID == handle.ID;
+                return false;
+            }
+
+            public override int GetHashCode()
+            {
+                return ID.GetHashCode();
+            }
+
+            public static bool operator ==(DocumentHandle left, DocumentHandle right)
+            {
+                if (ReferenceEquals(left, null))
+                    return ReferenceEquals(right, null);
+                return left.Equals(right);
+            }
+
+            public static bool operator !=(DocumentHandle left, DocumentHandle right)
+            {
+                return !(left == right);
+            }
+        }
+    }
+    public sealed class PdfDocumentInformation : PdfDictionary
+    {
+        public PdfDocumentInformation(PdfDocument document)
+            : base(document)
+        { }
+
+        internal PdfDocumentInformation(PdfDictionary dict)
+            : base(dict)
+        { }
+
+        public string Title
+        {
+            get { return Elements.GetString(Keys.Title); }
+            set { Elements.SetString(Keys.Title, value); }
+        }
+
+        public string Author
+        {
+            get { return Elements.GetString(Keys.Author); }
+            set { Elements.SetString(Keys.Author, value); }
+        }
+
+        public string Subject
+        {
+            get { return Elements.GetString(Keys.Subject); }
+            set { Elements.SetString(Keys.Subject, value); }
+        }
+
+        public string Keywords
+        {
+            get { return Elements.GetString(Keys.Keywords); }
+            set { Elements.SetString(Keys.Keywords, value); }
+        }
+
+        public string Creator
+        {
+            get { return Elements.GetString(Keys.Creator); }
+            set { Elements.SetString(Keys.Creator, value); }
+        }
+
+        public string Producer
+        {
+            get { return Elements.GetString(Keys.Producer); }
+        }
+
+        public DateTime CreationDate
+        {
+            get { return Elements.GetDateTime(Keys.CreationDate, DateTime.MinValue); }
+            set { Elements.SetDateTime(Keys.CreationDate, value); }
+        }
+
+        public DateTime ModificationDate
+        {
+            get { return Elements.GetDateTime(Keys.ModDate, DateTime.MinValue); }
+            set { Elements.SetDateTime(Keys.ModDate, value); }
+        }
+
+        internal sealed class Keys : KeysBase
+        {
+            [KeyInfo(KeyType.String | KeyType.Optional)]
+            public const string Title = "/Title";
+
+            [KeyInfo(KeyType.String | KeyType.Optional)]
+            public const string Author = "/Author";
+
+            [KeyInfo(KeyType.String | KeyType.Optional)]
+            public const string Subject = "/Subject";
+
+            [KeyInfo(KeyType.String | KeyType.Optional)]
+            public const string Keywords = "/Keywords";
+
+            [KeyInfo(KeyType.String | KeyType.Optional)]
+            public const string Creator = "/Creator";
+
+            [KeyInfo(KeyType.String | KeyType.Optional)]
+            public const string Producer = "/Producer";
+
+            [KeyInfo(KeyType.Date | KeyType.Optional)]
+            public const string CreationDate = "/CreationDate";
+
+            [KeyInfo(KeyType.String | KeyType.Optional)]
+            public const string ModDate = "/ModDate";
+
+            [KeyInfo("1.3", KeyType.Name | KeyType.Optional)]
+            public const string Trapped = "/Trapped";
+
+            public static DictionaryMeta Meta
+            {
+                get { return _meta ?? (_meta = CreateMeta(typeof(Keys))); }
+            }
+            static DictionaryMeta _meta;
+        }
+
+        internal override DictionaryMeta Meta
+        {
+            get { return Keys.Meta; }
+        }
+    }
+    public sealed class PdfDocumentOptions
+    {
+        internal PdfDocumentOptions(PdfDocument document)
+        {
+        }
+
+        public PdfColorMode ColorMode
+        {
+            get { return _colorMode; }
+            set { _colorMode = value; }
+        }
+        PdfColorMode _colorMode = PdfColorMode.Rgb;
+
+        public bool CompressContentStreams
+        {
+            get { return _compressContentStreams; }
+            set { _compressContentStreams = value; }
+        }
+#if DEBUG
+
+#else
+        bool _compressContentStreams = true;
+#endif
+
+        public bool NoCompression
+        {
+            get { return _noCompression; }
+            set { _noCompression = value; }
+        }
+        bool _noCompression;
+
+        public PdfFlateEncodeMode FlateEncodeMode
+        {
+            get { return _flateEncodeMode; }
+            set { _flateEncodeMode = value; }
+        }
+        PdfFlateEncodeMode _flateEncodeMode = PdfFlateEncodeMode.Default;
+
+        public bool EnableCcittCompressionForBilevelImages
+        {
+            get { return _enableCcittCompressionForBilevelImages; }
+            set { _enableCcittCompressionForBilevelImages = value; }
+        }
+        bool _enableCcittCompressionForBilevelImages = false;
+
+        public PdfUseFlateDecoderForJpegImages UseFlateDecoderForJpegImages
+        {
+            get { return _useFlateDecoderForJpegImages; }
+            set { _useFlateDecoderForJpegImages = value; }
+        }
+        PdfUseFlateDecoderForJpegImages _useFlateDecoderForJpegImages = PdfUseFlateDecoderForJpegImages.Never;
+    }
+    public sealed class PdfDocumentSettings
+    {
+        internal PdfDocumentSettings(PdfDocument document)
+        { }
+
+        public TrimMargins TrimMargins
+        {
+            get
+            {
+                if (_trimMargins == null)
+                    _trimMargins = new TrimMargins();
+                return _trimMargins;
+            }
+            set
+            {
+                if (_trimMargins == null)
+                    _trimMargins = new TrimMargins();
+                if (value != null)
+                {
+                    _trimMargins.Left = value.Left;
+                    _trimMargins.Right = value.Right;
+                    _trimMargins.Top = value.Top;
+                    _trimMargins.Bottom = value.Bottom;
+                }
+                else
+                    _trimMargins.All = 0;
+            }
+        }
+        TrimMargins _trimMargins = new TrimMargins();
+    }
+    public sealed class PdfInteger : PdfNumber, IConvertible
+    {
+        public PdfInteger()
+        { }
+
+        public PdfInteger(int value)
+        {
+            _value = value;
+        }
+
+        public int Value
+        {
+            get { return _value; }
+        }
+        readonly int _value;
+
+        public override string ToString()
+        {
+            return _value.ToString(CultureInfo.InvariantCulture);
+        }
+
+        internal override void WriteObject(PdfWriter writer)
+        {
+            writer.Write(this);
+        }
+
+        ulong IConvertible.ToUInt64(IFormatProvider provider)
+        {
+            return Convert.ToUInt64(_value);
+        }
+
+        sbyte IConvertible.ToSByte(IFormatProvider provider)
+        {
+            throw new InvalidCastException();
+        }
+
+        double IConvertible.ToDouble(IFormatProvider provider)
+        {
+            return _value;
+        }
+
+        DateTime IConvertible.ToDateTime(IFormatProvider provider)
+        {
+            return new DateTime();
+        }
+
+        float IConvertible.ToSingle(IFormatProvider provider)
+        {
+            return _value;
+        }
+
+        bool IConvertible.ToBoolean(IFormatProvider provider)
+        {
+            return Convert.ToBoolean(_value);
+        }
+
+        int IConvertible.ToInt32(IFormatProvider provider)
+        {
+            return _value;
+        }
+
+        ushort IConvertible.ToUInt16(IFormatProvider provider)
+        {
+            return Convert.ToUInt16(_value);
+        }
+
+        short IConvertible.ToInt16(IFormatProvider provider)
+        {
+            return Convert.ToInt16(_value);
+        }
+
+        string IConvertible.ToString(IFormatProvider provider)
+        {
+            return _value.ToString(provider);
+        }
+
+        byte IConvertible.ToByte(IFormatProvider provider)
+        {
+            return Convert.ToByte(_value);
+        }
+
+        char IConvertible.ToChar(IFormatProvider provider)
+        {
+            return Convert.ToChar(_value);
+        }
+
+        long IConvertible.ToInt64(IFormatProvider provider)
+        {
+            return _value;
+        }
+
+        public TypeCode GetTypeCode()
+        {
+            return TypeCode.Int32;
+        }
+
+        decimal IConvertible.ToDecimal(IFormatProvider provider)
+        {
+            return _value;
+        }
+
+        object IConvertible.ToType(Type conversionType, IFormatProvider provider)
+        {
+            return null;
+        }
+
+        uint IConvertible.ToUInt32(IFormatProvider provider)
+        {
+            return Convert.ToUInt32(_value);
+        }
+
+    }
+    public sealed class PdfIntegerObject : PdfNumberObject
+    {
+        public PdfIntegerObject()
+        { }
+
+        public PdfIntegerObject(int value)
+        {
+            _value = value;
+        }
+
+        public PdfIntegerObject(PdfDocument document, int value)
+            : base(document)
+        {
+            _value = value;
+        }
+
+        public int Value
+        {
+            get { return _value; }
+        }
+        readonly int _value;
+
+        public override string ToString()
+        {
+            return _value.ToString(CultureInfo.InvariantCulture);
+        }
+
+        internal override void WriteObject(PdfWriter writer)
+        {
+            writer.WriteBeginObject(this);
+            writer.Write(_value);
+            writer.WriteEndObject();
+        }
+    }
+    public abstract class PdfItem : ICloneable
+    {
+        object ICloneable.Clone()
+        {
+            return Copy();
+        }
+
+        public PdfItem Clone()
+        {
+            return (PdfItem)Copy();
+        }
+
+        protected virtual object Copy()
+        {
+            return MemberwiseClone();
+        }
+
+        internal abstract void WriteObject(PdfWriter writer);
+    }
+    public sealed class PdfLiteral : PdfItem
+    {
+        public PdfLiteral()
+        { }
+
+        public PdfLiteral(string value)
+        {
+            _value = value;
+        }
+
+        public PdfLiteral(string format, params object[] args)
+        {
+            _value = PdfEncoders.Format(format, args);
+        }
+
+        public static PdfLiteral FromMatrix(XMatrix matrix)
+        {
+            return new PdfLiteral("[" + PdfEncoders.ToString(matrix) + "]");
+        }
+
+        public string Value
+        {
+            get { return _value; }
+        }
+        readonly string _value = String.Empty;
+
+        public override string ToString()
+        {
+            return _value;
+        }
+
+        internal override void WriteObject(PdfWriter writer)
+        {
+            writer.Write(this);
+        }
+    }
+    public sealed class PdfName : PdfItem
+    {
+        public PdfName()
+        {
+            _value = "/";
+        }
+
+        public PdfName(string value)
+        {
+            if (value == null)
+                throw new ArgumentNullException("value");
+            if (value.Length == 0 || value[0] != '/')
+                throw new ArgumentException(PSSR.NameMustStartWithSlash);
+
+            _value = value;
+        }
+
+        public override bool Equals(object obj)
+        {
+            return _value.Equals(obj);
+        }
+
+        public override int GetHashCode()
+        {
+            return _value.GetHashCode();
+        }
+
+        public string Value
+        {
+            get { return _value; }
+        }
+        readonly string _value;
+
+        public override string ToString()
+        {
+            return _value;
+        }
+
+        public static bool operator ==(PdfName name, string str)
+        {
+            if (ReferenceEquals(name, null))
+                return str == null;
+
+            return name._value == str;
+        }
+
+        public static bool operator !=(PdfName name, string str)
+        {
+            if (ReferenceEquals(name, null))
+                return str != null;
+
+            return name._value != str;
+        }
+
+        public static readonly PdfName Empty = new PdfName("/");
+
+        internal override void WriteObject(PdfWriter writer)
+        {
+            writer.Write(this);
+        }
+
+        public static PdfXNameComparer Comparer
+        {
+            get { return new PdfXNameComparer(); }
+        }
+
+        public class PdfXNameComparer : IComparer<PdfName>
+        {
+            public int Compare(PdfName l, PdfName r)
+            {
+#if true_
+#else
+                if (l != null)
+                {
+                    if (r != null)
+                        return String.Compare(l._value, r._value, StringComparison.Ordinal);
+                    return -1;
+                }
+                if (r != null)
+                    return 1;
+                return 0;
+#endif
+            }
+        }
+    }
+    public sealed class PdfNameObject : PdfObject
+    {
+        public PdfNameObject()
+        {
+            _value = "/";
+        }
+
+        public PdfNameObject(PdfDocument document, string value)
+            : base(document)
+        {
+            if (value == null)
+                throw new ArgumentNullException("value");
+            if (value.Length == 0 || value[0] != '/')
+                throw new ArgumentException(PSSR.NameMustStartWithSlash);
+
+            _value = value;
+        }
+
+        public override bool Equals(object obj)
+        {
+            return _value.Equals(obj);
+        }
+
+        public override int GetHashCode()
+        {
+            return _value.GetHashCode();
+        }
+
+        public string Value
+        {
+            get { return _value; }
+            set { _value = value; }
+        }
+        string _value;
+
+        public override string ToString()
+        {
+            return _value;
+        }
+
+        public static bool operator ==(PdfNameObject name, string str)
+        {
+            return name._value == str;
+        }
+
+        public static bool operator !=(PdfNameObject name, string str)
+        {
+            return name._value != str;
+        }
+
+        internal override void WriteObject(PdfWriter writer)
+        {
+            writer.WriteBeginObject(this);
+            writer.Write(new PdfName(_value));
+            writer.WriteEndObject();
+        }
+    }
+    public sealed class PdfNull : PdfItem
+    {
+        PdfNull()
+        { }
+
+        public override string ToString()
+        {
+            return "null";
+        }
+
+        internal override void WriteObject(PdfWriter writer)
+        {
+            writer.WriteRaw(" null ");
+        }
+
+        public static readonly PdfNull Value = new PdfNull();
+    }
+    public sealed class PdfNullObject : PdfObject
+    {
+        public PdfNullObject()
+        { }
+
+        public PdfNullObject(PdfDocument document)
+            : base(document)
+        { }
+
+        public override string ToString()
+        {
+            return "null";
+        }
+
+        internal override void WriteObject(PdfWriter writer)
+        {
+            writer.WriteBeginObject(this);
+            writer.WriteRaw(" null ");
+            writer.WriteEndObject();
+        }
+    }
+    public abstract class PdfNumber : PdfItem
+    {
+    }
+    public abstract class PdfNumberObject : PdfObject
+    {
+        protected PdfNumberObject()
+        { }
+
+        protected PdfNumberObject(PdfDocument document)
+            : base(document)
+        { }
+    }
+    public abstract class PdfObject : PdfItem
+    {
+        protected PdfObject()
+        { }
+
+        protected PdfObject(PdfDocument document)
+        {
+            Document = document;
+        }
+
+        protected PdfObject(PdfObject obj)
+            : this(obj.Owner)
+        {
+            if (obj._iref != null)
+                obj._iref.Value = this;
+        }
+
+        public new PdfObject Clone()
+        {
+            return (PdfObject)Copy();
+        }
+
+        protected override object Copy()
+        {
+            PdfObject obj = (PdfObject)base.Copy();
+            obj._document = null;
+            obj._iref = null;
+            return obj;
+        }
+
+
+        internal void SetObjectID(int objectNumber, int generationNumber)
+        {
+            PdfObjectID objectID = new PdfObjectID(objectNumber, generationNumber);
+
+            if (_iref == null)
+                _iref = _document._irefTable[objectID];
+            if (_iref == null)
+            {
+                new PdfReference(this);
+                Debug.Assert(_iref != null);
+                _iref.ObjectID = objectID;
+            }
+            _iref.Value = this;
+            _iref.Document = _document;
+        }
+
+        public virtual PdfDocument Owner
+        {
+            get { return _document; }
+        }
+
+        internal virtual PdfDocument Document
+        {
+            set
+            {
+                if (!ReferenceEquals(_document, value))
+                {
+                    if (_document != null)
+                        throw new InvalidOperationException("Cannot change document.");
+                    _document = value;
+                    if (_iref != null)
+                        _iref.Document = value;
+                }
+            }
+        }
+        internal PdfDocument _document;
+
+        public bool IsIndirect
+        {
+            get { return _iref != null; }
+        }
+
+        public PdfObjectInternals Internals
+        {
+            get { return _internals ?? (_internals = new PdfObjectInternals(this)); }
+        }
+        PdfObjectInternals _internals;
+
+        internal virtual void PrepareForSave()
+        { }
+
+        internal override void WriteObject(PdfWriter writer)
+        {
+            Debug.Assert(false, "Must not come here!");
+        }
+
+        internal PdfObjectID ObjectID
+        {
+            get { return _iref != null ? _iref.ObjectID : PdfObjectID.Empty; }
+        }
+
+        internal int ObjectNumber
+        {
+            get { return ObjectID.ObjectNumber; }
+        }
+
+        internal int GenerationNumber
+        {
+            get { return ObjectID.GenerationNumber; }
+        }
+
+        internal static PdfObject DeepCopyClosure(PdfDocument owner, PdfObject externalObject)
+        {
+            PdfObject[] elements = externalObject.Owner.Internals.GetClosure(externalObject);
+            int count = elements.Length;
+            PdfImportedObjectTable iot = new PdfImportedObjectTable(owner, externalObject.Owner);
+            for (int idx = 0; idx < count; idx++)
+            {
+                PdfObject obj = elements[idx];
+                PdfObject clone = obj.Clone();
+                Debug.Assert(clone.Reference == null);
+                clone.Document = owner;
+                if (obj.Reference != null)
+                {
+                    owner._irefTable.Add(clone);
+                    Debug.Assert(clone.Reference != null);
+                    iot.Add(obj.ObjectID, clone.Reference);
+                }
+                else
+                {
+                    Debug.Assert(idx == 0);
+                }
+                elements[idx] = clone;
+            }
+
+            for (int idx = 0; idx < count; idx++)
+            {
+                PdfObject obj = elements[idx];
+                Debug.Assert(obj.Owner == owner);
+                FixUpObject(iot, owner, obj);
+            }
+
+            return elements[0];
+        }
+
+        internal static PdfObject ImportClosure(PdfImportedObjectTable importedObjectTable, PdfDocument owner, PdfObject externalObject)
+        {
+            Debug.Assert(ReferenceEquals(importedObjectTable.Owner, owner), "importedObjectTable does not belong to the owner.");
+            Debug.Assert(ReferenceEquals(importedObjectTable.ExternalDocument, externalObject.Owner),
+                "The ExternalDocument of the importedObjectTable does not belong to the owner of object to be imported.");
+
+            PdfObject[] elements = externalObject.Owner.Internals.GetClosure(externalObject);
+            int count = elements.Length;
+
+            for (int idx = 0; idx < count; idx++)
+            {
+                PdfObject obj = elements[idx];
+                Debug.Assert(!ReferenceEquals(obj.Owner, owner));
+                if (importedObjectTable.Contains(obj.ObjectID))
+                {
+                    PdfReference iref = importedObjectTable[obj.ObjectID];
+                    Debug.Assert(iref != null);
+                    Debug.Assert(iref.Value != null);
+                    Debug.Assert(iref.Document == owner);
+                    elements[idx] = iref.Value;
+                }
+                else
+                {
+                    PdfObject clone = obj.Clone();
+                    Debug.Assert(clone.Reference == null);
+                    clone.Document = owner;
+                    if (obj.Reference != null)
+                    {
+                        owner._irefTable.Add(clone);
+                        Debug.Assert(clone.Reference != null);
+                        importedObjectTable.Add(obj.ObjectID, clone.Reference);
+                    }
+                    else
+                    {
+                        Debug.Assert(idx == 0);
+                    }
+                    elements[idx] = clone;
+                }
+            }
+            for (int idx = 0; idx < count; idx++)
+            {
+                PdfObject obj = elements[idx];
+                Debug.Assert(owner != null);
+                FixUpObject(importedObjectTable, importedObjectTable.Owner, obj);
+            }
+
+            return elements[0];
+        }
+
+        static void FixUpObject(PdfImportedObjectTable iot, PdfDocument owner, PdfObject value)
+        {
+            Debug.Assert(ReferenceEquals(iot.Owner, owner));
+
+            PdfDictionary dict;
+            PdfArray array;
+            if ((dict = value as PdfDictionary) != null)
+            {
+                if (dict.Owner == null)
+                {
+                    dict.Document = owner;
+                }
+                else
+                {
+                    Debug.Assert(dict.Owner == owner);
+                }
+
+                PdfName[] names = dict.Elements.KeyNames;
+                foreach (PdfName name in names)
+                {
+                    PdfItem item = dict.Elements[name];
+                    Debug.Assert(item != null, "A dictionary element cannot be null.");
+
+                    PdfReference iref = item as PdfReference;
+                    if (iref != null)
+                    {
+                        if (iref.Document == owner)
+                        {
+                            continue;
+                        }
+
+                        PdfReference newXRef = iot[iref.ObjectID];
+                        Debug.Assert(newXRef != null);
+                        Debug.Assert(newXRef.Document == owner);
+                        dict.Elements[name] = newXRef;
+                    }
+                    else
+                    {
+                        PdfObject pdfObject = item as PdfObject;
+                        if (pdfObject != null)
+                        {
+                            FixUpObject(iot, owner, pdfObject);
+                        }
+                        else
+                        {
+                            DebugCheckNonObjects(item);
+                        }
+                    }
+                }
+            }
+            else if ((array = value as PdfArray) != null)
+            {
+                if (array.Owner == null)
+                {
+                    array.Document = owner;
+                }
+                else
+                {
+                    Debug.Assert(array.Owner == owner);
+                }
+
+                int count = array.Elements.Count;
+                for (int idx = 0; idx < count; idx++)
+                {
+                    PdfItem item = array.Elements[idx];
+                    Debug.Assert(item != null, "An array element cannot be null.");
+
+                    PdfReference iref = item as PdfReference;
+                    if (iref != null)
+                    {
+                        if (iref.Document == owner)
+                        {
+                            continue;
+                        }
+
+                        Debug.Assert(iref.Document == iot.ExternalDocument);
+                        PdfReference newXRef = iot[iref.ObjectID];
+                        Debug.Assert(newXRef != null);
+                        Debug.Assert(newXRef.Document == owner);
+                        array.Elements[idx] = newXRef;
+                    }
+                    else
+                    {
+                        PdfObject pdfObject = item as PdfObject;
+                        if (pdfObject != null)
+                        {
+                            FixUpObject(iot, owner, pdfObject);
+                        }
+                        else
+                        {
+                            DebugCheckNonObjects(item);
+                        }
+                    }
+                }
+            }
+            else
+            {
+                if (value is PdfNameObject || value is PdfStringObject || value is PdfBooleanObject || value is PdfIntegerObject || value is PdfNumberObject)
+                {
+                    Debug.Assert(value.IsIndirect);
+                    Debug.Assert(value.Owner == owner);
+                }
+                else
+                    Debug.Assert(false, "Should not come here. Object is neither a dictionary nor an array.");
+            }
+        }
+
+        [Conditional("DEBUG")]
+        static void DebugCheckNonObjects(PdfItem item)
+        {
+            if (item is PdfName)
+                return;
+            if (item is PdfBoolean)
+                return;
+            if (item is PdfInteger)
+                return;
+            if (item is PdfNumber)
+                return;
+            if (item is PdfString)
+                return;
+            if (item is PdfRectangle)
+                return;
+            if (item is PdfNull)
+                return;
+
+            Type type = item.GetType();
+            Debug.Assert(type != null, string.Format("CheckNonObjects: Add {0} to the list.", type.Name));
+        }
+
+        public PdfReference Reference
+        {
+            get { return _iref; }
+
+            internal set { _iref = value; }
+        }
+        PdfReference _iref;
+    }
+    public struct PdfObjectID : IComparable
+    {
+        public PdfObjectID(int objectNumber)
+        {
+            Debug.Assert(objectNumber >= 1, "Object number out of range.");
+            _objectNumber = objectNumber;
+            _generationNumber = 0;
+        }
+
+        public PdfObjectID(int objectNumber, int generationNumber)
+        {
+            Debug.Assert(objectNumber >= 1, "Object number out of range.");
+            _objectNumber = objectNumber;
+            _generationNumber = (ushort)generationNumber;
+        }
+
+        public int ObjectNumber
+        {
+            get { return _objectNumber; }
+        }
+        readonly int _objectNumber;
+
+        public int GenerationNumber
+        {
+            get { return _generationNumber; }
+        }
+        readonly ushort _generationNumber;
+
+        public bool IsEmpty
+        {
+            get { return _objectNumber == 0; }
+        }
+
+        public override bool Equals(object obj)
+        {
+            if (obj is PdfObjectID)
+            {
+                PdfObjectID id = (PdfObjectID)obj;
+                if (_objectNumber == id._objectNumber)
+                    return _generationNumber == id._generationNumber;
+            }
+            return false;
+        }
+
+        public override int GetHashCode()
+        {
+            return _objectNumber ^ _generationNumber;
+        }
+
+        public static bool operator ==(PdfObjectID left, PdfObjectID right)
+        {
+            return left.Equals(right);
+        }
+
+        public static bool operator !=(PdfObjectID left, PdfObjectID right)
+        {
+            return !left.Equals(right);
+        }
+
+        public override string ToString()
+        {
+            return _objectNumber.ToString(CultureInfo.InvariantCulture) + " " + _generationNumber.ToString(CultureInfo.InvariantCulture);
+        }
+
+        public static PdfObjectID Empty
+        {
+            get { return new PdfObjectID(); }
+        }
+
+        public int CompareTo(object obj)
+        {
+            if (obj is PdfObjectID)
+            {
+                PdfObjectID id = (PdfObjectID)obj;
+                if (_objectNumber == id._objectNumber)
+                    return _generationNumber - id._generationNumber;
+                return _objectNumber - id._objectNumber;
+            }
+            return 1;
+        }
+
+        internal string DebuggerDisplay
+        {
+            get { return String.Format("id=({0})", ToString()); }
+        }
+    }
+    public sealed class PdfOutline : PdfDictionary
+    {
+        public PdfOutline()
+        {
+        }
+
+        internal PdfOutline(PdfDocument document)
+            : base(document)
+        {
+        }
+
+        public PdfOutline(PdfDictionary dict)
+            : base(dict)
+        {
+            Initialize();
+        }
+
+        public PdfOutline(string title, PdfPage destinationPage, bool opened, PdfOutlineStyle style, XColor textColor)
+        {
+            Title = title;
+            DestinationPage = destinationPage;
+            Opened = opened;
+            Style = style;
+            TextColor = textColor;
+        }
+
+        public PdfOutline(string title, PdfPage destinationPage, bool opened, PdfOutlineStyle style)
+        {
+            Title = title;
+            DestinationPage = destinationPage;
+            Opened = opened;
+            Style = style;
+        }
+
+        public PdfOutline(string title, PdfPage destinationPage, bool opened)
+        {
+            Title = title;
+            DestinationPage = destinationPage;
+            Opened = opened;
+        }
+
+        public PdfOutline(string title, PdfPage destinationPage)
+        {
+            Title = title;
+            DestinationPage = destinationPage;
+        }
+
+        internal int Count
+        {
+            get { return _count; }
+            set { _count = value; }
+        }
+        int _count;
+
+        internal int OpenCount;
+
+        internal int CountOpen()
+        {
+            int count = _opened ? 1 : 0;
+            if (_outlines != null)
+                count += _outlines.CountOpen();
+            return count;
+        }
+
+        public PdfOutline Parent
+        {
+            get { return _parent; }
+            internal set { _parent = value; }
+        }
+        PdfOutline _parent;
+
+        public string Title
+        {
+            get { return Elements.GetString(Keys.Title); }
+            set
+            {
+                PdfString s = new PdfString(value, PdfStringEncoding.Unicode);
+                Elements.SetValue(Keys.Title, s);
+            }
+        }
+
+        public PdfPage DestinationPage
+        {
+            get { return _destinationPage; }
+            set { _destinationPage = value; }
+        }
+        PdfPage _destinationPage;
+
+        public double? Left
+        {
+            get { return _left; }
+            set { _left = value; }
+        }
+        double? _left = null;
+
+        public double? Top
+        {
+            get { return _top; }
+            set { _top = value; }
+        }
+        double? _top = null;
+
+        public double Right
+        {
+            get { return _right; }
+            set { _right = value; }
+        }
+        double _right = double.NaN;
+
+        public double Bottom
+        {
+            get { return _bottom; }
+            set { _bottom = value; }
+        }
+        double _bottom = double.NaN;
+
+        public double? Zoom
+        {
+            get { return _zoom; }
+            set
+            {
+                if (value.HasValue && value.Value == 0)
+                    _zoom = null;
+                else
+                    _zoom = value;
+            }
+        }
+        double? _zoom;
+
+        public bool Opened
+        {
+            get { return _opened; }
+#if true
+            set { _opened = value; }
+#endif
+        }
+        bool _opened;
+
+        public PdfOutlineStyle Style
+        {
+            get { return (PdfOutlineStyle)Elements.GetInteger(Keys.F); }
+            set { Elements.SetInteger(Keys.F, (int)value); }
+        }
+
+        public PdfPageDestinationType PageDestinationType
+        {
+            get { return _pageDestinationType; }
+            set { _pageDestinationType = value; }
+        }
+        PdfPageDestinationType _pageDestinationType = PdfPageDestinationType.Xyz;
+
+        public XColor TextColor
+        {
+            get { return _textColor; }
+            set { _textColor = value; }
+        }
+        XColor _textColor;
+
+        public bool HasChildren
+        {
+            get { return _outlines != null && _outlines.Count > 0; }
+        }
+
+        public PdfOutlineCollection Outlines
+        {
+            get { return _outlines ?? (_outlines = new PdfOutlineCollection(Owner, this)); }
+        }
+        PdfOutlineCollection _outlines;
+
+        void Initialize()
+        {
+            string title;
+            if (Elements.TryGetString(Keys.Title, out title))
+                Title = title;
+
+            PdfReference parentRef = Elements.GetReference(Keys.Parent);
+            if (parentRef != null)
+            {
+                PdfOutline parent = parentRef.Value as PdfOutline;
+                if (parent != null)
+                    Parent = parent;
+            }
+
+            Count = Elements.GetInteger(Keys.Count);
+
+            PdfArray colors = Elements.GetArray(Keys.C);
+            if (colors != null && colors.Elements.Count == 3)
+            {
+                double r = colors.Elements.GetReal(0);
+                double g = colors.Elements.GetReal(1);
+                double b = colors.Elements.GetReal(2);
+                TextColor = XColor.FromArgb((int)(r * 255), (int)(g * 255), (int)(b * 255));
+            }
+
+            PdfItem dest = Elements.GetValue(Keys.Dest);
+            PdfItem a = Elements.GetValue(Keys.A);
+            Debug.Assert(dest == null || a == null, "Either destination or goto action.");
+
+            PdfArray destArray = null;
+            if (dest != null)
+            {
+                destArray = dest as PdfArray;
+                if (destArray != null)
+                {
+                    SplitDestinationPage(destArray);
+                }
+                else
+                {
+                    Debug.Assert(false, "See what to do when this happened.");
+                }
+            }
+            else if (a != null)
+            {
+                PdfDictionary action = a as PdfDictionary;
+                if (action != null && action.Elements.GetName(PdfAction.Keys.S) == "/GoTo")
+                {
+                    dest = action.Elements[PdfGoToAction.Keys.D];
+                    destArray = dest as PdfArray;
+                    if (destArray != null)
+                    {
+                        Elements.Remove(Keys.A);
+                        Elements.Add(Keys.Dest, destArray);
+                        SplitDestinationPage(destArray);
+                    }
+                    else
+                    {
+                        throw new Exception("Destination Array expected.");
+                    }
+                }
+                else
+                {
+                    Debug.Assert(false, "See what to do when this happened.");
+                }
+            }
+            else
+            {
+            }
+
+            InitializeChildren();
+        }
+
+        void SplitDestinationPage(PdfArray destination)
+        {
+
+            PdfDictionary destPage = (PdfDictionary)((PdfReference)destination.Elements[0]).Value;
+            PdfPage page = destPage as PdfPage;
+            if (page == null)
+                page = new PdfPage(destPage);
+
+            DestinationPage = page;
+            PdfName type = destination.Elements[1] as PdfName;
+            if (type != null)
+            {
+                PageDestinationType = (PdfPageDestinationType)Enum.Parse(typeof(PdfPageDestinationType), type.Value.Substring(1), true);
+                switch (PageDestinationType)
+                {
+                    case PdfPageDestinationType.Xyz:
+                        Left = destination.Elements.GetNullableReal(2);
+                        Top = destination.Elements.GetNullableReal(3);
+                        Zoom = destination.Elements.GetNullableReal(4);
+                        break;
+
+                    case PdfPageDestinationType.Fit:
+                        break;
+
+                    case PdfPageDestinationType.FitH:
+                        Top = destination.Elements.GetNullableReal(2);
+                        break;
+
+                    case PdfPageDestinationType.FitV:
+                        Left = destination.Elements.GetNullableReal(2);
+                        break;
+
+                    case PdfPageDestinationType.FitR:
+                        Left = destination.Elements.GetReal(2);
+                        Bottom = destination.Elements.GetReal(3);
+                        Right = destination.Elements.GetReal(4);
+                        Top = destination.Elements.GetReal(5);
+                        break;
+
+                    case PdfPageDestinationType.FitB:
+                        break;
+
+                    case PdfPageDestinationType.FitBH:
+                        Top = destination.Elements.GetReal(2);
+                        break;
+
+                    case PdfPageDestinationType.FitBV:
+                        Left = destination.Elements.GetReal(2);
+                        break;
+
+                    default:
+                        throw new ArgumentOutOfRangeException();
+                }
+            }
+
+        }
+
+        void InitializeChildren()
+        {
+            PdfReference firstRef = Elements.GetReference(Keys.First);
+            PdfReference lastRef = Elements.GetReference(Keys.Last);
+            PdfReference current = firstRef;
+            while (current != null)
+            {
+                PdfOutline item = new PdfOutline((PdfDictionary)current.Value);
+                Outlines.Add(item);
+
+                current = item.Elements.GetReference(Keys.Next);
+            }
+        }
+
+        internal override void PrepareForSave()
+        {
+            bool hasKids = HasChildren;
+            if (_parent != null || hasKids)
+            {
+                if (_parent == null)
+                {
+                    Debug.Assert(_outlines != null && _outlines.Count > 0 && _outlines[0] != null);
+                    Elements[Keys.First] = _outlines[0].Reference;
+                    Elements[Keys.Last] = _outlines[_outlines.Count - 1].Reference;
+
+                    if (OpenCount > 0)
+                        Elements[Keys.Count] = new PdfInteger(OpenCount);
+                }
+                else
+                {
+                    Elements[Keys.Parent] = _parent.Reference;
+
+                    int count = _parent._outlines.Count;
+                    int index = _parent._outlines.IndexOf(this);
+                    Debug.Assert(index != -1);
+
+                    if (DestinationPage != null)
+                        Elements[Keys.Dest] = CreateDestArray();
+
+                    if (index > 0)
+                        Elements[Keys.Prev] = _parent._outlines[index - 1].Reference;
+
+                    if (index < count - 1)
+                        Elements[Keys.Next] = _parent._outlines[index + 1].Reference;
+
+                    if (hasKids)
+                    {
+                        Elements[Keys.First] = _outlines[0].Reference;
+                        Elements[Keys.Last] = _outlines[_outlines.Count - 1].Reference;
+                    }
+                    if (OpenCount > 0)
+                        Elements[Keys.Count] = new PdfInteger((_opened ? 1 : -1) * OpenCount);
+
+                    if (_textColor != XColor.Empty && Owner.HasVersion("1.4"))
+                        Elements[Keys.C] = new PdfLiteral("[{0}]", PdfEncoders.ToString(_textColor, PdfColorMode.Rgb));
+
+                }
+
+                if (hasKids)
+                {
+                    foreach (PdfOutline outline in _outlines)
+                        outline.PrepareForSave();
+                }
+            }
+        }
+
+        PdfArray CreateDestArray()
+        {
+            PdfArray dest = null;
+            switch (PageDestinationType)
+            {
+                case PdfPageDestinationType.Xyz:
+                    dest = new PdfArray(Owner,
+                        DestinationPage.Reference, new PdfLiteral(String.Format("/XYZ {0} {1} {2}", Fd(Left), Fd(Top), Fd(Zoom))));
+                    break;
+
+                case PdfPageDestinationType.Fit:
+                    dest = new PdfArray(Owner,
+                        DestinationPage.Reference, new PdfLiteral("/Fit"));
+                    break;
+
+                case PdfPageDestinationType.FitH:
+                    dest = new PdfArray(Owner,
+                        DestinationPage.Reference, new PdfLiteral(String.Format("/FitH {0}", Fd(Top))));
+                    break;
+
+                case PdfPageDestinationType.FitV:
+                    dest = new PdfArray(Owner,
+                        DestinationPage.Reference, new PdfLiteral(String.Format("/FitV {0}", Fd(Left))));
+                    break;
+
+                case PdfPageDestinationType.FitR:
+                    dest = new PdfArray(Owner,
+                        DestinationPage.Reference, new PdfLiteral(String.Format("/FitR {0} {1} {2} {3}", Fd(Left), Fd(Bottom), Fd(Right), Fd(Top))));
+                    break;
+
+                case PdfPageDestinationType.FitB:
+                    dest = new PdfArray(Owner,
+                        DestinationPage.Reference, new PdfLiteral("/FitB"));
+                    break;
+
+                case PdfPageDestinationType.FitBH:
+                    dest = new PdfArray(Owner,
+                        DestinationPage.Reference, new PdfLiteral(String.Format("/FitBH {0}", Fd(Top))));
+                    break;
+
+                case PdfPageDestinationType.FitBV:
+                    dest = new PdfArray(Owner,
+                        DestinationPage.Reference, new PdfLiteral(String.Format("/FitBV {0}", Fd(Left))));
+                    break;
+
+                default:
+                    throw new ArgumentOutOfRangeException();
+            }
+            return dest;
+        }
+
+        string Fd(double value)
+        {
+            if (Double.IsNaN(value))
+                throw new InvalidOperationException("Value is not a valid Double.");
+            return value.ToString("#.##", CultureInfo.InvariantCulture);
+
+        }
+
+        string Fd(double? value)
+        {
+            return value.HasValue ? value.Value.ToString("#.##", CultureInfo.InvariantCulture) : "null";
+        }
+
+        internal override void WriteObject(PdfWriter writer)
+        {
+            bool hasKids = HasChildren;
+            if (_parent != null || hasKids)
+            {
+                base.WriteObject(writer);
+            }
+        }
+
+
+        internal sealed class Keys : KeysBase
+        {
+            [KeyInfo(KeyType.Name | KeyType.Optional, FixedValue = "Outlines")]
+            public const string Type = "/Type";
+
+            [KeyInfo(KeyType.String | KeyType.Required)]
+            public const string Title = "/Title";
+
+            [KeyInfo(KeyType.Dictionary | KeyType.Required)]
+            public const string Parent = "/Parent";
+
+            [KeyInfo(KeyType.Dictionary | KeyType.Required)]
+            public const string Prev = "/Prev";
+
+            [KeyInfo(KeyType.Dictionary | KeyType.Required)]
+            public const string Next = "/Next";
+
+            [KeyInfo(KeyType.Dictionary | KeyType.Required)]
+            public const string First = "/First";
+
+            [KeyInfo(KeyType.Dictionary | KeyType.Required)]
+            public const string Last = "/Last";
+
+            [KeyInfo(KeyType.Integer | KeyType.Required)]
+            public const string Count = "/Count";
+
+            [KeyInfo(KeyType.ArrayOrNameOrString | KeyType.Optional)]
+            public const string Dest = "/Dest";
+
+            [KeyInfo(KeyType.Dictionary | KeyType.Optional)]
+            public const string A = "/A";
+
+            [KeyInfo(KeyType.Dictionary | KeyType.Optional)]
+            public const string SE = "/SE";
+
+            [KeyInfo(KeyType.Array | KeyType.Optional)]
+            public const string C = "/C";
+
+            [KeyInfo(KeyType.Integer | KeyType.Optional)]
+            public const string F = "/F";
+
+            public static DictionaryMeta Meta
+            {
+                get { return _meta ?? (_meta = CreateMeta(typeof(Keys))); }
+            }
+            static DictionaryMeta _meta;
+
+        }
+
+        internal override DictionaryMeta Meta
+        {
+            get { return Keys.Meta; }
+        }
+    }
+    public class PdfOutlineCollection : PdfObject, ICollection<PdfOutline>, IList<PdfOutline>
+    {
+        internal PdfOutlineCollection(PdfDocument document, PdfOutline parent)
+            : base(document)
+        {
+            _parent = parent;
+        }
+
+        [Obsolete("Use 'Count > 0' - HasOutline will throw exception.")]
+        public bool HasOutline
+        {
+            get
+            {
+                throw new InvalidOperationException("Use 'Count > 0'");
+            }
+        }
+
+        public bool Remove(PdfOutline item)
+        {
+            if (_outlines.Remove(item))
+            {
+                RemoveFromOutlinesTree(item);
+                return true;
+            }
+            return false;
+        }
+
+        public int Count
+        {
+            get { return _outlines.Count; }
+        }
+
+        public bool IsReadOnly
+        {
+            get { return false; }
+        }
+
+        public void Add(PdfOutline outline)
+        {
+            if (outline == null)
+                throw new ArgumentNullException("outline");
+
+            if (outline.DestinationPage != null && !ReferenceEquals(Owner, outline.DestinationPage.Owner))
+                throw new ArgumentException("Destination page must belong to this document.");
+
+            AddToOutlinesTree(outline);
+            _outlines.Add(outline);
+
+            if (outline.Opened)
+            {
+                outline = _parent;
+                while (outline != null)
+                {
+                    outline.OpenCount++;
+                    outline = outline.Parent;
+                }
+            }
+        }
+
+        public void Clear()
+        {
+            if (Count > 0)
+            {
+                PdfOutline[] array = new PdfOutline[Count];
+                _outlines.CopyTo(array);
+                _outlines.Clear();
+                foreach (PdfOutline item in array)
+                {
+                    RemoveFromOutlinesTree(item);
+                }
+            }
+        }
+
+        public bool Contains(PdfOutline item)
+        {
+            return _outlines.Contains(item);
+        }
+
+        public void CopyTo(PdfOutline[] array, int arrayIndex)
+        {
+            _outlines.CopyTo(array, arrayIndex);
+        }
+
+        public PdfOutline Add(string title, PdfPage destinationPage, bool opened, PdfOutlineStyle style, XColor textColor)
+        {
+            PdfOutline outline = new PdfOutline(title, destinationPage, opened, style, textColor);
+            Add(outline);
+            return outline;
+        }
+
+        public PdfOutline Add(string title, PdfPage destinationPage, bool opened, PdfOutlineStyle style)
+        {
+            PdfOutline outline = new PdfOutline(title, destinationPage, opened, style);
+            Add(outline);
+            return outline;
+        }
+
+        public PdfOutline Add(string title, PdfPage destinationPage, bool opened)
+        {
+            PdfOutline outline = new PdfOutline(title, destinationPage, opened);
+            Add(outline);
+            return outline;
+        }
+
+        public PdfOutline Add(string title, PdfPage destinationPage)
+        {
+            PdfOutline outline = new PdfOutline(title, destinationPage);
+            Add(outline);
+            return outline;
+        }
+
+        public int IndexOf(PdfOutline item)
+        {
+            return _outlines.IndexOf(item);
+        }
+
+        public void Insert(int index, PdfOutline outline)
+        {
+            if (outline == null)
+                throw new ArgumentNullException("outline");
+            if (index < 0 || index >= _outlines.Count)
+                throw new ArgumentOutOfRangeException("index", index, PSSR.OutlineIndexOutOfRange);
+
+            AddToOutlinesTree(outline);
+            _outlines.Insert(index, outline);
+        }
+
+        public void RemoveAt(int index)
+        {
+            PdfOutline outline = _outlines[index];
+            _outlines.RemoveAt(index);
+            RemoveFromOutlinesTree(outline);
+        }
+
+        public PdfOutline this[int index]
+        {
+            get
+            {
+                if (index < 0 || index >= _outlines.Count)
+                    throw new ArgumentOutOfRangeException("index", index, PSSR.OutlineIndexOutOfRange);
+                return _outlines[index];
+            }
+            set
+            {
+                if (index < 0 || index >= _outlines.Count)
+                    throw new ArgumentOutOfRangeException("index", index, PSSR.OutlineIndexOutOfRange);
+                if (value == null)
+                    throw new ArgumentOutOfRangeException("value", null, PSSR.SetValueMustNotBeNull);
+
+                AddToOutlinesTree(value);
+                _outlines[index] = value;
+            }
+        }
+
+        public IEnumerator<PdfOutline> GetEnumerator()
+        {
+            return _outlines.GetEnumerator();
+        }
+
+        IEnumerator IEnumerable.GetEnumerator()
+        {
+            return GetEnumerator();
+        }
+
+        internal int CountOpen()
+        {
+            int count = 0;
+            return count;
+        }
+
+        void AddToOutlinesTree(PdfOutline outline)
+        {
+            if (outline == null)
+                throw new ArgumentNullException("outline");
+
+            if (outline.DestinationPage != null && !ReferenceEquals(Owner, outline.DestinationPage.Owner))
+                throw new ArgumentException("Destination page must belong to this document.");
+
+            outline.Document = Owner;
+            outline.Parent = _parent;
+
+            if (!Owner._irefTable.Contains(outline.ObjectID))
+                Owner._irefTable.Add(outline);
+            else
+            {
+                outline.GetType();
+            }
+
+        }
+
+        void RemoveFromOutlinesTree(PdfOutline outline)
+        {
+            if (outline == null)
+                throw new ArgumentNullException("outline");
+
+            outline.Parent = null;
+
+            Owner._irefTable.Remove(outline.Reference);
+        }
+
+        readonly PdfOutline _parent;
+
+        readonly List<PdfOutline> _outlines = new List<PdfOutline>();
+    }
+    public sealed class PdfPage : PdfDictionary, IContentStream
+    {
+        public PdfPage()
+        {
+            Elements.SetName(Keys.Type, "/Page");
+            Initialize();
+        }
+
+        public PdfPage(PdfDocument document)
+            : base(document)
+        {
+            Elements.SetName(Keys.Type, "/Page");
+            Elements[Keys.Parent] = document.Pages.Reference;
+            Initialize();
+        }
+
+        internal PdfPage(PdfDictionary dict)
+            : base(dict)
+        {
+            int rotate = Elements.GetInteger(InheritablePageKeys.Rotate);
+            if (Math.Abs((rotate / 90)) % 2 == 1)
+            {
+#if true
+                _orientation = PageOrientation.Landscape;
+                _orientationSetByCodeForRotatedDocument = true;
+#endif
+            }
+        }
+
+        void Initialize()
+        {
+            Size = RegionInfo.CurrentRegion.IsMetric ? PageSize.A4 : PageSize.Letter;
+            PdfRectangle rect = MediaBox;
+        }
+
+        public object Tag
+        {
+            get { return _tag; }
+            set { _tag = value; }
+        }
+        object _tag;
+
+        public void Close()
+        {
+            _closed = true;
+        }
+        bool _closed;
+
+        internal bool IsClosed
+        {
+            get { return _closed; }
+        }
+
+        internal override PdfDocument Document
+        {
+            set
+            {
+                if (!ReferenceEquals(_document, value))
+                {
+                    if (_document != null)
+                        throw new InvalidOperationException("Cannot change document.");
+                    _document = value;
+                    if (Reference != null)
+                        Reference.Document = value;
+                    Elements[Keys.Parent] = _document.Pages.Reference;
+                }
+            }
+        }
+
+        public PageOrientation Orientation
+        {
+            get { return _orientation; }
+            set
+            {
+                _orientation = value;
+                _orientationSetByCodeForRotatedDocument = false;
+            }
+        }
+        PageOrientation _orientation;
+        bool _orientationSetByCodeForRotatedDocument;
+        public PageSize Size
+        {
+            get { return _pageSize; }
+            set
+            {
+                if (!Enum.IsDefined(typeof(PageSize), value))
+                    throw new InvalidEnumArgumentException("value", (int)value, typeof(PageSize));
+
+                XSize size = PageSizeConverter.ToSize(value);
+                MediaBox = new PdfRectangle(0, 0, size.Width, size.Height);
+                _pageSize = value;
+            }
+        }
+        PageSize _pageSize;
+
+        public TrimMargins TrimMargins
+        {
+            get
+            {
+                if (_trimMargins == null)
+                    _trimMargins = new TrimMargins();
+                return _trimMargins;
+            }
+            set
+            {
+                if (_trimMargins == null)
+                    _trimMargins = new TrimMargins();
+                if (value != null)
+                {
+                    _trimMargins.Left = value.Left;
+                    _trimMargins.Right = value.Right;
+                    _trimMargins.Top = value.Top;
+                    _trimMargins.Bottom = value.Bottom;
+                }
+                else
+                    _trimMargins.All = 0;
+            }
+        }
+        TrimMargins _trimMargins = new TrimMargins();
+
+        public PdfRectangle MediaBox
+        {
+            get { return Elements.GetRectangle(Keys.MediaBox, true); }
+            set { Elements.SetRectangle(Keys.MediaBox, value); }
+        }
+
+        public PdfRectangle CropBox
+        {
+            get { return Elements.GetRectangle(Keys.CropBox, true); }
+            set { Elements.SetRectangle(Keys.CropBox, value); }
+        }
+
+        public PdfRectangle BleedBox
+        {
+            get { return Elements.GetRectangle(Keys.BleedBox, true); }
+            set { Elements.SetRectangle(Keys.BleedBox, value); }
+        }
+
+        public PdfRectangle ArtBox
+        {
+            get { return Elements.GetRectangle(Keys.ArtBox, true); }
+            set { Elements.SetRectangle(Keys.ArtBox, value); }
+        }
+
+        public PdfRectangle TrimBox
+        {
+            get { return Elements.GetRectangle(Keys.TrimBox, true); }
+            set { Elements.SetRectangle(Keys.TrimBox, value); }
+        }
+
+        public XUnit Height
+        {
+            get
+            {
+                PdfRectangle rect = MediaBox;
+                return _orientation == PageOrientation.Portrait ? rect.Height : rect.Width;
+            }
+            set
+            {
+                PdfRectangle rect = MediaBox;
+                if (_orientation == PageOrientation.Portrait)
+                    MediaBox = new PdfRectangle(rect.X1, 0, rect.X2, value);
+                else
+                    MediaBox = new PdfRectangle(0, rect.Y1, value, rect.Y2);
+                _pageSize = PageSize.Undefined;
+            }
+        }
+
+        public XUnit Width
+        {
+            get
+            {
+                PdfRectangle rect = MediaBox;
+                return _orientation == PageOrientation.Portrait ? rect.Width : rect.Height;
+            }
+            set
+            {
+                PdfRectangle rect = MediaBox;
+                if (_orientation == PageOrientation.Portrait)
+                    MediaBox = new PdfRectangle(0, rect.Y1, value, rect.Y2);
+                else
+                    MediaBox = new PdfRectangle(rect.X1, 0, rect.X2, value);
+                _pageSize = PageSize.Undefined;
+            }
+        }
+
+        public int Rotate
+        {
+            get { return _elements.GetInteger(InheritablePageKeys.Rotate); }
+            set
+            {
+                if (value % 90 != 0)
+                    throw new ArgumentException("Value must be a multiple of 90.");
+                _elements.SetInteger(InheritablePageKeys.Rotate, value);
+            }
+        }
+
+        internal PdfContent RenderContent;
+
+        public PdfContents Contents
+        {
+            get
+            {
+                if (_contents == null)
+                {
+                    if (true)
+                    {
+                        PdfItem item = Elements[Keys.Contents];
+                        if (item == null)
+                        {
+                            _contents = new PdfContents(Owner);
+                        }
+                        else
+                        {
+                            if (item is PdfReference)
+                                item = ((PdfReference)item).Value;
+
+                            PdfArray array = item as PdfArray;
+                            if (array != null)
+                            {
+                                if (array.IsIndirect)
+                                {
+                                    array = array.Clone();
+                                    array.Document = Owner;
+                                }
+                                _contents = new PdfContents(array);
+                            }
+                            else
+                            {
+                                _contents = new PdfContents(Owner);
+                                PdfContent content = new PdfContent((PdfDictionary)item);
+                                _contents.Elements.Add(content.Reference);
+                            }
+                        }
+                    }
+                    Debug.Assert(_contents.Reference == null);
+                    Elements[Keys.Contents] = _contents;
+                }
+                return _contents;
+            }
+        }
+        PdfContents _contents;
+
+        public bool HasAnnotations
+        {
+            get
+            {
+                if (_annotations == null)
+                {
+                    _annotations = (PdfAnnotations)Elements.GetValue(Keys.Annots);
+                    _annotations.Page = this;
+                }
+                return _annotations != null;
+            }
+        }
+
+        public PdfAnnotations Annotations
+        {
+            get
+            {
+                if (_annotations == null)
+                {
+                    _annotations = (PdfAnnotations)Elements.GetValue(Keys.Annots, VCF.Create);
+                    _annotations.Page = this;
+                }
+                return _annotations;
+            }
+        }
+        PdfAnnotations _annotations;
+
+        public PdfLinkAnnotation AddDocumentLink(PdfRectangle rect, int destinationPage)
+        {
+            PdfLinkAnnotation annotation = PdfLinkAnnotation.CreateDocumentLink(rect, destinationPage);
+            Annotations.Add(annotation);
+            return annotation;
+        }
+
+        public PdfLinkAnnotation AddWebLink(PdfRectangle rect, string url)
+        {
+            PdfLinkAnnotation annotation = PdfLinkAnnotation.CreateWebLink(rect, url);
+            Annotations.Add(annotation);
+            return annotation;
+        }
+
+        public PdfLinkAnnotation AddFileLink(PdfRectangle rect, string fileName)
+        {
+            PdfLinkAnnotation annotation = PdfLinkAnnotation.CreateFileLink(rect, fileName);
+            Annotations.Add(annotation);
+            return annotation;
+        }
+
+        public PdfCustomValues CustomValues
+        {
+            get
+            {
+                if (_customValues == null)
+                    _customValues = PdfCustomValues.Get(Elements);
+                return _customValues;
+            }
+            set
+            {
+                if (value != null)
+                    throw new ArgumentException("Only null is allowed to clear all custom values.");
+                PdfCustomValues.Remove(Elements);
+                _customValues = null;
+            }
+        }
+        PdfCustomValues _customValues;
+
+        public PdfResources Resources
+        {
+            get
+            {
+                if (_resources == null)
+                    _resources = (PdfResources)Elements.GetValue(Keys.Resources, VCF.Create);
+                return _resources;
+            }
+        }
+        PdfResources _resources;
+
+        PdfResources IContentStream.Resources
+        {
+            get { return Resources; }
+        }
+
+        internal string GetFontName(XFont font, out PdfFont pdfFont)
+        {
+            pdfFont = _document.FontTable.GetFont(font);
+            Debug.Assert(pdfFont != null);
+            string name = Resources.AddFont(pdfFont);
+            return name;
+        }
+
+        string IContentStream.GetFontName(XFont font, out PdfFont pdfFont)
+        {
+            return GetFontName(font, out pdfFont);
+        }
+
+        internal string TryGetFontName(string idName, out PdfFont pdfFont)
+        {
+            pdfFont = _document.FontTable.TryGetFont(idName);
+            string name = null;
+            if (pdfFont != null)
+                name = Resources.AddFont(pdfFont);
+            return name;
+        }
+
+        internal string GetFontName(string idName, byte[] fontData, out PdfFont pdfFont)
+        {
+            pdfFont = _document.FontTable.GetFont(idName, fontData);
+            Debug.Assert(pdfFont != null);
+            string name = Resources.AddFont(pdfFont);
+            return name;
+        }
+
+        string IContentStream.GetFontName(string idName, byte[] fontData, out PdfFont pdfFont)
+        {
+            return GetFontName(idName, fontData, out pdfFont);
+        }
+
+        internal string GetImageName(XImage image)
+        {
+            PdfImage pdfImage = _document.ImageTable.GetImage(image);
+            Debug.Assert(pdfImage != null);
+            string name = Resources.AddImage(pdfImage);
+            return name;
+        }
+
+        string IContentStream.GetImageName(XImage image)
+        {
+            return GetImageName(image);
+        }
+
+        internal string GetFormName(XForm form)
+        {
+            PdfFormXObject pdfForm = _document.FormTable.GetForm(form);
+            Debug.Assert(pdfForm != null);
+            string name = Resources.AddForm(pdfForm);
+            return name;
+        }
+
+        string IContentStream.GetFormName(XForm form)
+        {
+            return GetFormName(form);
+        }
+
+        internal override void WriteObject(PdfWriter writer)
+        {
+            PdfRectangle mediaBox = MediaBox;
+            if (_orientation == PageOrientation.Landscape && !_orientationSetByCodeForRotatedDocument)
+                MediaBox = new PdfRectangle(mediaBox.X1, mediaBox.Y1, mediaBox.Y2, mediaBox.X2);
+
+#if true
+            TransparencyUsed = true;
+            if (TransparencyUsed && !Elements.ContainsKey(Keys.Group) &&
+                _document.Options.ColorMode != PdfColorMode.Undefined)
+            {
+                PdfDictionary group = new PdfDictionary();
+                _elements["/Group"] = group;
+                if (_document.Options.ColorMode != PdfColorMode.Cmyk)
+                    group.Elements.SetName("/CS", "/DeviceRGB");
+                else
+                    group.Elements.SetName("/CS", "/DeviceCMYK");
+                group.Elements.SetName("/S", "/Transparency");
+            }
+#endif
+
+            base.WriteObject(writer);
+
+            if (_orientation == PageOrientation.Landscape && !_orientationSetByCodeForRotatedDocument)
+                MediaBox = mediaBox;
+        }
+
+        internal bool TransparencyUsed;
+
+        internal static void InheritValues(PdfDictionary page, InheritedValues values)
+        {
+            if (values.Resources != null)
+            {
+                PdfDictionary resources;
+                PdfItem res = page.Elements[InheritablePageKeys.Resources];
+                if (res is PdfReference)
+                {
+                    resources = (PdfDictionary)((PdfReference)res).Value.Clone();
+                    resources.Document = page.Owner;
+                }
+                else
+                    resources = (PdfDictionary)res;
+
+                if (resources == null)
+                {
+                    resources = values.Resources.Clone();
+                    resources.Document = page.Owner;
+                    page.Elements.Add(InheritablePageKeys.Resources, resources);
+                }
+                else
+                {
+                    foreach (PdfName name in values.Resources.Elements.KeyNames)
+                    {
+                        if (!resources.Elements.ContainsKey(name.Value))
+                        {
+                            PdfItem item = values.Resources.Elements[name];
+                            if (item is PdfObject)
+                                item = item.Clone();
+                            resources.Elements.Add(name.ToString(), item);
+                        }
+                    }
+                }
+            }
+
+            if (values.MediaBox != null && page.Elements[InheritablePageKeys.MediaBox] == null)
+                page.Elements[InheritablePageKeys.MediaBox] = values.MediaBox;
+
+            if (values.CropBox != null && page.Elements[InheritablePageKeys.CropBox] == null)
+                page.Elements[InheritablePageKeys.CropBox] = values.CropBox;
+
+            if (values.Rotate != null && page.Elements[InheritablePageKeys.Rotate] == null)
+                page.Elements[InheritablePageKeys.Rotate] = values.Rotate;
+        }
+
+        internal static void InheritValues(PdfDictionary page, ref InheritedValues values)
+        {
+            PdfItem item = page.Elements[InheritablePageKeys.Resources];
+            if (item != null)
+            {
+                PdfReference reference = item as PdfReference;
+                if (reference != null)
+                    values.Resources = (PdfDictionary)(reference.Value);
+                else
+                    values.Resources = (PdfDictionary)item;
+            }
+
+            item = page.Elements[InheritablePageKeys.MediaBox];
+            if (item != null)
+                values.MediaBox = new PdfRectangle(item);
+
+            item = page.Elements[InheritablePageKeys.CropBox];
+            if (item != null)
+                values.CropBox = new PdfRectangle(item);
+
+            item = page.Elements[InheritablePageKeys.Rotate];
+            if (item != null)
+            {
+                if (item is PdfReference)
+                    item = ((PdfReference)item).Value;
+                values.Rotate = (PdfInteger)item;
+            }
+        }
+
+        internal override void PrepareForSave()
+        {
+            if (_trimMargins.AreSet)
+            {
+                double width = _trimMargins.Left.Point + Width.Point + _trimMargins.Right.Point;
+                double height = _trimMargins.Top.Point + Height.Point + _trimMargins.Bottom.Point;
+
+                MediaBox = new PdfRectangle(0, 0, width, height);
+                CropBox = new PdfRectangle(0, 0, width, height);
+                BleedBox = new PdfRectangle(0, 0, width, height);
+
+                PdfRectangle rect = new PdfRectangle(_trimMargins.Left.Point, _trimMargins.Top.Point,
+                  width - _trimMargins.Right.Point, height - _trimMargins.Bottom.Point);
+                TrimBox = rect;
+                ArtBox = rect.Clone();
+            }
+        }
+
+        internal sealed class Keys : InheritablePageKeys
+        {
+            [KeyInfo(KeyType.Name | KeyType.Required, FixedValue = "Page")]
+            public const string Type = "/Type";
+
+            [KeyInfo(KeyType.Dictionary | KeyType.Required | KeyType.MustBeIndirect)]
+            public const string Parent = "/Parent";
+
+            [KeyInfo(KeyType.Date)]
+            public const string LastModified = "/LastModified";
+
+            [KeyInfo("1.3", KeyType.Rectangle | KeyType.Optional)]
+            public const string BleedBox = "/BleedBox";
+
+            [KeyInfo("1.3", KeyType.Rectangle | KeyType.Optional)]
+            public const string TrimBox = "/TrimBox";
+
+            [KeyInfo("1.3", KeyType.Rectangle | KeyType.Optional)]
+            public const string ArtBox = "/ArtBox";
+
+            [KeyInfo("1.4", KeyType.Dictionary | KeyType.Optional)]
+            public const string BoxColorInfo = "/BoxColorInfo";
+
+            [KeyInfo(KeyType.Array | KeyType.Stream | KeyType.Optional)]
+            public const string Contents = "/Contents";
+
+            [KeyInfo("1.4", KeyType.Dictionary | KeyType.Optional)]
+            public const string Group = "/Group";
+
+            [KeyInfo(KeyType.Stream | KeyType.Optional)]
+            public const string Thumb = "/Thumb";
+
+            [KeyInfo("1.1", KeyType.Array | KeyType.Optional)]
+            public const string B = "/B";
+
+            [KeyInfo("1.1", KeyType.Real | KeyType.Optional)]
+            public const string Dur = "/Dur";
+
+            [KeyInfo("1.1", KeyType.Dictionary | KeyType.Optional)]
+            public const string Trans = "/Trans";
+
+            [KeyInfo(KeyType.Array | KeyType.Optional, typeof(PdfAnnotations))]
+            public const string Annots = "/Annots";
+
+            [KeyInfo("1.2", KeyType.Dictionary | KeyType.Optional)]
+            public const string AA = "/AA";
+
+            [KeyInfo("1.4", KeyType.Stream | KeyType.Optional)]
+            public const string Metadata = "/Metadata";
+
+            [KeyInfo("1.3", KeyType.Dictionary | KeyType.Optional)]
+            public const string PieceInfo = "/PieceInfo";
+
+            [KeyInfo(KeyType.Integer | KeyType.Optional)]
+            public const string StructParents = "/StructParents";
+
+            [KeyInfo("1.3", KeyType.String | KeyType.Optional)]
+            public const string ID = "/ID";
+
+            [KeyInfo("1.3", KeyType.Real | KeyType.Optional)]
+            public const string PZ = "/PZ";
+
+            [KeyInfo("1.3", KeyType.Dictionary | KeyType.Optional)]
+            public const string SeparationInfo = "/SeparationInfo";
+
+            [KeyInfo("1.5", KeyType.Name | KeyType.Optional)]
+            public const string Tabs = "/Tabs";
+
+            [KeyInfo(KeyType.Name | KeyType.Optional)]
+            public const string TemplateInstantiated = "/TemplateInstantiated";
+
+            [KeyInfo("1.5", KeyType.Dictionary | KeyType.Optional)]
+            public const string PresSteps = "/PresSteps";
+
+            [KeyInfo("1.6", KeyType.Real | KeyType.Optional)]
+            public const string UserUnit = "/UserUnit";
+
+            [KeyInfo("1.6", KeyType.Dictionary | KeyType.Optional)]
+            public const string VP = "/VP";
+
+            internal static DictionaryMeta Meta
+            {
+                get { return _meta ?? (_meta = CreateMeta(typeof(Keys))); }
+            }
+            static DictionaryMeta _meta;
+        }
+
+        internal override DictionaryMeta Meta
+        {
+            get { return Keys.Meta; }
+        }
+
+        internal class InheritablePageKeys : KeysBase
+        {
+            [KeyInfo(KeyType.Dictionary | KeyType.Required | KeyType.Inheritable, typeof(PdfResources))]
+            public const string Resources = "/Resources";
+
+            [KeyInfo(KeyType.Rectangle | KeyType.Required | KeyType.Inheritable)]
+            public const string MediaBox = "/MediaBox";
+
+            [KeyInfo(KeyType.Rectangle | KeyType.Optional | KeyType.Inheritable)]
+            public const string CropBox = "/CropBox";
+
+            [KeyInfo(KeyType.Integer | KeyType.Optional)]
+            public const string Rotate = "/Rotate";
+        }
+
+        internal struct InheritedValues
+        {
+            public PdfDictionary Resources;
+            public PdfRectangle MediaBox;
+            public PdfRectangle CropBox;
+            public PdfInteger Rotate;
+        }
+    }
+    public sealed class PdfPages : PdfDictionary, IEnumerable<PdfPage>
+    {
+        internal PdfPages(PdfDocument document)
+            : base(document)
+        {
+            Elements.SetName(Keys.Type, "/Pages");
+            Elements[Keys.Count] = new PdfInteger(0);
+        }
+
+        internal PdfPages(PdfDictionary dictionary)
+            : base(dictionary)
+        { }
+
+        public int Count
+        {
+            get { return PagesArray.Elements.Count; }
+        }
+
+        public PdfPage this[int index]
+        {
+            get
+            {
+                if (index < 0 || index >= Count)
+                    throw new ArgumentOutOfRangeException("index", index, PSSR.PageIndexOutOfRange);
+
+                PdfDictionary dict = (PdfDictionary)((PdfReference)PagesArray.Elements[index]).Value;
+                if (!(dict is PdfPage))
+                    dict = new PdfPage(dict);
+                return (PdfPage)dict;
+            }
+        }
+
+        internal PdfPage FindPage(PdfObjectID id)
+        {
+            PdfPage page = null;
+            foreach (PdfItem item in PagesArray)
+            {
+                PdfReference reference = item as PdfReference;
+                if (reference != null)
+                {
+                    PdfDictionary dictionary = reference.Value as PdfDictionary;
+                    if (dictionary != null && dictionary.ObjectID == id)
+                    {
+                        page = dictionary as PdfPage ?? new PdfPage(dictionary);
+                        break;
+                    }
+                }
+            }
+            return page;
+        }
+
+        public PdfPage Add()
+        {
+            PdfPage page = new PdfPage();
+            Insert(Count, page);
+            return page;
+        }
+
+        public PdfPage Add(PdfPage page)
+        {
+            return Insert(Count, page);
+        }
+
+        public PdfPage Insert(int index)
+        {
+            PdfPage page = new PdfPage();
+            Insert(index, page);
+            return page;
+        }
+
+        public PdfPage Insert(int index, PdfPage page)
+        {
+            if (page == null)
+                throw new ArgumentNullException("page");
+
+            if (page.Owner == Owner)
+            {
+                int count = Count;
+                for (int idx = 0; idx < count; idx++)
+                {
+                    if (ReferenceEquals(this[idx], page))
+                        throw new InvalidOperationException(PSSR.MultiplePageInsert);
+                }
+
+                Owner._irefTable.Add(page);
+                Debug.Assert(page.Owner == Owner);
+
+                PagesArray.Elements.Insert(index, page.Reference);
+
+                Elements.SetInteger(Keys.Count, PagesArray.Elements.Count);
+
+                return page;
+            }
+
+            if (page.Owner == null)
+            {
+                page.Document = Owner;
+
+                Owner._irefTable.Add(page);
+                Debug.Assert(page.Owner == Owner);
+                PagesArray.Elements.Insert(index, page.Reference);
+                Elements.SetInteger(Keys.Count, PagesArray.Elements.Count);
+            }
+            else
+            {
+                PdfPage importPage = page;
+                page = ImportExternalPage(importPage);
+                Owner._irefTable.Add(page);
+
+                PdfImportedObjectTable importedObjectTable = Owner.FormTable.GetImportedObjectTable(importPage);
+                importedObjectTable.Add(importPage.ObjectID, page.Reference);
+
+                PagesArray.Elements.Insert(index, page.Reference);
+                Elements.SetInteger(Keys.Count, PagesArray.Elements.Count);
+                PdfAnnotations.FixImportedAnnotation(page);
+            }
+            if (Owner.Settings.TrimMargins.AreSet)
+                page.TrimMargins = Owner.Settings.TrimMargins;
+
+            return page;
+        }
+
+        public void InsertRange(int index, PdfDocument document, int startIndex, int pageCount)
+        {
+            if (document == null)
+                throw new ArgumentNullException("document");
+
+            if (index < 0 || index > Count)
+                throw new ArgumentOutOfRangeException("index", "Argument 'index' out of range.");
+
+            int importDocumentPageCount = document.PageCount;
+
+            if (startIndex < 0 || startIndex + pageCount > importDocumentPageCount)
+                throw new ArgumentOutOfRangeException("startIndex", "Argument 'startIndex' out of range.");
+
+            if (pageCount > importDocumentPageCount)
+                throw new ArgumentOutOfRangeException("pageCount", "Argument 'pageCount' out of range.");
+
+            PdfPage[] insertPages = new PdfPage[pageCount];
+            PdfPage[] importPages = new PdfPage[pageCount];
+
+            for (int idx = 0, insertIndex = index, importIndex = startIndex;
+                importIndex < startIndex + pageCount;
+                idx++, insertIndex++, importIndex++)
+            {
+                PdfPage importPage = document.Pages[importIndex];
+                PdfPage page = ImportExternalPage(importPage);
+                insertPages[idx] = page;
+                importPages[idx] = importPage;
+
+                Owner._irefTable.Add(page);
+
+                PdfImportedObjectTable importedObjectTable = Owner.FormTable.GetImportedObjectTable(importPage);
+                importedObjectTable.Add(importPage.ObjectID, page.Reference);
+
+                PagesArray.Elements.Insert(insertIndex, page.Reference);
+
+                if (Owner.Settings.TrimMargins.AreSet)
+                    page.TrimMargins = Owner.Settings.TrimMargins;
+            }
+            Elements.SetInteger(Keys.Count, PagesArray.Elements.Count);
+
+            for (int idx = 0, importIndex = startIndex;
+                importIndex < startIndex + pageCount;
+                idx++, importIndex++)
+            {
+                PdfPage importPage = document.Pages[importIndex];
+                PdfPage page = insertPages[idx];
+
+                PdfArray annots = importPage.Elements.GetArray(PdfPage.Keys.Annots);
+                if (annots != null)
+                {
+                    PdfAnnotations annotations = new PdfAnnotations(Owner);
+
+                    int count = annots.Elements.Count;
+                    for (int idxAnnotation = 0; idxAnnotation < count; idxAnnotation++)
+                    {
+                        PdfDictionary annot = annots.Elements.GetDictionary(idxAnnotation);
+                        if (annot != null)
+                        {
+                            string subtype = annot.Elements.GetString(PdfAnnotation.Keys.Subtype);
+                            if (subtype == "/Link")
+                            {
+                                bool addAnnotation = false;
+                                PdfLinkAnnotation newAnnotation = new PdfLinkAnnotation(Owner);
+
+                                PdfName[] importAnnotationKeyNames = annot.Elements.KeyNames;
+                                foreach (PdfName pdfItem in importAnnotationKeyNames)
+                                {
+                                    PdfItem impItem;
+                                    switch (pdfItem.Value)
+                                    {
+                                        case "/BS":
+                                            newAnnotation.Elements.Add("/BS", new PdfLiteral("<</W 0>>"));
+                                            break;
+
+                                        case "/F":
+                                            impItem = annot.Elements.GetValue("/F");
+                                            Debug.Assert(impItem is PdfInteger);
+                                            newAnnotation.Elements.Add("/F", impItem.Clone());
+                                            break;
+
+                                        case "/Rect":
+                                            impItem = annot.Elements.GetValue("/Rect");
+                                            Debug.Assert(impItem is PdfArray);
+                                            newAnnotation.Elements.Add("/Rect", impItem.Clone());
+                                            break;
+
+                                        case "/StructParent":
+                                            impItem = annot.Elements.GetValue("/StructParent");
+                                            Debug.Assert(impItem is PdfInteger);
+                                            newAnnotation.Elements.Add("/StructParent", impItem.Clone());
+                                            break;
+
+                                        case "/Subtype":
+                                            break;
+
+                                        case "/Dest":
+                                            impItem = annot.Elements.GetValue("/Dest");
+                                            impItem = impItem.Clone();
+
+                                            PdfArray destArray = impItem as PdfArray;
+                                            if (destArray != null && destArray.Elements.Count == 5)
+                                            {
+                                                PdfReference iref = destArray.Elements[0] as PdfReference;
+                                                if (iref != null)
+                                                {
+                                                    iref = RemapReference(insertPages, importPages, iref);
+                                                    if (iref != null)
+                                                    {
+                                                        destArray.Elements[0] = iref;
+                                                        newAnnotation.Elements.Add("/Dest", destArray);
+                                                        addAnnotation = true;
+                                                    }
+                                                }
+                                            }
+                                            break;
+
+                                        default:
+                                            break;
+
+                                    }
+                                }
+                                if (addAnnotation)
+                                    annotations.Add(newAnnotation);
+                            }
+                        }
+                    }
+
+                    if (annotations.Count > 0)
+                    {
+                        page.Elements.Add(PdfPage.Keys.Annots, annotations);
+                    }
+                }
+
+            }
+        }
+
+        public void InsertRange(int index, PdfDocument document)
+        {
+            if (document == null)
+                throw new ArgumentNullException("document");
+
+            InsertRange(index, document, 0, document.PageCount);
+        }
+
+        public void InsertRange(int index, PdfDocument document, int startIndex)
+        {
+            if (document == null)
+                throw new ArgumentNullException("document");
+
+            InsertRange(index, document, startIndex, document.PageCount - startIndex);
+        }
+
+        public void Remove(PdfPage page)
+        {
+            PagesArray.Elements.Remove(page.Reference);
+            Elements.SetInteger(Keys.Count, PagesArray.Elements.Count);
+        }
+
+        public void RemoveAt(int index)
+        {
+            PagesArray.Elements.RemoveAt(index);
+            Elements.SetInteger(Keys.Count, PagesArray.Elements.Count);
+        }
+
+        public void MovePage(int oldIndex, int newIndex)
+        {
+            if (oldIndex < 0 || oldIndex >= Count)
+                throw new ArgumentOutOfRangeException("oldIndex");
+            if (newIndex < 0 || newIndex >= Count)
+                throw new ArgumentOutOfRangeException("newIndex");
+            if (oldIndex == newIndex)
+                return;
+
+            PdfReference page = (PdfReference)_pagesArray.Elements[oldIndex];
+            _pagesArray.Elements.RemoveAt(oldIndex);
+            _pagesArray.Elements.Insert(newIndex, page);
+        }
+
+        PdfPage ImportExternalPage(PdfPage importPage)
+        {
+            if (importPage.Owner._openMode != PdfDocumentOpenMode.Import)
+                throw new InvalidOperationException("A PDF document must be opened with PdfDocumentOpenMode.Import to import pages from it.");
+
+            PdfPage page = new PdfPage(_document);
+
+            CloneElement(page, importPage, PdfPage.Keys.Resources, false);
+            CloneElement(page, importPage, PdfPage.Keys.Contents, false);
+            CloneElement(page, importPage, PdfPage.Keys.MediaBox, true);
+            CloneElement(page, importPage, PdfPage.Keys.CropBox, true);
+            CloneElement(page, importPage, PdfPage.Keys.Rotate, true);
+            CloneElement(page, importPage, PdfPage.Keys.BleedBox, true);
+            CloneElement(page, importPage, PdfPage.Keys.TrimBox, true);
+            CloneElement(page, importPage, PdfPage.Keys.ArtBox, true);
+#if true
+            CloneElement(page, importPage, PdfPage.Keys.Annots, false);
+#endif
+            return page;
+        }
+
+        void CloneElement(PdfPage page, PdfPage importPage, string key, bool deepcopy)
+        {
+            Debug.Assert(page != null);
+            Debug.Assert(page.Owner == _document);
+            Debug.Assert(importPage.Owner != null);
+            Debug.Assert(importPage.Owner != _document);
+
+            PdfItem item = importPage.Elements[key];
+            if (item != null)
+            {
+                PdfImportedObjectTable importedObjectTable = null;
+                if (!deepcopy)
+                    importedObjectTable = Owner.FormTable.GetImportedObjectTable(importPage);
+
+                if (item is PdfReference)
+                    item = ((PdfReference)item).Value;
+                if (item is PdfObject)
+                {
+                    PdfObject root = (PdfObject)item;
+                    if (deepcopy)
+                    {
+                        Debug.Assert(root.Owner != null, "See 'else' case for details");
+                        root = DeepCopyClosure(_document, root);
+                    }
+                    else
+                    {
+                        if (root.Owner == null)
+                            root.Document = importPage.Owner;
+                        root = ImportClosure(importedObjectTable, page.Owner, root);
+                    }
+
+                    if (root.Reference == null)
+                        page.Elements[key] = root;
+                    else
+                        page.Elements[key] = root.Reference;
+                }
+                else
+                {
+                    page.Elements[key] = item.Clone();
+                }
+            }
+        }
+
+        static PdfReference RemapReference(PdfPage[] newPages, PdfPage[] impPages, PdfReference iref)
+        {
+            for (int idx = 0; idx < newPages.Length; idx++)
+            {
+                if (impPages[idx].Reference == iref)
+                    return newPages[idx].Reference;
+            }
+            return null;
+        }
+
+        public PdfArray PagesArray
+        {
+            get
+            {
+                if (_pagesArray == null)
+                    _pagesArray = (PdfArray)Elements.GetValue(Keys.Kids, VCF.Create);
+                return _pagesArray;
+            }
+        }
+        PdfArray _pagesArray;
+
+        internal void FlattenPageTree()
+        {
+            PdfPage.InheritedValues values = new PdfPage.InheritedValues();
+            PdfPage.InheritValues(this, ref values);
+            PdfDictionary[] pages = GetKids(Reference, values, null);
+
+            PdfArray array = new PdfArray(Owner);
+            foreach (PdfDictionary page in pages)
+            {
+                page.Elements[PdfPage.Keys.Parent] = Reference;
+                array.Elements.Add(page.Reference);
+            }
+
+            Elements.SetName(Keys.Type, "/Pages");
+#if true
+            Elements.SetValue(Keys.Kids, array);
+#endif
+            Elements.SetInteger(Keys.Count, array.Elements.Count);
+        }
+
+        PdfDictionary[] GetKids(PdfReference iref, PdfPage.InheritedValues values, PdfDictionary parent)
+        {
+            PdfDictionary kid = (PdfDictionary)iref.Value;
+
+#if true
+            string type = kid.Elements.GetName(Keys.Type);
+            if (type == "/Page")
+            {
+                PdfPage.InheritValues(kid, values);
+                return new PdfDictionary[] { kid };
+            }
+
+            if (string.IsNullOrEmpty(type))
+            {
+                PdfPage.InheritValues(kid, values);
+                return new PdfDictionary[] { kid };
+            }
+
+#endif
+
+            Debug.Assert(kid.Elements.GetName(Keys.Type) == "/Pages");
+            PdfPage.InheritValues(kid, ref values);
+            List<PdfDictionary> list = new List<PdfDictionary>();
+            PdfArray kids = kid.Elements["/Kids"] as PdfArray;
+
+            if (kids == null)
+            {
+                PdfReference xref3 = kid.Elements["/Kids"] as PdfReference;
+                if (xref3 != null)
+                    kids = xref3.Value as PdfArray;
+            }
+
+            foreach (PdfReference xref2 in kids)
+                list.AddRange(GetKids(xref2, values, kid));
+            int count = list.Count;
+            Debug.Assert(count == kid.Elements.GetInteger("/Count"));
+            return list.ToArray();
+        }
+
+        internal override void PrepareForSave()
+        {
+            int count = _pagesArray.Elements.Count;
+            for (int idx = 0; idx < count; idx++)
+            {
+                PdfPage page = this[idx];
+                page.PrepareForSave();
+            }
+        }
+
+        public new IEnumerator<PdfPage> GetEnumerator()
+        {
+            return new PdfPagesEnumerator(this);
+        }
+
+        class PdfPagesEnumerator : IEnumerator<PdfPage>
+        {
+            internal PdfPagesEnumerator(PdfPages list)
+            {
+                _list = list;
+                _index = -1;
+            }
+
+            public bool MoveNext()
+            {
+                if (_index < _list.Count - 1)
+                {
+                    _index++;
+                    _currentElement = _list[_index];
+                    return true;
+                }
+                _index = _list.Count;
+                return false;
+            }
+
+            public void Reset()
+            {
+                _currentElement = null;
+                _index = -1;
+            }
+
+            object IEnumerator.Current
+            {
+                get { return Current; }
+            }
+
+            public PdfPage Current
+            {
+                get
+                {
+                    if (_index == -1 || _index >= _list.Count)
+                        throw new InvalidOperationException(PSSR.ListEnumCurrentOutOfRange);
+                    return _currentElement;
+                }
+            }
+
+            public void Dispose()
+            {
+            }
+
+            PdfPage _currentElement;
+            int _index;
+            readonly PdfPages _list;
+        }
+
+        internal sealed class Keys : PdfPage.InheritablePageKeys
+        {
+            [KeyInfo(KeyType.Name | KeyType.Required, FixedValue = "Pages")]
+            public const string Type = "/Type";
+
+            [KeyInfo(KeyType.Dictionary | KeyType.Required)]
+            public const string Parent = "/Parent";
+
+            [KeyInfo(KeyType.Array | KeyType.Required)]
+            public const string Kids = "/Kids";
+
+            [KeyInfo(KeyType.Integer | KeyType.Required)]
+            public const string Count = "/Count";
+
+            public static DictionaryMeta Meta
+            {
+                get { return _meta ?? (_meta = CreateMeta(typeof(Keys))); }
+            }
+            static DictionaryMeta _meta;
+        }
+
+        internal override DictionaryMeta Meta
+        {
+            get { return Keys.Meta; }
+        }
+    }
+    public sealed class PdfReal : PdfNumber
+    {
+        public PdfReal()
+        { }
+
+        public PdfReal(double value)
+        {
+            _value = value;
+        }
+
+        public double Value
+        {
+            get { return _value; }
+        }
+        readonly double _value;
+
+        public override string ToString()
+        {
+            return _value.ToString(Config.SignificantFigures3, CultureInfo.InvariantCulture);
+        }
+
+        internal override void WriteObject(PdfWriter writer)
+        {
+            writer.Write(this);
+        }
+    }
+    public sealed class PdfRealObject : PdfNumberObject
+    {
+        public PdfRealObject()
+        { }
+
+        public PdfRealObject(double value)
+        {
+            _value = value;
+        }
+
+        public PdfRealObject(PdfDocument document, double value)
+            : base(document)
+        {
+            _value = value;
+        }
+
+        public double Value
+        {
+            get { return _value; }
+            set { _value = value; }
+        }
+        double _value;
+
+        public override string ToString()
+        {
+            return _value.ToString(CultureInfo.InvariantCulture);
+        }
+
+        internal override void WriteObject(PdfWriter writer)
+        {
+            writer.WriteBeginObject(this);
+            writer.Write(_value);
+            writer.WriteEndObject();
+        }
+    }
+    public sealed class PdfRectangle : PdfItem
+    {
+        public PdfRectangle()
+        { }
+
+        internal PdfRectangle(double x1, double y1, double x2, double y2)
+        {
+            _x1 = x1;
+            _y1 = y1;
+            _x2 = x2;
+            _y2 = y2;
+        }
+
+        public PdfRectangle(XPoint pt1, XPoint pt2)
+        {
+            _x1 = pt1.X;
+            _y1 = pt1.Y;
+            _x2 = pt2.X;
+            _y2 = pt2.Y;
+        }
+
+        public PdfRectangle(XPoint pt, XSize size)
+        {
+            _x1 = pt.X;
+            _y1 = pt.Y;
+            _x2 = pt.X + size.Width;
+            _y2 = pt.Y + size.Height;
+        }
+
+        public PdfRectangle(XRect rect)
+        {
+            _x1 = rect.X;
+            _y1 = rect.Y;
+            _x2 = rect.X + rect.Width;
+            _y2 = rect.Y + rect.Height;
+        }
+
+        internal PdfRectangle(PdfItem item)
+        {
+            if (item == null || item is PdfNull)
+                return;
+
+            if (item is PdfReference)
+                item = ((PdfReference)item).Value;
+
+            PdfArray array = item as PdfArray;
+            if (array == null)
+                throw new InvalidOperationException(PSSR.UnexpectedTokenInPdfFile);
+
+            _x1 = array.Elements.GetReal(0);
+            _y1 = array.Elements.GetReal(1);
+            _x2 = array.Elements.GetReal(2);
+            _y2 = array.Elements.GetReal(3);
+        }
+
+        public new PdfRectangle Clone()
+        {
+            return (PdfRectangle)Copy();
+        }
+
+        protected override object Copy()
+        {
+            PdfRectangle rect = (PdfRectangle)base.Copy();
+            return rect;
+        }
+
+        public bool IsEmpty
+        {
+            get { return _x1 == 0 && _y1 == 0 && _x2 == 0 && _y2 == 0; }
+        }
+
+        public override bool Equals(object obj)
+        {
+            PdfRectangle rectangle = obj as PdfRectangle;
+            if (rectangle != null)
+            {
+                PdfRectangle rect = rectangle;
+                return rect._x1 == _x1 && rect._y1 == _y1 && rect._x2 == _x2 && rect._y2 == _y2;
+            }
+            return false;
+        }
+
+        public override int GetHashCode()
+        {
+            return (int)(((((uint)_x1) ^ ((((uint)_y1) << 13) |
+              (((uint)_y1) >> 0x13))) ^ ((((uint)_x2) << 0x1a) |
+              (((uint)_x2) >> 6))) ^ ((((uint)_y2) << 7) |
+              (((uint)_y2) >> 0x19)));
+        }
+
+        public static bool operator ==(PdfRectangle left, PdfRectangle right)
+        {
+            if ((object)left != null)
+            {
+                if ((object)right != null)
+                    return left._x1 == right._x1 && left._y1 == right._y1 && left._x2 == right._x2 && left._y2 == right._y2;
+                return false;
+            }
+            return (object)right == null;
+        }
+
+        public static bool operator !=(PdfRectangle left, PdfRectangle right)
+        {
+            return !(left == right);
+        }
+
+        public double X1
+        {
+            get { return _x1; }
+        }
+        readonly double _x1;
+
+        public double Y1
+        {
+            get { return _y1; }
+        }
+        readonly double _y1;
+
+        public double X2
+        {
+            get { return _x2; }
+        }
+        readonly double _x2;
+
+        public double Y2
+        {
+            get { return _y2; }
+        }
+        readonly double _y2;
+
+        public double Width
+        {
+            get { return _x2 - _x1; }
+        }
+
+        public double Height
+        {
+            get { return _y2 - _y1; }
+        }
+
+        public XPoint Location
+        {
+            get { return new XPoint(_x1, _y1); }
+        }
+
+        public XSize Size
+        {
+            get { return new XSize(_x2 - _x1, _y2 - _y1); }
+        }
+
+        public bool Contains(XPoint pt)
+        {
+            return Contains(pt.X, pt.Y);
+        }
+
+        public bool Contains(double x, double y)
+        {
+            return _x1 <= x && x <= _x2 && _y1 <= y && y <= _y2;
+        }
+
+
+        public bool Contains(XRect rect)
+        {
+            return _x1 <= rect.X && (rect.X + rect.Width) <= _x2 &&
+              _y1 <= rect.Y && (rect.Y + rect.Height) <= _y2;
+        }
+
+        public bool Contains(PdfRectangle rect)
+        {
+            return _x1 <= rect._x1 && rect._x2 <= _x2 &&
+              _y1 <= rect._y1 && rect._y2 <= _y2;
+        }
+
+        public XRect ToXRect()
+        {
+            return new XRect(_x1, _y1, Width, Height);
+        }
+
+        public override string ToString()
+        {
+            const string format = Config.SignificantFigures3;
+            return PdfEncoders.Format("[{0:" + format + "} {1:" + format + "} {2:" + format + "} {3:" + format + "}]", _x1, _y1, _x2, _y2);
+        }
+
+        internal override void WriteObject(PdfWriter writer)
+        {
+            writer.Write(this);
+        }
+
+        string DebuggerDisplay
+        {
+            get
+            {
+                const string format = Config.SignificantFigures10;
+                return String.Format(CultureInfo.InvariantCulture,
+                    "X1={0:" + format + "}, Y1={1:" + format + "}, X2={2:" + format + "}, Y2={3:" + format + "}", _x1, _y1, _x2, _y2);
+            }
+        }
+        public static readonly PdfRectangle Empty = new PdfRectangle();
+    }
+    internal sealed class PdfReferenceTable_old
+    {
+        public PdfReferenceTable_old(PdfDocument document)
+        {
+            _document = document;
+        }
+        readonly PdfDocument _document;
+
+        public Dictionary<PdfObjectID, PdfReference> ObjectTable = new Dictionary<PdfObjectID, PdfReference>();
+
+        internal bool IsUnderConstruction
+        {
+            get { return _isUnderConstruction; }
+            set { _isUnderConstruction = value; }
+        }
+        bool _isUnderConstruction;
+
+        public void Add(PdfReference iref)
+        {
+            if (iref.ObjectID.IsEmpty)
+                iref.ObjectID = new PdfObjectID(GetNewObjectNumber());
+
+            if (ObjectTable.ContainsKey(iref.ObjectID))
+                throw new InvalidOperationException("Object already in table.");
+
+            ObjectTable.Add(iref.ObjectID, iref);
+        }
+
+        public void Add(PdfObject value)
+        {
+            if (value.Owner == null)
+                value.Document = _document;
+            else
+                Debug.Assert(value.Owner == _document);
+
+            if (value.ObjectID.IsEmpty)
+                value.SetObjectID(GetNewObjectNumber(), 0);
+
+            if (ObjectTable.ContainsKey(value.ObjectID))
+                throw new InvalidOperationException("Object already in table.");
+
+            ObjectTable.Add(value.ObjectID, value.Reference);
+        }
+
+        public void Remove(PdfReference iref)
+        {
+            ObjectTable.Remove(iref.ObjectID);
+        }
+
+        public PdfReference this[PdfObjectID objectID]
+        {
+            get
+            {
+                PdfReference iref;
+                ObjectTable.TryGetValue(objectID, out iref);
+                return iref;
+            }
+        }
+
+        public bool Contains(PdfObjectID objectID)
+        {
+            return ObjectTable.ContainsKey(objectID);
+        }
+
+        public int GetNewObjectNumber()
+        {
+            return ++_maxObjectNumber;
+        }
+        internal int _maxObjectNumber;
+
+        internal void WriteObject(PdfWriter writer)
+        {
+            writer.WriteRaw("xref\n");
+
+            PdfReference[] irefs = AllReferences;
+
+            int count = irefs.Length;
+            writer.WriteRaw(String.Format("0 {0}\n", count + 1));
+            writer.WriteRaw(String.Format("{0:0000000000} {1:00000} {2} \n", 0, 65535, "f"));
+            for (int idx = 0; idx < count; idx++)
+            {
+                PdfReference iref = irefs[idx];
+
+                writer.WriteRaw(String.Format("{0:0000000000} {1:00000} {2} \n", iref.Position, iref.GenerationNumber, "n"));
+            }
+        }
+
+        internal PdfObjectID[] AllObjectIDs
+        {
+            get
+            {
+                ICollection collection = ObjectTable.Keys;
+                PdfObjectID[] objectIDs = new PdfObjectID[collection.Count];
+                collection.CopyTo(objectIDs, 0);
+                return objectIDs;
+            }
+        }
+
+        internal PdfReference[] AllReferences
+        {
+            get
+            {
+                Dictionary<PdfObjectID, PdfReference>.ValueCollection collection = ObjectTable.Values;
+                List<PdfReference> list = new List<PdfReference>(collection);
+                list.Sort(PdfReference.Comparer);
+                PdfReference[] irefs = new PdfReference[collection.Count];
+                list.CopyTo(irefs, 0);
+                return irefs;
+            }
+        }
+
+        internal void HandleOrphanedReferences()
+        { }
+
+        internal int Compact()
+        {
+            int removed = ObjectTable.Count;
+            PdfReference[] irefs = TransitiveClosure(_document._trailer);
+
+
+
+            _maxObjectNumber = 0;
+            ObjectTable.Clear();
+            foreach (PdfReference iref in irefs)
+            {
+                if (!ObjectTable.ContainsKey(iref.ObjectID))
+                {
+                    ObjectTable.Add(iref.ObjectID, iref);
+                    _maxObjectNumber = Math.Max(_maxObjectNumber, iref.ObjectNumber);
+                }
+            }
+            removed -= ObjectTable.Count;
+            return removed;
+        }
+
+        internal void Renumber()
+        {
+            PdfReference[] irefs = AllReferences;
+            ObjectTable.Clear();
+            int count = irefs.Length;
+            for (int idx = 0; idx < count; idx++)
+            {
+                PdfReference iref = irefs[idx];
+
+                iref.ObjectID = new PdfObjectID(idx + 1);
+                ObjectTable.Add(iref.ObjectID, iref);
+            }
+            _maxObjectNumber = count;
+        }
+
+        [Conditional("DEBUG_")]
+        public void CheckConsistence()
+        {
+            Dictionary<PdfReference, object> ht1 = new Dictionary<PdfReference, object>();
+            foreach (PdfReference iref in ObjectTable.Values)
+            {
+                Debug.Assert(!ht1.ContainsKey(iref), "Duplicate iref.");
+                Debug.Assert(iref.Value != null);
+                ht1.Add(iref, null);
+            }
+
+            Dictionary<PdfObjectID, object> ht2 = new Dictionary<PdfObjectID, object>();
+            foreach (PdfReference iref in ObjectTable.Values)
+            {
+                Debug.Assert(!ht2.ContainsKey(iref.ObjectID), "Duplicate iref.");
+                ht2.Add(iref.ObjectID, null);
+            }
+
+            ICollection collection = ObjectTable.Values;
+            int count = collection.Count;
+            PdfReference[] irefs = new PdfReference[count];
+            collection.CopyTo(irefs, 0);
+#if true
+            for (int i = 0; i < count; i++)
+                for (int j = 0; j < count; j++)
+                    if (i != j)
+                    {
+                        Debug.Assert(ReferenceEquals(irefs[i].Document, _document));
+                        Debug.Assert(irefs[i] != irefs[j]);
+                        Debug.Assert(!ReferenceEquals(irefs[i], irefs[j]));
+                        Debug.Assert(!ReferenceEquals(irefs[i].Value, irefs[j].Value));
+                        Debug.Assert(!Equals(irefs[i].ObjectID, irefs[j].Value.ObjectID));
+                        Debug.Assert(irefs[i].ObjectNumber != irefs[j].Value.ObjectNumber);
+                        Debug.Assert(ReferenceEquals(irefs[i].Document, irefs[j].Document));
+                        GetType();
+                    }
+#endif
+        }
+
+        public PdfReference[] TransitiveClosure(PdfObject pdfObject)
+        {
+            return TransitiveClosure(pdfObject, Int16.MaxValue);
+        }
+
+        public PdfReference[] TransitiveClosure(PdfObject pdfObject, int depth)
+        {
+            CheckConsistence();
+            Dictionary<PdfItem, object> objects = new Dictionary<PdfItem, object>();
+            _overflow = new Dictionary<PdfItem, object>();
+            TransitiveClosureImplementation(objects, pdfObject);
+        TryAgain:
+            if (_overflow.Count > 0)
+            {
+                PdfObject[] array = new PdfObject[_overflow.Count];
+                _overflow.Keys.CopyTo(array, 0);
+                _overflow = new Dictionary<PdfItem, object>();
+                for (int idx = 0; idx < array.Length; idx++)
+                {
+                    PdfObject obj = array[idx];
+                    TransitiveClosureImplementation(objects, obj);
+                }
+                goto TryAgain;
+            }
+
+            CheckConsistence();
+
+            ICollection collection = objects.Keys;
+            int count = collection.Count;
+            PdfReference[] irefs = new PdfReference[count];
+            collection.CopyTo(irefs, 0);
+
+            return irefs;
+        }
+
+        static int _nestingLevel;
+        Dictionary<PdfItem, object> _overflow = new Dictionary<PdfItem, object>();
+
+        void TransitiveClosureImplementation(Dictionary<PdfItem, object> objects, PdfObject pdfObject)
+        {
+            try
+            {
+                _nestingLevel++;
+                if (_nestingLevel >= 1000)
+                {
+                    if (!_overflow.ContainsKey(pdfObject))
+                        _overflow.Add(pdfObject, null);
+                    return;
+                }
+
+                IEnumerable enumerable = null;
+                PdfDictionary dict;
+                PdfArray array;
+                if ((dict = pdfObject as PdfDictionary) != null)
+                    enumerable = dict.Elements.Values;
+                else if ((array = pdfObject as PdfArray) != null)
+                    enumerable = array.Elements;
+                else
+                    Debug.Assert(false, "Should not come here.");
+
+                if (enumerable != null)
+                {
+                    foreach (PdfItem item in enumerable)
+                    {
+                        PdfReference iref = item as PdfReference;
+                        if (iref != null)
+                        {
+                            if (!ReferenceEquals(iref.Document, _document))
+                            {
+                                GetType();
+                                Debug.WriteLine(String.Format("Bad iref: {0}", iref.ObjectID.ToString()));
+                            }
+                            Debug.Assert(ReferenceEquals(iref.Document, _document) || iref.Document == null, "External object detected!");
+
+                            if (!objects.ContainsKey(iref))
+                            {
+                                PdfObject value = iref.Value;
+
+                                if (iref.Document != null)
+                                {
+                                    if (value == null)
+                                    {
+                                        iref = ObjectTable[iref.ObjectID];
+                                        Debug.Assert(iref.Value != null);
+                                        value = iref.Value;
+                                    }
+                                    Debug.Assert(ReferenceEquals(iref.Document, _document));
+                                    objects.Add(iref, null);
+                                    if (value is PdfArray || value is PdfDictionary)
+                                        TransitiveClosureImplementation(objects, value);
+                                }
+                            }
+                        }
+                        else
+                        {
+                            PdfObject pdfObject28 = item as PdfObject;
+                            if (pdfObject28 != null && (pdfObject28 is PdfDictionary || pdfObject28 is PdfArray))
+                                TransitiveClosureImplementation(objects, pdfObject28);
+                        }
+                    }
+                }
+            }
+            finally
+            {
+                _nestingLevel--;
+            }
+        }
+
+        public PdfReference DeadObject
+        {
+            get
+            {
+                if (_deadObject == null)
+                {
+                    _deadObject = new PdfDictionary(_document);
+                    Add(_deadObject);
+                    _deadObject.Elements.Add("/DeadObjectCount", new PdfInteger());
+                }
+                return _deadObject.Reference;
+            }
+        }
+        PdfDictionary _deadObject;
+    }
+    public enum PdfStringEncoding
+    {
+        RawEncoding = PdfStringFlags.RawEncoding,
+
+        StandardEncoding = PdfStringFlags.StandardEncoding,
+
+        PDFDocEncoding = PdfStringFlags.PDFDocEncoding,
+        WinAnsiEncoding = PdfStringFlags.WinAnsiEncoding,
+
+        MacRomanEncoding = PdfStringFlags.MacExpertEncoding,
+
+        MacExpertEncoding = PdfStringFlags.MacExpertEncoding,
+
+        Unicode = PdfStringFlags.Unicode,
+    }
+
+    [Flags]
+    enum PdfStringFlags
+    {
+        RawEncoding = 0x00,
+        StandardEncoding = 0x01,
+        PDFDocEncoding = 0x02,
+        WinAnsiEncoding = 0x03,
+        MacRomanEncoding = 0x04,
+        MacExpertEncoding = 0x05,
+        Unicode = 0x06,
+        EncodingMask = 0x0F,
+
+        HexLiteral = 0x80,
+    }
+
+    [DebuggerDisplay("({Value})")]
+    public sealed class PdfString : PdfItem
+    {
+        public PdfString()
+        {
+        }
+
+        public PdfString(string value)
+        {
+#if true
+            if (!IsRawEncoding(value))
+                _flags = PdfStringFlags.Unicode;
+            _value = value;
+#endif
+        }
+
+        public PdfString(string value, PdfStringEncoding encoding)
+        {
+            switch (encoding)
+            {
+                case PdfStringEncoding.RawEncoding:
+                    CheckRawEncoding(value);
+                    break;
+
+                case PdfStringEncoding.StandardEncoding:
+                    break;
+
+                case PdfStringEncoding.PDFDocEncoding:
+                    break;
+
+                case PdfStringEncoding.WinAnsiEncoding:
+                    CheckRawEncoding(value);
+                    break;
+
+                case PdfStringEncoding.MacRomanEncoding:
+                    break;
+
+                case PdfStringEncoding.Unicode:
+                    break;
+
+                default:
+                    throw new ArgumentOutOfRangeException("encoding");
+            }
+            _value = value;
+            _flags = (PdfStringFlags)encoding;
+        }
+
+        internal PdfString(string value, PdfStringFlags flags)
+        {
+            _value = value;
+            _flags = flags;
+        }
+
+        public int Length
+        {
+            get { return _value == null ? 0 : _value.Length; }
+        }
+
+        public PdfStringEncoding Encoding
+        {
+            get { return (PdfStringEncoding)(_flags & PdfStringFlags.EncodingMask); }
+        }
+
+        public bool HexLiteral
+        {
+            get { return (_flags & PdfStringFlags.HexLiteral) != 0; }
+        }
+
+        internal PdfStringFlags Flags
+        {
+            get { return _flags; }
+        }
+        readonly PdfStringFlags _flags;
+
+        public string Value
+        {
+            get { return _value ?? ""; }
+        }
+        string _value;
+
+        internal byte[] EncryptionValue
+        {
+            get { return _value == null ? new byte[0] : PdfEncoders.RawEncoding.GetBytes(_value); }
+            set { _value = PdfEncoders.RawEncoding.GetString(value, 0, value.Length); }
+        }
+
+        public override string ToString()
+        {
+#if true
+            PdfStringEncoding encoding = (PdfStringEncoding)(_flags & PdfStringFlags.EncodingMask);
+            string pdf = (_flags & PdfStringFlags.HexLiteral) == 0 ?
+                PdfEncoders.ToStringLiteral(_value, encoding, null) :
+                PdfEncoders.ToHexStringLiteral(_value, encoding, null);
+            return pdf;
+#endif
+        }
+
+        public string ToStringFromPdfDocEncoded()
+        {
+            int length = _value.Length;
+            char[] bytes = new char[length];
+            for (int idx = 0; idx < length; idx++)
+            {
+                char ch = _value[idx];
+                if (ch <= 255)
+                {
+                    bytes[idx] = Encode[ch];
+                }
+                else
+                {
+                    throw new InvalidOperationException("DocEncoded string contains char greater 255.");
+                }
+            }
+            StringBuilder sb = new StringBuilder(length);
+            for (int idx = 0; idx < length; idx++)
+                sb.Append((char)bytes[idx]);
+            return sb.ToString();
+        }
+        static readonly char[] Encode =
+        {
+            '\x00', '\x01', '\x02', '\x03', '\x04', '\x05', '\x06', '\x07', '\x08', '\x09', '\x0A', '\x0B', '\x0C', '\x0D', '\x0E', '\x0F',
+            '\x10', '\x11', '\x12', '\x13', '\x14', '\x15', '\x16', '\x17', '\x18', '\x19', '\x1A', '\x1B', '\x1C', '\x1D', '\x1E', '\x1F',
+            '\x20', '\x21', '\x22', '\x23', '\x24', '\x25', '\x26', '\x27', '\x28', '\x29', '\x2A', '\x2B', '\x2C', '\x2D', '\x2E', '\x2F',
+            '\x30', '\x31', '\x32', '\x33', '\x34', '\x35', '\x36', '\x37', '\x38', '\x39', '\x3A', '\x3B', '\x3C', '\x3D', '\x3E', '\x3F',
+            '\x40', '\x41', '\x42', '\x43', '\x44', '\x45', '\x46', '\x47', '\x48', '\x49', '\x4A', '\x4B', '\x4C', '\x4D', '\x4E', '\x4F',
+            '\x50', '\x51', '\x52', '\x53', '\x54', '\x55', '\x56', '\x57', '\x58', '\x59', '\x5A', '\x5B', '\x5C', '\x5D', '\x5E', '\x5F',
+            '\x60', '\x61', '\x62', '\x63', '\x64', '\x65', '\x66', '\x67', '\x68', '\x69', '\x6A', '\x6B', '\x6C', '\x6D', '\x6E', '\x6F',
+            '\x70', '\x71', '\x72', '\x73', '\x74', '\x75', '\x76', '\x77', '\x78', '\x79', '\x7A', '\x7B', '\x7C', '\x7D', '\x7E', '\x7F',
+            '\x2022', '\x2020', '\x2021', '\x2026', '\x2014', '\x2013', '\x0192', '\x2044', '\x2039', '\x203A', '\x2212', '\x2030', '\x201E', '\x201C', '\x201D', '\x2018',
+            '\x2019', '\x201A', '\x2122', '\xFB01', '\xFB02', '\x0141', '\x0152', '\x0160', '\x0178', '\x017D', '\x0131', '\x0142', '\x0153', '\x0161', '\x017E', '\xFFFD',
+            '\x20AC', '\xA1', '\xA2', '\xA3', '\xA4', '\xA5', '\xA6', '\xA7', '\xA8', '\xA9', '\xAA', '\xAB', '\xAC', '\xAD', '\xAE', '\xAF',
+            '\xB0', '\xB1', '\xB2', '\xB3', '\xB4', '\xB5', '\xB6', '\xB7', '\xB8', '\xB9', '\xBA', '\xBB', '\xBC', '\xBD', '\xBE', '\xBF',
+            '\xC0', '\xC1', '\xC2', '\xC3', '\xC4', '\xC5', '\xC6', '\xC7', '\xC8', '\xC9', '\xCA', '\xCB', '\xCC', '\xCD', '\xCE', '\xCF',
+            '\xD0', '\xD1', '\xD2', '\xD3', '\xD4', '\xD5', '\xD6', '\xD7', '\xD8', '\xD9', '\xDA', '\xDB', '\xDC', '\xDD', '\xDE', '\xDF',
+            '\xE0', '\xE1', '\xE2', '\xE3', '\xE4', '\xE5', '\xE6', '\xE7', '\xE8', '\xE9', '\xEA', '\xEB', '\xEC', '\xED', '\xEE', '\xEF',
+            '\xF0', '\xF1', '\xF2', '\xF3', '\xF4', '\xF5', '\xF6', '\xF7', '\xF8', '\xF9', '\xFA', '\xFB', '\xFC', '\xFD', '\xFE', '\xFF',
+        };
+
+        static void CheckRawEncoding(string s)
+        {
+            if (String.IsNullOrEmpty(s))
+                return;
+
+            int length = s.Length;
+            for (int idx = 0; idx < length; idx++)
+            {
+                Debug.Assert(s[idx] < 256, "RawString contains invalid character.");
+            }
+        }
+
+        static bool IsRawEncoding(string s)
+        {
+            if (String.IsNullOrEmpty(s))
+                return true;
+
+            int length = s.Length;
+            for (int idx = 0; idx < length; idx++)
+            {
+                if (!(s[idx] < 256))
+                    return false;
+            }
+            return true;
+        }
+
+        internal override void WriteObject(PdfWriter writer)
+        {
+            writer.Write(this);
+        }
+    }
+    public sealed class PdfStringObject : PdfObject
+    {
+        public PdfStringObject()
+        {
+            _flags = PdfStringFlags.RawEncoding;
+        }
+
+        public PdfStringObject(PdfDocument document, string value)
+            : base(document)
+        {
+            _value = value;
+            _flags = PdfStringFlags.RawEncoding;
+        }
+
+        public PdfStringObject(string value, PdfStringEncoding encoding)
+        {
+            _value = value;
+            _flags = (PdfStringFlags)encoding;
+        }
+
+        internal PdfStringObject(string value, PdfStringFlags flags)
+        {
+            _value = value;
+            _flags = flags;
+        }
+
+        public int Length
+        {
+            get { return _value == null ? 0 : _value.Length; }
+        }
+
+        public PdfStringEncoding Encoding
+        {
+            get { return (PdfStringEncoding)(_flags & PdfStringFlags.EncodingMask); }
+            set { _flags = (_flags & ~PdfStringFlags.EncodingMask) | ((PdfStringFlags)value & PdfStringFlags.EncodingMask); }
+        }
+
+        public bool HexLiteral
+        {
+            get { return (_flags & PdfStringFlags.HexLiteral) != 0; }
+            set { _flags = value ? _flags | PdfStringFlags.HexLiteral : _flags & ~PdfStringFlags.HexLiteral; }
+        }
+        PdfStringFlags _flags;
+
+        public string Value
+        {
+            get { return _value ?? ""; }
+            set { _value = value ?? ""; }
+        }
+        string _value;
+
+        internal byte[] EncryptionValue
+        {
+            get { return _value == null ? new byte[0] : PdfEncoders.RawEncoding.GetBytes(_value); }
+            set { _value = PdfEncoders.RawEncoding.GetString(value, 0, value.Length); }
+        }
+
+        public override string ToString()
+        {
+            return _value;
+        }
+
+        internal override void WriteObject(PdfWriter writer)
+        {
+            writer.WriteBeginObject(this);
+            writer.Write(new PdfString(_value, _flags));
+            writer.WriteEndObject();
+        }
+    }
+    public sealed class PdfUInteger : PdfNumber, IConvertible
+    {
+        public PdfUInteger()
+        { }
+
+        public PdfUInteger(uint value)
+        {
+            _value = value;
+        }
+
+        public uint Value
+        {
+            get { return _value; }
+        }
+        readonly uint _value;
+
+        public override string ToString()
+        {
+            return _value.ToString(CultureInfo.InvariantCulture);
+        }
+
+        internal override void WriteObject(PdfWriter writer)
+        {
+            writer.Write(this);
+        }
+
+        public ulong ToUInt64(IFormatProvider provider)
+        {
+            return Convert.ToUInt64(_value);
+        }
+
+        public sbyte ToSByte(IFormatProvider provider)
+        {
+            throw new InvalidCastException();
+        }
+
+        public double ToDouble(IFormatProvider provider)
+        {
+            return _value;
+        }
+
+        public DateTime ToDateTime(IFormatProvider provider)
+        {
+            return new DateTime();
+        }
+
+        public float ToSingle(IFormatProvider provider)
+        {
+            return _value;
+        }
+
+        public bool ToBoolean(IFormatProvider provider)
+        {
+            return Convert.ToBoolean(_value);
+        }
+
+        public int ToInt32(IFormatProvider provider)
+        {
+            return Convert.ToInt32(_value);
+        }
+
+        public ushort ToUInt16(IFormatProvider provider)
+        {
+            return Convert.ToUInt16(_value);
+        }
+
+        public short ToInt16(IFormatProvider provider)
+        {
+            return Convert.ToInt16(_value);
+        }
+
+        string IConvertible.ToString(IFormatProvider provider)
+        {
+            return _value.ToString(provider);
+        }
+
+        public byte ToByte(IFormatProvider provider)
+        {
+            return Convert.ToByte(_value);
+        }
+
+        public char ToChar(IFormatProvider provider)
+        {
+            return Convert.ToChar(_value);
+        }
+
+        public long ToInt64(IFormatProvider provider)
+        {
+            return _value;
+        }
+
+        public TypeCode GetTypeCode()
+        {
+            return TypeCode.Int32;
+        }
+
+        public decimal ToDecimal(IFormatProvider provider)
+        {
+            return _value;
+        }
+
+        public object ToType(Type conversionType, IFormatProvider provider)
+        {
+            return null;
+        }
+
+        public uint ToUInt32(IFormatProvider provider)
+        {
+            return Convert.ToUInt32(_value);
+        }
+
+    }
+    public sealed class PdfUIntegerObject : PdfNumberObject
+    {
+        public PdfUIntegerObject()
+        { }
+
+        public PdfUIntegerObject(uint value)
+        {
+            _value = value;
+        }
+
+        public PdfUIntegerObject(PdfDocument document, uint value)
+            : base(document)
+        {
+            _value = value;
+        }
+
+        public uint Value
+        {
+            get { return _value; }
+        }
+        readonly uint _value;
+
+        public override string ToString()
+        {
+            return _value.ToString(CultureInfo.InvariantCulture);
+        }
+
+        internal override void WriteObject(PdfWriter writer)
+        {
+            writer.WriteBeginObject(this);
+            writer.Write(_value);
+            writer.WriteEndObject();
+        }
+    }
+    public sealed class PdfViewerPreferences : PdfDictionary
+    {
+        internal PdfViewerPreferences(PdfDocument document)
+            : base(document)
+        { }
+
+        PdfViewerPreferences(PdfDictionary dict)
+            : base(dict)
+        { }
+
+        public bool HideToolbar
+        {
+            get { return Elements.GetBoolean(Keys.HideToolbar); }
+            set { Elements.SetBoolean(Keys.HideToolbar, value); }
+        }
+
+        public bool HideMenubar
+        {
+            get { return Elements.GetBoolean(Keys.HideMenubar); }
+            set { Elements.SetBoolean(Keys.HideMenubar, value); }
+        }
+
+        public bool HideWindowUI
+        {
+            get { return Elements.GetBoolean(Keys.HideWindowUI); }
+            set { Elements.SetBoolean(Keys.HideWindowUI, value); }
+        }
+
+        public bool FitWindow
+        {
+            get { return Elements.GetBoolean(Keys.FitWindow); }
+            set { Elements.SetBoolean(Keys.FitWindow, value); }
+        }
+
+        public bool CenterWindow
+        {
+            get { return Elements.GetBoolean(Keys.CenterWindow); }
+            set { Elements.SetBoolean(Keys.CenterWindow, value); }
+        }
+
+        public bool DisplayDocTitle
+        {
+            get { return Elements.GetBoolean(Keys.DisplayDocTitle); }
+            set { Elements.SetBoolean(Keys.DisplayDocTitle, value); }
+        }
+
+        public PdfReadingDirection? Direction
+        {
+            get
+            {
+                switch (Elements.GetName(Keys.Direction))
+                {
+                    case "L2R":
+                        return PdfReadingDirection.LeftToRight;
+
+                    case "R2L":
+                        return PdfReadingDirection.RightToLeft;
+                }
+                return null;
+            }
+            set
+            {
+                if (value.HasValue)
+                {
+                    switch (value.Value)
+                    {
+                        case PdfReadingDirection.RightToLeft:
+                            Elements.SetName(Keys.Direction, "R2L");
+                            break;
+
+                        default:
+                            Elements.SetName(Keys.Direction, "L2R");
+                            break;
+                    }
+                }
+                else
+                    Elements.Remove(Keys.Direction);
+            }
+        }
+
+        internal sealed class Keys : KeysBase
+        {
+            [KeyInfo(KeyType.Boolean | KeyType.Optional)]
+            public const string HideToolbar = "/HideToolbar";
+
+            [KeyInfo(KeyType.Boolean | KeyType.Optional)]
+            public const string HideMenubar = "/HideMenubar";
+
+            [KeyInfo(KeyType.Boolean | KeyType.Optional)]
+            public const string HideWindowUI = "/HideWindowUI";
+
+            [KeyInfo(KeyType.Boolean | KeyType.Optional)]
+            public const string FitWindow = "/FitWindow";
+
+            [KeyInfo(KeyType.Boolean | KeyType.Optional)]
+            public const string CenterWindow = "/CenterWindow";
+
+            [KeyInfo(KeyType.Boolean | KeyType.Optional)]
+            public const string DisplayDocTitle = "/DisplayDocTitle";
+
+            [KeyInfo(KeyType.Name | KeyType.Optional)]
+            public const string NonFullScreenPageMode = "/NonFullScreenPageMode";
+
+            [KeyInfo(KeyType.Name | KeyType.Optional)]
+            public const string Direction = "/Direction";
+
+            [KeyInfo(KeyType.Name | KeyType.Optional)]
+            public const string ViewArea = "/ViewArea";
+
+            [KeyInfo(KeyType.Name | KeyType.Optional)]
+            public const string ViewClip = "/ViewClip";
+
+            [KeyInfo(KeyType.Name | KeyType.Optional)]
+            public const string PrintArea = "/PrintArea";
+
+            [KeyInfo(KeyType.Name | KeyType.Optional)]
+            public const string PrintClip = "/PrintClip";
+
+            [KeyInfo(KeyType.Name | KeyType.Optional)]
+            public const string PrintScaling = "/PrintScaling";
+
+            public static DictionaryMeta Meta
+            {
+                get { return _meta ?? (_meta = CreateMeta(typeof(Keys))); }
+            }
+            static DictionaryMeta _meta;
+        }
+
+        internal override DictionaryMeta Meta
+        {
+            get { return Keys.Meta; }
+        }
+    }
+    public sealed class TrimMargins
+    {
+        public XUnit All
+        {
+            set
+            {
+                _left = value;
+                _right = value;
+                _top = value;
+                _bottom = value;
+            }
+        }
+
+        public XUnit Left
+        {
+            get { return _left; }
+            set { _left = value; }
+        }
+        XUnit _left;
+
+        public XUnit Right
+        {
+            get { return _right; }
+            set { _right = value; }
+        }
+        XUnit _right;
+
+        public XUnit Top
+        {
+            get { return _top; }
+            set { _top = value; }
+        }
+        XUnit _top;
+
+        public XUnit Bottom
+        {
+            get { return _bottom; }
+            set { _bottom = value; }
+        }
+        XUnit _bottom;
+
+        public bool AreSet
+        {
+            get { return _left.Value != 0 || _right.Value != 0 || _top.Value != 0 || _bottom.Value != 0; }
+        }
+    }
+
+
+
 
 
 
