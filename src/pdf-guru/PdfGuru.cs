@@ -295,6 +295,69 @@ using System.Diagnostics;
 using System;
 using System;
 using System;
+using System;
+using System;
+using System.Diagnostics;
+using System;
+using System.Collections.Generic;
+using System.Diagnostics;
+using System.Collections;
+using System.Collections.Generic;
+using System;
+using System.Diagnostics;
+using System.Collections;
+using System.Collections.Generic;
+using System;
+using System.Diagnostics;
+using System.Globalization;
+using System.Collections.Generic;
+using System;
+using System.Diagnostics;
+using System.Text;
+using System;
+using System.Diagnostics;
+using System.Collections.Generic;
+using System;
+using System.Diagnostics;
+using System;
+using System.Diagnostics;
+using System.Collections.Generic;
+using System;
+using System.Diagnostics;
+using System.IO;
+using System.Drawing.Imaging;
+using System;
+using System.Diagnostics;
+using System;
+using System.Diagnostics;
+using System.Collections.Generic;
+using System;
+using System.Collections.Generic;
+using System;
+using System.Text;
+using System.IO;
+using System.IO;
+using System;
+using System;
+using System.Collections.Generic;
+using System.Diagnostics;
+using System.Collections.Generic;
+using System.Collections.Generic;
+using System;
+using System;
+using System;
+using System;
+using System.Collections.Generic;
+using System.Text;
+using System.IO;
+using System;
+using System.Diagnostics;
+using System.Diagnostics;
+using System.Diagnostics;
+using System.Text;
+
+
+
 
 
 
@@ -27746,35 +27809,5437 @@ namespace pdf_guru
             get { return Keys.Meta; }
         }
     }
+    public enum PdfNamedActionNames
+    {
+        NextPage,
+
+        PrevPage,
+
+        FirstPage,
+
+        LastPage
+    }
+    public abstract class PdfAction : PdfDictionary
+    {
+        protected PdfAction()
+        {
+            Elements.SetName(Keys.Type, "/Action");
+        }
+
+        protected PdfAction(PdfDocument document)
+            : base(document)
+        {
+            Elements.SetName(Keys.Type, "/Action");
+        }
+
+        internal class Keys : KeysBase
+        {
+            [KeyInfo(KeyType.Name | KeyType.Optional, FixedValue = "Action")]
+            public const string Type = "/Type";
+
+            [KeyInfo(KeyType.Name | KeyType.Required)]
+            public const string S = "/S";
+
+            [KeyInfo(KeyType.ArrayOrDictionary | KeyType.Optional)]
+            public const string Next = "/Next";
+        }
+    }
+    public sealed class PdfGoToAction : PdfAction
+    {
+        public PdfGoToAction()
+        {
+            Inititalize();
+        }
+
+        public PdfGoToAction(PdfDocument document)
+            : base(document)
+        {
+            Inititalize();
+        }
+
+        void Inititalize()
+        {
+            Elements.SetName(PdfAction.Keys.Type, "/Action");
+            Elements.SetName(PdfAction.Keys.S, "/Goto");
+        }
+
+        internal new class Keys : PdfAction.Keys
+        {
+            [KeyInfo(KeyType.Name | KeyType.ByteString | KeyType.Array | KeyType.Required)]
+            public const string D = "/D";
+        }
+    }
+    internal interface IContentStream
+    {
+        PdfResources Resources { get; }
+
+        string GetFontName(XFont font, out PdfFont pdfFont);
+
+        string GetFontName(string idName, byte[] fontData, out PdfFont pdfFont);
+
+        string GetImageName(XImage image);
+
+        string GetFormName(XForm form);
+    }
+    public sealed class PdfCatalog : PdfDictionary
+    {
+        public PdfCatalog(PdfDocument document)
+            : base(document)
+        {
+            Elements.SetName(Keys.Type, "/Catalog");
+
+            _version = "1.4";
+        }
+
+        internal PdfCatalog(PdfDictionary dictionary)
+            : base(dictionary)
+        { }
+
+        public string Version
+        {
+            get { return _version; }
+            set
+            {
+                switch (value)
+                {
+                    case "1.0":
+                    case "1.1":
+                    case "1.2":
+                        throw new InvalidOperationException("Unsupported PDF version.");
+
+                    case "1.3":
+                    case "1.4":
+                        _version = value;
+                        break;
+
+                    case "1.5":
+                    case "1.6":
+                        throw new InvalidOperationException("Unsupported PDF version.");
+
+                    default:
+                        throw new ArgumentException("Invalid version.");
+                }
+            }
+        }
+        string _version = "1.3";
+
+        public PdfPages Pages
+        {
+            get
+            {
+                if (_pages == null)
+                {
+                    _pages = (PdfPages)Elements.GetValue(Keys.Pages, VCF.CreateIndirect);
+                    if (Owner.IsImported)
+                        _pages.FlattenPageTree();
+                }
+                return _pages;
+            }
+        }
+        PdfPages _pages;
+
+        internal PdfPageLayout PageLayout
+        {
+            get { return (PdfPageLayout)Elements.GetEnumFromName(Keys.PageLayout, PdfPageLayout.SinglePage); }
+            set { Elements.SetEnumAsName(Keys.PageLayout, value); }
+        }
+
+        internal PdfPageMode PageMode
+        {
+            get { return (PdfPageMode)Elements.GetEnumFromName(Keys.PageMode, PdfPageMode.UseNone); }
+            set { Elements.SetEnumAsName(Keys.PageMode, value); }
+        }
+
+        internal PdfViewerPreferences ViewerPreferences
+        {
+            get
+            {
+                if (_viewerPreferences == null)
+                    _viewerPreferences = (PdfViewerPreferences)Elements.GetValue(Keys.ViewerPreferences, VCF.CreateIndirect);
+                return _viewerPreferences;
+            }
+        }
+        PdfViewerPreferences _viewerPreferences;
+
+        internal PdfOutlineCollection Outlines
+        {
+            get
+            {
+                if (_outline == null)
+                {
+                    _outline = (PdfOutline)Elements.GetValue(Keys.Outlines, VCF.CreateIndirect);
+                }
+                return _outline.Outlines;
+            }
+        }
+        PdfOutline _outline;
+
+        public PdfAcroForm AcroForm
+        {
+            get
+            {
+                if (_acroForm == null)
+                    _acroForm = (PdfAcroForm)Elements.GetValue(Keys.AcroForm);
+                return _acroForm;
+            }
+        }
+        PdfAcroForm _acroForm;
+
+        public string Language
+        {
+            get { return Elements.GetString(Keys.Lang); }
+            set
+            {
+                if (value == null)
+                    Elements.Remove(Keys.Lang);
+                else
+                    Elements.SetString(Keys.Lang, value);
+            }
+        }
+
+        internal override void PrepareForSave()
+        {
+            if (_pages != null)
+                _pages.PrepareForSave();
+
+            if (_outline != null && _outline.Outlines.Count > 0)
+            {
+                if (Elements[Keys.PageMode] == null)
+                    PageMode = PdfPageMode.UseOutlines;
+                _outline.PrepareForSave();
+            }
+        }
+
+        internal override void WriteObject(PdfWriter writer)
+        {
+            if (_outline != null && _outline.Outlines.Count > 0)
+            {
+                if (Elements[Keys.PageMode] == null)
+                    PageMode = PdfPageMode.UseOutlines;
+            }
+            base.WriteObject(writer);
+        }
+
+        internal sealed class Keys : KeysBase
+        {
+            [KeyInfo(KeyType.Name | KeyType.Required, FixedValue = "Catalog")]
+            public const string Type = "/Type";
+
+            [KeyInfo("1.4", KeyType.Name | KeyType.Optional)]
+            public const string Version = "/Version";
+
+            [KeyInfo(KeyType.Dictionary | KeyType.Required | KeyType.MustBeIndirect, typeof(PdfPages))]
+            public const string Pages = "/Pages";
+
+            [KeyInfo("1.3", KeyType.NumberTree | KeyType.Optional)]
+            public const string PageLabels = "/PageLabels";
+
+            [KeyInfo("1.2", KeyType.Dictionary | KeyType.Optional)]
+            public const string Names = "/Names";
+
+            [KeyInfo("1.1", KeyType.Dictionary | KeyType.Optional)]
+            public const string Dests = "/Dests";
+
+            [KeyInfo("1.2", KeyType.Dictionary | KeyType.Optional, typeof(PdfViewerPreferences))]
+            public const string ViewerPreferences = "/ViewerPreferences";
+
+            [KeyInfo(KeyType.Name | KeyType.Optional)]
+            public const string PageLayout = "/PageLayout";
+
+            [KeyInfo(KeyType.Name | KeyType.Optional)]
+            public const string PageMode = "/PageMode";
+
+            [KeyInfo(KeyType.Dictionary | KeyType.Optional, typeof(PdfOutline))]
+            public const string Outlines = "/Outlines";
+
+            [KeyInfo("1.1", KeyType.Array | KeyType.Optional)]
+            public const string Threads = "/Threads";
+
+            [KeyInfo("1.1", KeyType.ArrayOrDictionary | KeyType.Optional)]
+            public const string OpenAction = "/OpenAction";
+
+            [KeyInfo("1.4", KeyType.Dictionary | KeyType.Optional)]
+            public const string AA = "/AA";
+
+            [KeyInfo("1.1", KeyType.Dictionary | KeyType.Optional)]
+            public const string URI = "/URI";
+
+            [KeyInfo("1.2", KeyType.Dictionary | KeyType.Optional, typeof(PdfAcroForm))]
+            public const string AcroForm = "/AcroForm";
+
+            [KeyInfo("1.4", KeyType.Dictionary | KeyType.Optional | KeyType.MustBeIndirect)]
+            public const string Metadata = "/Metadata";
+
+            [KeyInfo("1.3", KeyType.Dictionary | KeyType.Optional)]
+            public const string StructTreeRoot = "/StructTreeRoot";
+
+            [KeyInfo("1.4", KeyType.Dictionary | KeyType.Optional)]
+            public const string MarkInfo = "/MarkInfo";
+
+            [KeyInfo("1.4", KeyType.String | KeyType.Optional)]
+            public const string Lang = "/Lang";
+
+            [KeyInfo("1.3", KeyType.Dictionary | KeyType.Optional)]
+            public const string SpiderInfo = "/SpiderInfo";
+
+            [KeyInfo("1.4", KeyType.Array | KeyType.Optional)]
+            public const string OutputIntents = "/OutputIntents";
+
+            [KeyInfo("1.4", KeyType.Dictionary | KeyType.Optional)]
+            public const string PieceInfo = "/PieceInfo";
+
+            [KeyInfo("1.5", KeyType.Dictionary | KeyType.Optional)]
+            public const string OCProperties = "/OCProperties";
+
+            [KeyInfo("1.5", KeyType.Dictionary | KeyType.Optional)]
+            public const string Perms = "/Perms";
+
+            [KeyInfo("1.5", KeyType.Dictionary | KeyType.Optional)]
+            public const string Legal = "/Legal";
+
+            [KeyInfo("1.7", KeyType.Array | KeyType.Optional)]
+            public const string Requirements = "/Requirements";
+
+            [KeyInfo("1.7", KeyType.Dictionary | KeyType.Optional)]
+            public const string Collection = "/Collection";
+
+            [KeyInfo("1.7", KeyType.Boolean | KeyType.Optional)]
+            public const string NeedsRendering = "/NeedsRendering";
+
+            public static DictionaryMeta Meta
+            {
+                get { return _meta ?? (_meta = CreateMeta(typeof(Keys))); }
+            }
+            static DictionaryMeta _meta;
+        }
+
+        internal override DictionaryMeta Meta
+        {
+            get { return Keys.Meta; }
+        }
+    }
+    internal class PdfCIDFont : PdfFont
+    {
+        public PdfCIDFont(PdfDocument document)
+            : base(document)
+        { }
+
+        public PdfCIDFont(PdfDocument document, PdfFontDescriptor fontDescriptor, XFont font)
+            : base(document)
+        {
+            Elements.SetName(Keys.Type, "/Font");
+            Elements.SetName(Keys.Subtype, "/CIDFontType2");
+            PdfDictionary cid = new PdfDictionary();
+            cid.Elements.SetString("/Ordering", "Identity");
+            cid.Elements.SetString("/Registry", "Adobe");
+            cid.Elements.SetInteger("/Supplement", 0);
+            Elements.SetValue(Keys.CIDSystemInfo, cid);
+
+            FontDescriptor = fontDescriptor;
+            Owner._irefTable.Add(fontDescriptor);
+            Elements[Keys.FontDescriptor] = fontDescriptor.Reference;
+
+            FontEncoding = font.PdfOptions.FontEncoding;
+        }
+
+        public PdfCIDFont(PdfDocument document, PdfFontDescriptor fontDescriptor, byte[] fontData)
+            : base(document)
+        {
+            Elements.SetName(Keys.Type, "/Font");
+            Elements.SetName(Keys.Subtype, "/CIDFontType2");
+            PdfDictionary cid = new PdfDictionary();
+            cid.Elements.SetString("/Ordering", "Identity");
+            cid.Elements.SetString("/Registry", "Adobe");
+            cid.Elements.SetInteger("/Supplement", 0);
+            Elements.SetValue(Keys.CIDSystemInfo, cid);
+
+            FontDescriptor = fontDescriptor;
+            Owner._irefTable.Add(fontDescriptor);
+            Elements[Keys.FontDescriptor] = fontDescriptor.Reference;
+
+            FontEncoding = PdfFontEncoding.Unicode;
+        }
+
+        public string BaseFont
+        {
+            get { return Elements.GetName(Keys.BaseFont); }
+            set { Elements.SetName(Keys.BaseFont, value); }
+        }
+
+        internal override void PrepareForSave()
+        {
+            base.PrepareForSave();
+
+            OpenTypeFontface subSet = null;
+            if (FontDescriptor._descriptor.FontFace.loca == null)
+                subSet = FontDescriptor._descriptor.FontFace;
+            else
+                subSet = FontDescriptor._descriptor.FontFace.CreateFontSubSet(_cmapInfo.GlyphIndices, true);
+            byte[] fontData = subSet.FontSource.Bytes;
+            PdfDictionary fontStream = new PdfDictionary(Owner);
+            Owner.Internals.AddObject(fontStream);
+            FontDescriptor.Elements[PdfFontDescriptor.Keys.FontFile2] = fontStream.Reference;
+
+            fontStream.Elements["/Length1"] = new PdfInteger(fontData.Length);
+            if (!Owner.Options.NoCompression)
+            {
+                fontData = Filtering.FlateDecode.Encode(fontData, _document.Options.FlateEncodeMode);
+                fontStream.Elements["/Filter"] = new PdfName("/FlateDecode");
+            }
+            fontStream.Elements["/Length"] = new PdfInteger(fontData.Length);
+            fontStream.CreateStream(fontData);
+        }
+
+        public new sealed class Keys : PdfFont.Keys
+        {
+            [KeyInfo(KeyType.Name | KeyType.Required, FixedValue = "Font")]
+            public new const string Type = "/Type";
+
+            [KeyInfo(KeyType.Name | KeyType.Required)]
+            public new const string Subtype = "/Subtype";
+
+            [KeyInfo(KeyType.Name | KeyType.Required)]
+            public new const string BaseFont = "/BaseFont";
+
+            [KeyInfo(KeyType.Dictionary | KeyType.Required)]
+            public const string CIDSystemInfo = "/CIDSystemInfo";
+
+            [KeyInfo(KeyType.Dictionary | KeyType.MustBeIndirect, typeof(PdfFontDescriptor))]
+            public new const string FontDescriptor = "/FontDescriptor";
+
+            [KeyInfo(KeyType.Integer)]
+            public const string DW = "/DW";
+
+            [KeyInfo(KeyType.Array, typeof(PdfArray))]
+            public const string W = "/W";
+
+            [KeyInfo(KeyType.Array)]
+            public const string DW2 = "/DW2";
+
+            [KeyInfo(KeyType.Array, typeof(PdfArray))]
+            public const string W2 = "/W2";
+
+            [KeyInfo(KeyType.Dictionary | KeyType.StreamOrName)]
+            public const string CIDToGIDMap = "/CIDToGIDMap";
+
+            internal static DictionaryMeta Meta
+            {
+                get { return _meta ?? (_meta = CreateMeta(typeof(Keys))); }
+            }
+            static DictionaryMeta _meta;
+        }
+
+        internal override DictionaryMeta Meta
+        {
+            get { return Keys.Meta; }
+        }
+    }
+    public sealed class PdfContent : PdfDictionary
+    {
+        public PdfContent(PdfDocument document)
+            : base(document)
+        { }
+
+        internal PdfContent(PdfPage page)
+            : base(page != null ? page.Owner : null)
+        {
+        }
+
+        public PdfContent(PdfDictionary dict)
+            : base(dict)
+        {
+            Decode();
+        }
+
+        public bool Compressed
+        {
+            set
+            {
+                if (value)
+                {
+                    PdfItem filter = Elements["/Filter"];
+                    if (filter == null)
+                    {
+                        byte[] bytes = Filtering.FlateDecode.Encode(Stream.Value, _document.Options.FlateEncodeMode);
+                        Stream.Value = bytes;
+                        Elements.SetInteger("/Length", Stream.Length);
+                        Elements.SetName("/Filter", "/FlateDecode");
+                    }
+                }
+            }
+        }
+
+        void Decode()
+        {
+            if (Stream != null && Stream.Value != null)
+            {
+                PdfItem item = Elements["/Filter"];
+                if (item != null)
+                {
+                    byte[] bytes = Filtering.Decode(Stream.Value, item);
+                    if (bytes != null)
+                    {
+                        Stream.Value = bytes;
+                        Elements.Remove("/Filter");
+                        Elements.SetInteger("/Length", Stream.Length);
+                    }
+                }
+            }
+        }
+
+        internal void PreserveGraphicsState()
+        {
+            if (Stream != null)
+            {
+                byte[] value = Stream.Value;
+                int length = value.Length;
+                if (length != 0 && ((value[0] != (byte)'q' || value[1] != (byte)'\n')))
+                {
+                    byte[] newValue = new byte[length + 2 + 3];
+                    newValue[0] = (byte)'q';
+                    newValue[1] = (byte)'\n';
+                    Array.Copy(value, 0, newValue, 2, length);
+                    newValue[length + 2] = (byte)' ';
+                    newValue[length + 3] = (byte)'Q';
+                    newValue[length + 4] = (byte)'\n';
+                    Stream.Value = newValue;
+                    Elements.SetInteger("/Length", Stream.Length);
+                }
+            }
+        }
+
+        internal override void WriteObject(PdfWriter writer)
+        {
+            if (_pdfRenderer != null)
+            {
+                _pdfRenderer.Close();
+                Debug.Assert(_pdfRenderer == null);
+            }
+
+            if (Stream != null)
+            {
+                if (Owner.Options.CompressContentStreams && Elements.GetName("/Filter").Length == 0)
+                {
+                    Stream.Value = Filtering.FlateDecode.Encode(Stream.Value, _document.Options.FlateEncodeMode);
+                    Elements.SetName("/Filter", "/FlateDecode");
+                }
+                Elements.SetInteger("/Length", Stream.Length);
+            }
+
+            base.WriteObject(writer);
+        }
+
+        internal XGraphicsPdfRenderer _pdfRenderer;
+
+        internal sealed class Keys : PdfStream.Keys
+        {
+            public static DictionaryMeta Meta
+            {
+                get { return _meta ?? (_meta = CreateMeta(typeof(Keys))); }
+            }
+            static DictionaryMeta _meta;
+        }
+
+        internal override DictionaryMeta Meta
+        {
+            get { return Keys.Meta; }
+        }
+    }
+    public sealed class PdfContents : PdfArray
+    {
+        public PdfContents(PdfDocument document)
+            : base(document)
+        { }
+
+        internal PdfContents(PdfArray array)
+            : base(array)
+        {
+            int count = Elements.Count;
+            for (int idx = 0; idx < count; idx++)
+            {
+                PdfItem item = Elements[idx];
+                PdfReference iref = item as PdfReference;
+                if (iref != null && iref.Value is PdfDictionary)
+                {
+                    new PdfContent((PdfDictionary)iref.Value);
+                }
+                else
+                    throw new InvalidOperationException("Unexpected item in a content stream array.");
+            }
+        }
+
+        public PdfContent AppendContent()
+        {
+            Debug.Assert(Owner != null);
+
+            SetModified();
+            PdfContent content = new PdfContent(Owner);
+            Owner._irefTable.Add(content);
+            Debug.Assert(content.Reference != null);
+            Elements.Add(content.Reference);
+            return content;
+        }
+
+        public PdfContent PrependContent()
+        {
+            Debug.Assert(Owner != null);
+
+            SetModified();
+            PdfContent content = new PdfContent(Owner);
+            Owner._irefTable.Add(content);
+            Debug.Assert(content.Reference != null);
+            Elements.Insert(0, content.Reference);
+            return content;
+        }
+
+        public PdfContent CreateSingleContent()
+        {
+            byte[] bytes = new byte[0];
+            byte[] bytes1;
+            byte[] bytes2;
+            foreach (PdfItem iref in Elements)
+            {
+                PdfDictionary cont = (PdfDictionary)((PdfReference)iref).Value;
+                bytes1 = bytes;
+                bytes2 = cont.Stream.UnfilteredValue;
+                bytes = new byte[bytes1.Length + bytes2.Length + 1];
+                bytes1.CopyTo(bytes, 0);
+                bytes[bytes1.Length] = (byte)'\n';
+                bytes2.CopyTo(bytes, bytes1.Length + 1);
+            }
+            PdfContent content = new PdfContent(Owner);
+            content.Stream = new PdfDictionary.PdfStream(bytes, content);
+            return content;
+        }
+
+        public PdfContent ReplaceContent(CSequence cseq)
+        {
+            if (cseq == null)
+                throw new ArgumentNullException(nameof(cseq));
+
+            return ReplaceContent(cseq.ToContent());
+        }
+
+        PdfContent ReplaceContent(byte[] contentBytes)
+        {
+            Debug.Assert(Owner != null);
+
+            PdfContent content = new PdfContent(Owner);
+
+            content.CreateStream(contentBytes);
+
+            Owner._irefTable.Add(content);
+            Elements.Clear();
+            Elements.Add(content.Reference);
+
+            return content;
+        }
+
+        void SetModified()
+        {
+            if (!_modified)
+            {
+                _modified = true;
+                int count = Elements.Count;
+
+                if (count == 1)
+                {
+                    PdfContent content = (PdfContent)((PdfReference)Elements[0]).Value;
+                    content.PreserveGraphicsState();
+                }
+                else if (count > 1)
+                {
+                    byte[] value;
+                    int length;
+                    PdfContent content = (PdfContent)((PdfReference)Elements[0]).Value;
+                    if (content != null && content.Stream != null)
+                    {
+                        length = content.Stream.Length;
+                        value = new byte[length + 2];
+                        value[0] = (byte)'q';
+                        value[1] = (byte)'\n';
+                        Array.Copy(content.Stream.Value, 0, value, 2, length);
+                        content.Stream.Value = value;
+                        content.Elements.SetInteger("/Length", length + 2);
+                    }
+                    content = (PdfContent)((PdfReference)Elements[count - 1]).Value;
+                    if (content != null && content.Stream != null)
+                    {
+                        length = content.Stream.Length;
+                        value = new byte[length + 3];
+                        Array.Copy(content.Stream.Value, 0, value, 0, length);
+                        value[length] = (byte)' ';
+                        value[length + 1] = (byte)'Q';
+                        value[length + 2] = (byte)'\n';
+                        content.Stream.Value = value;
+                        content.Elements.SetInteger("/Length", length + 3);
+                    }
+                }
+            }
+        }
+        bool _modified;
+
+        internal override void WriteObject(PdfWriter writer)
+        {
+            if (Elements.Count == 1)
+                Elements[0].WriteObject(writer);
+            else
+                base.WriteObject(writer);
+        }
+
+        public new IEnumerator<PdfContent> GetEnumerator()
+        {
+            return new PdfPageContentEnumerator(this);
+        }
+
+        class PdfPageContentEnumerator : IEnumerator<PdfContent>
+        {
+            internal PdfPageContentEnumerator(PdfContents list)
+            {
+                _contents = list;
+                _index = -1;
+            }
+
+            public bool MoveNext()
+            {
+                if (_index < _contents.Elements.Count - 1)
+                {
+                    _index++;
+                    _currentElement = (PdfContent)((PdfReference)_contents.Elements[_index]).Value;
+                    return true;
+                }
+                _index = _contents.Elements.Count;
+                return false;
+            }
+
+            public void Reset()
+            {
+                _currentElement = null;
+                _index = -1;
+            }
+
+            object IEnumerator.Current
+            {
+                get { return Current; }
+            }
+
+            public PdfContent Current
+            {
+                get
+                {
+                    if (_index == -1 || _index >= _contents.Elements.Count)
+                        throw new InvalidOperationException(PSSR.ListEnumCurrentOutOfRange);
+                    return _currentElement;
+                }
+            }
+
+            public void Dispose()
+            {
+            }
+
+            PdfContent _currentElement;
+            int _index;
+            readonly PdfContents _contents;
+        }
+    }
+    internal sealed class PdfCrossReferenceStream : PdfTrailer
+    {
+        public PdfCrossReferenceStream(PdfDocument document)
+            : base(document)
+        {
+
+        }
+
+        public readonly List<CrossReferenceStreamEntry> Entries = new List<CrossReferenceStreamEntry>();
+
+        public struct CrossReferenceStreamEntry
+        {
+            public uint Type;
+
+            public uint Field2;
+
+            public uint Field3;
+        }
+
+        public new class Keys : PdfTrailer.Keys
+        {
+            [KeyInfo(KeyType.Name | KeyType.Required, FixedValue = "XRef")]
+            public const string Type = "/Type";
+
+            [KeyInfo(KeyType.Integer | KeyType.Required)]
+            public new const string Size = "/Size";
+
+            [KeyInfo(KeyType.Array | KeyType.Optional)]
+            public const string Index = "/Index";
+
+            [KeyInfo(KeyType.Integer | KeyType.Optional)]
+            public new const string Prev = "/Prev";
+
+            [KeyInfo(KeyType.Array | KeyType.Required)]
+            public const string W = "/W";
+
+            public static new DictionaryMeta Meta
+            {
+                get { return _meta ?? (_meta = CreateMeta(typeof(Keys))); }
+            }
+            static DictionaryMeta _meta;
+        }
+
+        internal override DictionaryMeta Meta
+        {
+            get { return Keys.Meta; }
+        }
+    }
+    internal sealed class PdfCrossReferenceTable
+    {
+        public PdfCrossReferenceTable(PdfDocument document)
+        {
+            _document = document;
+        }
+        readonly PdfDocument _document;
+
+        public Dictionary<PdfObjectID, PdfReference> ObjectTable = new Dictionary<PdfObjectID, PdfReference>();
+
+        internal bool IsUnderConstruction
+        {
+            get { return _isUnderConstruction; }
+            set { _isUnderConstruction = value; }
+        }
+        bool _isUnderConstruction;
+
+        public void Add(PdfReference iref)
+        {
+            if (iref.ObjectID.IsEmpty)
+                iref.ObjectID = new PdfObjectID(GetNewObjectNumber());
+
+            if (ObjectTable.ContainsKey(iref.ObjectID))
+                throw new InvalidOperationException("Object already in table.");
+
+            ObjectTable.Add(iref.ObjectID, iref);
+        }
+
+        public void Add(PdfObject value)
+        {
+            if (value.Owner == null)
+                value.Document = _document;
+            else
+                Debug.Assert(value.Owner == _document);
+
+            if (value.ObjectID.IsEmpty)
+                value.SetObjectID(GetNewObjectNumber(), 0);
+
+            if (ObjectTable.ContainsKey(value.ObjectID))
+                throw new InvalidOperationException("Object already in table.");
+
+            ObjectTable.Add(value.ObjectID, value.Reference);
+        }
+
+        public void Remove(PdfReference iref)
+        {
+            ObjectTable.Remove(iref.ObjectID);
+        }
+
+        public PdfReference this[PdfObjectID objectID]
+        {
+            get
+            {
+                PdfReference iref;
+                ObjectTable.TryGetValue(objectID, out iref);
+                return iref;
+            }
+        }
+
+        public bool Contains(PdfObjectID objectID)
+        {
+            return ObjectTable.ContainsKey(objectID);
+        }
+
+        public int GetNewObjectNumber()
+        {
+            return ++_maxObjectNumber;
+        }
+        internal int _maxObjectNumber;
+
+        internal void WriteObject(PdfWriter writer)
+        {
+            writer.WriteRaw("xref\n");
+
+            PdfReference[] irefs = AllReferences;
+
+            int count = irefs.Length;
+            writer.WriteRaw(String.Format("0 {0}\n", count + 1));
+            writer.WriteRaw(String.Format("{0:0000000000} {1:00000} {2} \n", 0, 65535, "f"));
+            for (int idx = 0; idx < count; idx++)
+            {
+                PdfReference iref = irefs[idx];
+
+                writer.WriteRaw(String.Format("{0:0000000000} {1:00000} {2} \n", iref.Position, iref.GenerationNumber, "n"));
+            }
+        }
+
+        internal PdfObjectID[] AllObjectIDs
+        {
+            get
+            {
+                ICollection collection = ObjectTable.Keys;
+                PdfObjectID[] objectIDs = new PdfObjectID[collection.Count];
+                collection.CopyTo(objectIDs, 0);
+                return objectIDs;
+            }
+        }
+
+        internal PdfReference[] AllReferences
+        {
+            get
+            {
+                Dictionary<PdfObjectID, PdfReference>.ValueCollection collection = ObjectTable.Values;
+                List<PdfReference> list = new List<PdfReference>(collection);
+                list.Sort(PdfReference.Comparer);
+                PdfReference[] irefs = new PdfReference[collection.Count];
+                list.CopyTo(irefs, 0);
+                return irefs;
+            }
+        }
+
+        internal void HandleOrphanedReferences()
+        { }
+
+        internal int Compact()
+        {
+            int removed = ObjectTable.Count;
+            PdfReference[] irefs = TransitiveClosure(_document._trailer);
+
+            _maxObjectNumber = 0;
+            ObjectTable.Clear();
+            foreach (PdfReference iref in irefs)
+            {
+                if (!ObjectTable.ContainsKey(iref.ObjectID))
+                {
+                    ObjectTable.Add(iref.ObjectID, iref);
+                    _maxObjectNumber = Math.Max(_maxObjectNumber, iref.ObjectNumber);
+                }
+            }
+            removed -= ObjectTable.Count;
+            return removed;
+        }
+
+        internal void Renumber()
+        {
+            PdfReference[] irefs = AllReferences;
+            ObjectTable.Clear();
+            int count = irefs.Length;
+            for (int idx = 0; idx < count; idx++)
+            {
+                PdfReference iref = irefs[idx];
+                iref.ObjectID = new PdfObjectID(idx + 1);
+                ObjectTable.Add(iref.ObjectID, iref);
+            }
+            _maxObjectNumber = count;
+        }
+
+        [Conditional("DEBUG_")]
+        public void CheckConsistence()
+        {
+            Dictionary<PdfReference, object> ht1 = new Dictionary<PdfReference, object>();
+            foreach (PdfReference iref in ObjectTable.Values)
+            {
+                Debug.Assert(!ht1.ContainsKey(iref), "Duplicate iref.");
+                Debug.Assert(iref.Value != null);
+                ht1.Add(iref, null);
+            }
+
+            Dictionary<PdfObjectID, object> ht2 = new Dictionary<PdfObjectID, object>();
+            foreach (PdfReference iref in ObjectTable.Values)
+            {
+                Debug.Assert(!ht2.ContainsKey(iref.ObjectID), "Duplicate iref.");
+                ht2.Add(iref.ObjectID, null);
+            }
+
+            ICollection collection = ObjectTable.Values;
+            int count = collection.Count;
+            PdfReference[] irefs = new PdfReference[count];
+            collection.CopyTo(irefs, 0);
+#if true
+            for (int i = 0; i < count; i++)
+                for (int j = 0; j < count; j++)
+                    if (i != j)
+                    {
+                        Debug.Assert(ReferenceEquals(irefs[i].Document, _document));
+                        Debug.Assert(irefs[i] != irefs[j]);
+                        Debug.Assert(!ReferenceEquals(irefs[i], irefs[j]));
+                        Debug.Assert(!ReferenceEquals(irefs[i].Value, irefs[j].Value));
+                        Debug.Assert(!Equals(irefs[i].ObjectID, irefs[j].Value.ObjectID));
+                        Debug.Assert(irefs[i].ObjectNumber != irefs[j].Value.ObjectNumber);
+                        Debug.Assert(ReferenceEquals(irefs[i].Document, irefs[j].Document));
+                        GetType();
+                    }
+#endif
+        }
+
+        public PdfReference[] TransitiveClosure(PdfObject pdfObject)
+        {
+            return TransitiveClosure(pdfObject, short.MaxValue);
+        }
+
+        public PdfReference[] TransitiveClosure(PdfObject pdfObject, int depth)
+        {
+            CheckConsistence();
+            Dictionary<PdfItem, object> objects = new Dictionary<PdfItem, object>();
+            _overflow = new Dictionary<PdfItem, object>();
+            TransitiveClosureImplementation(objects, pdfObject);
+        TryAgain:
+            if (_overflow.Count > 0)
+            {
+                PdfObject[] array = new PdfObject[_overflow.Count];
+                _overflow.Keys.CopyTo(array, 0);
+                _overflow = new Dictionary<PdfItem, object>();
+                for (int idx = 0; idx < array.Length; idx++)
+                {
+                    PdfObject obj = array[idx];
+                    TransitiveClosureImplementation(objects, obj);
+                }
+                goto TryAgain;
+            }
+
+            CheckConsistence();
+
+            ICollection collection = objects.Keys;
+            int count = collection.Count;
+            PdfReference[] irefs = new PdfReference[count];
+            collection.CopyTo(irefs, 0);
+
+            return irefs;
+        }
+
+        static int _nestingLevel;
+        Dictionary<PdfItem, object> _overflow = new Dictionary<PdfItem, object>();
+
+        void TransitiveClosureImplementation(Dictionary<PdfItem, object> objects, PdfObject pdfObject)
+        {
+            try
+            {
+                _nestingLevel++;
+                if (_nestingLevel >= 1000)
+                {
+                    if (!_overflow.ContainsKey(pdfObject))
+                        _overflow.Add(pdfObject, null);
+                    return;
+                }
+
+                IEnumerable enumerable = null;
+                PdfDictionary dict;
+                PdfArray array;
+                if ((dict = pdfObject as PdfDictionary) != null)
+                    enumerable = dict.Elements.Values;
+                else if ((array = pdfObject as PdfArray) != null)
+                    enumerable = array.Elements;
+                else
+                    Debug.Assert(false, "Should not come here.");
+
+                if (enumerable != null)
+                {
+                    foreach (PdfItem item in enumerable)
+                    {
+                        PdfReference iref = item as PdfReference;
+                        if (iref != null)
+                        {
+                            if (!ReferenceEquals(iref.Document, _document))
+                            {
+                                GetType();
+                                Debug.WriteLine(String.Format("Bad iref: {0}", iref.ObjectID.ToString()));
+                            }
+                            Debug.Assert(ReferenceEquals(iref.Document, _document) || iref.Document == null, "External object detected!");
+
+                            if (!objects.ContainsKey(iref))
+                            {
+                                PdfObject value = iref.Value;
+
+                                if (iref.Document != null)
+                                {
+                                    if (value == null)
+                                    {
+                                        iref = ObjectTable[iref.ObjectID];
+                                        Debug.Assert(iref.Value != null);
+                                        value = iref.Value;
+                                    }
+                                    Debug.Assert(ReferenceEquals(iref.Document, _document));
+                                    objects.Add(iref, null);
+                                    if (value is PdfArray || value is PdfDictionary)
+                                        TransitiveClosureImplementation(objects, value);
+                                }
+                            }
+                        }
+                        else
+                        {
+                            PdfObject pdfObject28 = item as PdfObject;
+                            if (pdfObject28 != null && (pdfObject28 is PdfDictionary || pdfObject28 is PdfArray))
+                                TransitiveClosureImplementation(objects, pdfObject28);
+                        }
+                    }
+                }
+            }
+            finally
+            {
+                _nestingLevel--;
+            }
+        }
+
+        public PdfReference DeadObject
+        {
+            get
+            {
+                if (_deadObject == null)
+                {
+                    _deadObject = new PdfDictionary(_document);
+                    Add(_deadObject);
+                    _deadObject.Elements.Add("/DeadObjectCount", new PdfInteger());
+                }
+                return _deadObject.Reference;
+            }
+        }
+        PdfDictionary _deadObject;
+    }
+    public abstract class PdfDictionaryWithContentStream : PdfDictionary, IContentStream
+    {
+        public PdfDictionaryWithContentStream()
+        { }
+
+        public PdfDictionaryWithContentStream(PdfDocument document)
+            : base(document)
+        { }
+
+        protected PdfDictionaryWithContentStream(PdfDictionary dict)
+            : base(dict)
+        { }
+
+        internal PdfResources Resources
+        {
+            get
+            {
+                if (_resources == null)
+                    _resources = (PdfResources)Elements.GetValue(Keys.Resources, VCF.Create);
+                return _resources;
+            }
+        }
+        PdfResources _resources;
+
+        PdfResources IContentStream.Resources
+        {
+            get { return Resources; }
+        }
+
+        internal string GetFontName(XFont font, out PdfFont pdfFont)
+        {
+            pdfFont = _document.FontTable.GetFont(font);
+            Debug.Assert(pdfFont != null);
+            string name = Resources.AddFont(pdfFont);
+            return name;
+        }
+
+        string IContentStream.GetFontName(XFont font, out PdfFont pdfFont)
+        {
+            return GetFontName(font, out pdfFont);
+        }
+
+        internal string GetFontName(string idName, byte[] fontData, out PdfFont pdfFont)
+        {
+            pdfFont = _document.FontTable.GetFont(idName, fontData);
+            Debug.Assert(pdfFont != null);
+            string name = Resources.AddFont(pdfFont);
+            return name;
+        }
+
+        string IContentStream.GetFontName(string idName, byte[] fontData, out PdfFont pdfFont)
+        {
+            return GetFontName(idName, fontData, out pdfFont);
+        }
+
+        internal string GetImageName(XImage image)
+        {
+            PdfImage pdfImage = _document.ImageTable.GetImage(image);
+            Debug.Assert(pdfImage != null);
+            string name = Resources.AddImage(pdfImage);
+            return name;
+        }
+
+        string IContentStream.GetImageName(XImage image)
+        {
+            throw new NotImplementedException();
+        }
+
+        internal string GetFormName(XForm form)
+        {
+            PdfFormXObject pdfForm = _document.FormTable.GetForm(form);
+            Debug.Assert(pdfForm != null);
+            string name = Resources.AddForm(pdfForm);
+            return name;
+        }
+
+        string IContentStream.GetFormName(XForm form)
+        {
+            throw new NotImplementedException();
+        }
+
+        public class Keys : PdfDictionary.PdfStream.Keys
+        {
+            [KeyInfo(KeyType.Dictionary | KeyType.Optional, typeof(PdfResources))]
+            public const string Resources = "/Resources";
+        }
+    }
+    public sealed class PdfExtGState : PdfDictionary
+    {
+        public PdfExtGState(PdfDocument document)
+            : base(document)
+        {
+            Elements.SetName(Keys.Type, "/ExtGState");
+
+        }
+
+        internal void SetDefault1()
+        {
+            Elements.SetBoolean(Keys.AIS, false);
+            if (Elements.ContainsKey(Keys.BM)) Elements.SetName(Keys.BM, "/Normal");
+            StrokeAlpha = 1;
+            NonStrokeAlpha = 1;
+            Elements.SetBoolean(Keys.op, false);
+            Elements.SetBoolean(Keys.OP, false);
+            Elements.SetBoolean(Keys.SA, true);
+            Elements.SetName(Keys.SMask, "/None");
+        }
+
+        internal void SetDefault2()
+        {
+            Elements.SetBoolean(Keys.AIS, false);
+            Elements.SetName(Keys.BM, "/Normal");
+            StrokeAlpha = 1;
+            NonStrokeAlpha = 1;
+            Elements.SetBoolean(Keys.op, true);
+            Elements.SetBoolean(Keys.OP, true);
+            Elements.SetInteger(Keys.OPM, 1);
+            Elements.SetBoolean(Keys.SA, true);
+            Elements.SetName(Keys.SMask, "/None");
+        }
+
+        public double StrokeAlpha
+        {
+            set
+            {
+                _strokeAlpha = value;
+                Elements.SetReal(Keys.CA, value);
+                UpdateKey();
+            }
+        }
+        double _strokeAlpha;
+
+        public double NonStrokeAlpha
+        {
+            set
+            {
+                _nonStrokeAlpha = value;
+                Elements.SetReal(Keys.ca, value);
+                UpdateKey();
+            }
+        }
+        double _nonStrokeAlpha;
+
+        public bool StrokeOverprint
+        {
+            set
+            {
+                _strokeOverprint = value;
+                Elements.SetBoolean(Keys.OP, value);
+                UpdateKey();
+            }
+        }
+        bool _strokeOverprint;
+
+        public bool NonStrokeOverprint
+        {
+            set
+            {
+                _nonStrokeOverprint = value;
+                Elements.SetBoolean(Keys.op, value);
+                UpdateKey();
+            }
+        }
+        bool _nonStrokeOverprint;
+
+        public PdfSoftMask SoftMask
+        {
+            set { Elements.SetReference(Keys.SMask, value); }
+        }
+
+        internal string Key
+        {
+            get { return _key; }
+        }
+
+        void UpdateKey()
+        {
+            _key = ((int)(1000 * _strokeAlpha)).ToString(CultureInfo.InvariantCulture) +
+                         ((int)(1000 * _nonStrokeAlpha)).ToString(CultureInfo.InvariantCulture) +
+                         (_strokeOverprint ? "S" : "s") + (_nonStrokeOverprint ? "N" : "n");
+        }
+        string _key;
+
+        internal static string MakeKey(double alpha, bool overPaint)
+        {
+            string key = ((int)(1000 * alpha)).ToString(CultureInfo.InvariantCulture) + (overPaint ? "O" : "0");
+            return key;
+        }
+
+        internal sealed class Keys : KeysBase
+        {
+            [KeyInfo(KeyType.Name | KeyType.Optional)]
+            public const string Type = "/Type";
+
+            [KeyInfo(KeyType.Real | KeyType.Optional)]
+            public const string LW = "/LW";
+
+            [KeyInfo(KeyType.Integer | KeyType.Optional)]
+            public const string LC = "/LC";
+
+            [KeyInfo(KeyType.Integer | KeyType.Optional)]
+            public const string LJ = "/LJ";
+
+            [KeyInfo(KeyType.Real | KeyType.Optional)]
+            public const string ML = "/ML";
+
+            [KeyInfo(KeyType.Array | KeyType.Optional)]
+            public const string D = "/D";
+
+            [KeyInfo(KeyType.Name | KeyType.Optional)]
+            public const string RI = "/RI";
+
+            [KeyInfo(KeyType.Boolean | KeyType.Optional)]
+            public const string OP = "/OP";
+
+            [KeyInfo(KeyType.Boolean | KeyType.Optional)]
+            public const string op = "/op";
+
+            [KeyInfo(KeyType.Integer | KeyType.Optional)]
+            public const string OPM = "/OPM";
+
+            [KeyInfo(KeyType.Array | KeyType.Optional)]
+            public const string Font = "/Font";
+
+            [KeyInfo(KeyType.Function | KeyType.Optional)]
+            public const string BG = "/BG";
+
+            [KeyInfo(KeyType.FunctionOrName | KeyType.Optional)]
+            public const string BG2 = "/BG2";
+
+            [KeyInfo(KeyType.Function | KeyType.Optional)]
+            public const string UCR = "/UCR";
+
+            [KeyInfo(KeyType.FunctionOrName | KeyType.Optional)]
+            public const string UCR2 = "/UCR2";
+
+            [KeyInfo(KeyType.Boolean | KeyType.Optional)]
+            public const string SA = "/SA";
+
+            [KeyInfo(KeyType.NameOrArray | KeyType.Optional)]
+            public const string BM = "/BM";
+
+            [KeyInfo(KeyType.NameOrDictionary | KeyType.Optional)]
+            public const string SMask = "/SMask";
+
+            [KeyInfo(KeyType.Real | KeyType.Optional)]
+            public const string CA = "/CA";
+
+            [KeyInfo(KeyType.Real | KeyType.Optional)]
+            public const string ca = "/ca";
+
+            [KeyInfo(KeyType.Boolean | KeyType.Optional)]
+            public const string AIS = "/AIS";
+
+            [KeyInfo(KeyType.Boolean | KeyType.Optional)]
+            public const string TK = "/TK";
+
+            internal static DictionaryMeta Meta
+            {
+                get { return _meta ?? (_meta = CreateMeta(typeof(Keys))); }
+            }
+            static DictionaryMeta _meta;
+        }
+
+        internal override DictionaryMeta Meta
+        {
+            get { return Keys.Meta; }
+        }
+    }
+    public sealed class PdfExtGStateTable : PdfResourceTable
+    {
+        public PdfExtGStateTable(PdfDocument document)
+            : base(document)
+        { }
 
 
+        public PdfExtGState GetExtGStateStroke(double alpha, bool overprint)
+        {
+            string key = PdfExtGState.MakeKey(alpha, overprint);
+            PdfExtGState extGState;
+            if (!_strokeAlphaValues.TryGetValue(key, out extGState))
+            {
+                extGState = new PdfExtGState(Owner);
+                extGState.StrokeAlpha = alpha;
+                if (overprint)
+                {
+                    extGState.StrokeOverprint = true;
+                    extGState.Elements.SetInteger(PdfExtGState.Keys.OPM, 1);
+                }
+                _strokeAlphaValues[key] = extGState;
+            }
+            return extGState;
+        }
+
+        public PdfExtGState GetExtGStateNonStroke(double alpha, bool overprint)
+        {
+            string key = PdfExtGState.MakeKey(alpha, overprint);
+            PdfExtGState extGState;
+            if (!_nonStrokeStates.TryGetValue(key, out extGState))
+            {
+                extGState = new PdfExtGState(Owner);
+                extGState.NonStrokeAlpha = alpha;
+                if (overprint)
+                {
+                    extGState.NonStrokeOverprint = true;
+                    extGState.Elements.SetInteger(PdfExtGState.Keys.OPM, 1);
+                }
+
+                _nonStrokeStates[key] = extGState;
+            }
+            return extGState;
+        }
+
+        readonly Dictionary<string, PdfExtGState> _strokeAlphaValues = new Dictionary<string, PdfExtGState>();
+        readonly Dictionary<string, PdfExtGState> _nonStrokeStates = new Dictionary<string, PdfExtGState>();
+    }
+    public class PdfFont : PdfDictionary
+    {
+        public PdfFont(PdfDocument document)
+            : base(document)
+        { }
+
+        internal PdfFontDescriptor FontDescriptor
+        {
+            get
+            {
+                Debug.Assert(_fontDescriptor != null);
+                return _fontDescriptor;
+            }
+            set { _fontDescriptor = value; }
+        }
+        PdfFontDescriptor _fontDescriptor;
+
+        internal PdfFontEncoding FontEncoding;
+
+        public bool IsSymbolFont
+        {
+            get { return _fontDescriptor.IsSymbolFont; }
+        }
+
+        internal void AddChars(string text)
+        {
+            if (_cmapInfo != null)
+                _cmapInfo.AddChars(text);
+        }
+
+        internal void AddGlyphIndices(string glyphIndices)
+        {
+            if (_cmapInfo != null)
+                _cmapInfo.AddGlyphIndices(glyphIndices);
+        }
+
+        internal CMapInfo CMapInfo
+        {
+            get { return _cmapInfo; }
+            set { _cmapInfo = value; }
+        }
+        internal CMapInfo _cmapInfo;
+
+        internal PdfToUnicodeMap ToUnicodeMap
+        {
+            get { return _toUnicode; }
+            set { _toUnicode = value; }
+        }
+        internal PdfToUnicodeMap _toUnicode;
 
 
+        internal static string CreateEmbeddedFontSubsetName(string name)
+        {
+            StringBuilder s = new StringBuilder(64);
+            byte[] bytes = Guid.NewGuid().ToByteArray();
+            for (int idx = 0; idx < 6; idx++)
+                s.Append((char)('A' + bytes[idx] % 26));
+            s.Append('+');
+            if (name.StartsWith("/"))
+                s.Append(name.Substring(1));
+            else
+                s.Append(name);
+            return s.ToString();
+        }
+
+        public class Keys : KeysBase
+        {
+            [KeyInfo(KeyType.Name | KeyType.Required, FixedValue = "Font")]
+            public const string Type = "/Type";
+
+            [KeyInfo(KeyType.Name | KeyType.Required)]
+            public const string Subtype = "/Subtype";
+
+            [KeyInfo(KeyType.Name | KeyType.Required)]
+            public const string BaseFont = "/BaseFont";
+
+            [KeyInfo(KeyType.Dictionary | KeyType.MustBeIndirect, typeof(PdfFontDescriptor))]
+            public const string FontDescriptor = "/FontDescriptor";
+        }
+    }
+    enum PdfFontDescriptorFlags
+    {
+        FixedPitch = 1 << 0,
+
+        Serif = 1 << 1,
+
+        Symbolic = 1 << 2,
+
+        Script = 1 << 3,
+
+        Nonsymbolic = 1 << 5,
+
+        Italic = 1 << 6,
+
+        AllCap = 1 << 16,
+
+        SmallCap = 1 << 17,
+
+        ForceBold = 1 << 18,
+    }
+    public sealed class PdfFontDescriptor : PdfDictionary
+    {
+        internal PdfFontDescriptor(PdfDocument document, OpenTypeDescriptor descriptor)
+            : base(document)
+        {
+            _descriptor = descriptor;
+            Elements.SetName(Keys.Type, "/FontDescriptor");
+
+            Elements.SetInteger(Keys.Ascent, _descriptor.DesignUnitsToPdf(_descriptor.Ascender));
+            Elements.SetInteger(Keys.CapHeight, _descriptor.DesignUnitsToPdf(_descriptor.CapHeight));
+            Elements.SetInteger(Keys.Descent, _descriptor.DesignUnitsToPdf(_descriptor.Descender));
+            Elements.SetInteger(Keys.Flags, (int)FlagsFromDescriptor(_descriptor));
+            Elements.SetRectangle(Keys.FontBBox, new PdfRectangle(
+              _descriptor.DesignUnitsToPdf(_descriptor.XMin),
+              _descriptor.DesignUnitsToPdf(_descriptor.YMin),
+              _descriptor.DesignUnitsToPdf(_descriptor.XMax),
+              _descriptor.DesignUnitsToPdf(_descriptor.YMax)));
+            Elements.SetReal(Keys.ItalicAngle, _descriptor.ItalicAngle);
+            Elements.SetInteger(Keys.StemV, _descriptor.StemV);
+            Elements.SetInteger(Keys.XHeight, _descriptor.DesignUnitsToPdf(_descriptor.XHeight));
+        }
+
+        internal OpenTypeDescriptor _descriptor;
+
+        public string FontName
+        {
+            get { return Elements.GetName(Keys.FontName); }
+            set { Elements.SetName(Keys.FontName, value); }
+        }
+
+        public bool IsSymbolFont
+        {
+            get { return _isSymbolFont; }
+        }
+        bool _isSymbolFont;
+
+        PdfFontDescriptorFlags FlagsFromDescriptor(OpenTypeDescriptor descriptor)
+        {
+            PdfFontDescriptorFlags flags = 0;
+            _isSymbolFont = descriptor.FontFace.cmap.symbol;
+            flags |= descriptor.FontFace.cmap.symbol ? PdfFontDescriptorFlags.Symbolic : PdfFontDescriptorFlags.Nonsymbolic;
+            return flags;
+        }
+
+        public sealed class Keys : KeysBase
+        {
+            [KeyInfo(KeyType.Name | KeyType.Required, FixedValue = "FontDescriptor")]
+            public const string Type = "/Type";
+
+            [KeyInfo(KeyType.Name | KeyType.Required)]
+            public const string FontName = "/FontName";
+
+            [KeyInfo(KeyType.String | KeyType.Optional)]
+            public const string FontFamily = "/FontFamily";
+
+            [KeyInfo(KeyType.Name | KeyType.Optional)]
+            public const string FontStretch = "/FontStretch";
+
+            [KeyInfo(KeyType.Real | KeyType.Optional)]
+            public const string FontWeight = "/FontWeight";
+
+            [KeyInfo(KeyType.Integer | KeyType.Required)]
+            public const string Flags = "/Flags";
+
+            [KeyInfo(KeyType.Rectangle | KeyType.Required)]
+            public const string FontBBox = "/FontBBox";
+
+            [KeyInfo(KeyType.Real | KeyType.Required)]
+            public const string ItalicAngle = "/ItalicAngle";
+
+            [KeyInfo(KeyType.Real | KeyType.Required)]
+            public const string Ascent = "/Ascent";
+
+            [KeyInfo(KeyType.Real | KeyType.Required)]
+            public const string Descent = "/Descent";
+
+            [KeyInfo(KeyType.Real | KeyType.Optional)]
+            public const string Leading = "/Leading";
+
+            [KeyInfo(KeyType.Real | KeyType.Required)]
+            public const string CapHeight = "/CapHeight";
+
+            [KeyInfo(KeyType.Real | KeyType.Optional)]
+            public const string XHeight = "/XHeight";
+
+            [KeyInfo(KeyType.Real | KeyType.Required)]
+            public const string StemV = "/StemV";
+
+            [KeyInfo(KeyType.Real | KeyType.Optional)]
+            public const string StemH = "/StemH";
+
+            [KeyInfo(KeyType.Real | KeyType.Optional)]
+            public const string AvgWidth = "/AvgWidth";
+
+            [KeyInfo(KeyType.Real | KeyType.Optional)]
+            public const string MaxWidth = "/MaxWidth";
+
+            [KeyInfo(KeyType.Real | KeyType.Optional)]
+            public const string MissingWidth = "/MissingWidth";
+
+            [KeyInfo(KeyType.Stream | KeyType.Optional)]
+            public const string FontFile = "/FontFile";
+
+            [KeyInfo(KeyType.Stream | KeyType.Optional)]
+            public const string FontFile2 = "/FontFile2";
+
+            [KeyInfo(KeyType.Stream | KeyType.Optional)]
+            public const string FontFile3 = "/FontFile3";
+
+            [KeyInfo(KeyType.String | KeyType.Optional)]
+            public const string CharSet = "/CharSet";
+
+            internal static DictionaryMeta Meta
+            {
+                get
+                {
+                    if (_meta == null)
+                        _meta = CreateMeta(typeof(Keys));
+                    return _meta;
+                }
+            }
+            static DictionaryMeta _meta;
+        }
+
+        internal override DictionaryMeta Meta
+        {
+            get { return Keys.Meta; }
+        }
+    }
+    internal enum FontType
+    {
+        TrueType = 1,
+
+        Type0 = 2,
+    }
+    internal sealed class PdfFontTable : PdfResourceTable
+    {
+        public PdfFontTable(PdfDocument document)
+            : base(document)
+        { }
+
+        public PdfFont GetFont(XFont font)
+        {
+            string selector = font.Selector;
+            if (selector == null)
+            {
+                selector = ComputeKey(font);
+                font.Selector = selector;
+            }
+            PdfFont pdfFont;
+            if (!_fonts.TryGetValue(selector, out pdfFont))
+            {
+                if (font.Unicode)
+                    pdfFont = new PdfType0Font(Owner, font, font.IsVertical);
+                else
+                    pdfFont = new PdfTrueTypeFont(Owner, font);
+                Debug.Assert(pdfFont.Owner == Owner);
+                _fonts[selector] = pdfFont;
+            }
+            return pdfFont;
+        }
+
+#if true
+        public PdfFont GetFont(string idName, byte[] fontData)
+        {
+            Debug.Assert(false);
+            string selector = null;
+            PdfFont pdfFont;
+            if (!_fonts.TryGetValue(selector, out pdfFont))
+            {
+                pdfFont = new PdfType0Font(Owner, idName, fontData, false);
+                Debug.Assert(pdfFont.Owner == Owner);
+                _fonts[selector] = pdfFont;
+            }
+            return pdfFont;
+        }
+#endif
+
+        public PdfFont TryGetFont(string idName)
+        {
+            Debug.Assert(false);
+            string selector = null;
+            PdfFont pdfFont;
+            _fonts.TryGetValue(selector, out pdfFont);
+            return pdfFont;
+        }
+
+        internal static string ComputeKey(XFont font)
+        {
+            XGlyphTypeface glyphTypeface = font.GlyphTypeface;
+            string key = glyphTypeface.Fontface.FullFaceName.ToLowerInvariant() +
+                (glyphTypeface.IsBold ? "/b" : "") + (glyphTypeface.IsItalic ? "/i" : "") + font.Unicode;
+            return key;
+        }
+
+        readonly Dictionary<string, PdfFont> _fonts = new Dictionary<string, PdfFont>();
+
+        public void PrepareForSave()
+        {
+            foreach (PdfFont font in _fonts.Values)
+                font.PrepareForSave();
+        }
+    }
+    public sealed class PdfFormXObject : PdfXObject, IContentStream
+    {
+        internal PdfFormXObject(PdfDocument thisDocument)
+            : base(thisDocument)
+        {
+            Elements.SetName(Keys.Type, "/XObject");
+            Elements.SetName(Keys.Subtype, "/Form");
+        }
+
+        internal PdfFormXObject(PdfDocument thisDocument, XForm form)
+            : base(thisDocument)
+        {
+            Elements.SetName(Keys.Type, "/XObject");
+            Elements.SetName(Keys.Subtype, "/Form");
+
+        }
+
+        internal double DpiX
+        {
+            get { return _dpiX; }
+            set { _dpiX = value; }
+        }
+        double _dpiX = 72;
+
+        internal double DpiY
+        {
+            get { return _dpiY; }
+            set { _dpiY = value; }
+        }
+        double _dpiY = 72;
+
+        internal PdfFormXObject(PdfDocument thisDocument, PdfImportedObjectTable importedObjectTable, XPdfForm form)
+            : base(thisDocument)
+        {
+            Debug.Assert(importedObjectTable != null);
+            Debug.Assert(ReferenceEquals(thisDocument, importedObjectTable.Owner));
+            Elements.SetName(Keys.Type, "/XObject");
+            Elements.SetName(Keys.Subtype, "/Form");
+
+            if (form.IsTemplate)
+            {
+                Debug.Assert(importedObjectTable == null);
+                return;
+            }
+
+            XPdfForm pdfForm = form;
+            PdfPages importPages = importedObjectTable.ExternalDocument.Pages;
+            if (pdfForm.PageNumber < 1 || pdfForm.PageNumber > importPages.Count)
+                PSSR.ImportPageNumberOutOfRange(pdfForm.PageNumber, importPages.Count, form._path);
+            PdfPage importPage = importPages[pdfForm.PageNumber - 1];
+
+            PdfItem res = importPage.Elements["/Resources"];
+            if (res != null)
+            {
+#if true
+                PdfObject root;
+                if (res is PdfReference)
+                    root = ((PdfReference)res).Value;
+                else
+                    root = (PdfDictionary)res;
+
+                root = ImportClosure(importedObjectTable, thisDocument, root);
+                if (root.Reference == null)
+                    thisDocument._irefTable.Add(root);
+
+                Debug.Assert(root.Reference != null);
+                Elements["/Resources"] = root.Reference;
+#endif
+            }
+
+            PdfRectangle rect = importPage.Elements.GetRectangle(PdfPage.Keys.MediaBox);
+            int rotate = (importPage.Elements.GetInteger(PdfPage.Keys.Rotate) % 360 + 360) % 360;
+            if (rotate == 0)
+            {
+                Elements["/BBox"] = rect;
+            }
+            else
+            {
+                Elements["/BBox"] = rect;
+
+                XMatrix matrix = new XMatrix();
+                double width = rect.Width;
+                double height = rect.Height;
+                matrix.RotateAtPrepend(-rotate, new XPoint(width / 2, height / 2));
+
+                double offset = (height - width) / 2;
+                if (rotate == 90)
+                {
+                    if (height > width)
+                        matrix.TranslatePrepend(offset, offset);
+                    else
+                        matrix.TranslatePrepend(offset, offset);
+                }
+                else if (rotate == 270)
+                {
+                    if (height > width)
+                        matrix.TranslatePrepend(-offset, -offset);
+                    else
+                        matrix.TranslatePrepend(-offset, -offset);
+                }
+
+                Elements.SetMatrix(Keys.Matrix, matrix);
+            }
+
+            PdfContent content = importPage.Contents.CreateSingleContent();
+#if !DEBUG
+            content.Compressed = true;
+#endif
+            PdfItem filter = content.Elements["/Filter"];
+            if (filter != null)
+                Elements["/Filter"] = filter.Clone();
+
+            Stream = content.Stream;
+            Elements.SetInteger("/Length", content.Stream.Value.Length);
+        }
+
+        public PdfResources Resources
+        {
+            get
+            {
+                if (_resources == null)
+                    _resources = (PdfResources)Elements.GetValue(Keys.Resources, VCF.Create);
+                return _resources;
+            }
+        }
+        PdfResources _resources;
+
+        PdfResources IContentStream.Resources
+        {
+            get { return Resources; }
+        }
+
+        internal string GetFontName(XFont font, out PdfFont pdfFont)
+        {
+            pdfFont = _document.FontTable.GetFont(font);
+            Debug.Assert(pdfFont != null);
+            string name = Resources.AddFont(pdfFont);
+            return name;
+        }
+
+        string IContentStream.GetFontName(XFont font, out PdfFont pdfFont)
+        {
+            return GetFontName(font, out pdfFont);
+        }
+
+        internal string GetFontName(string idName, byte[] fontData, out PdfFont pdfFont)
+        {
+            pdfFont = _document.FontTable.GetFont(idName, fontData);
+            Debug.Assert(pdfFont != null);
+            string name = Resources.AddFont(pdfFont);
+            return name;
+        }
+
+        string IContentStream.GetFontName(string idName, byte[] fontData, out PdfFont pdfFont)
+        {
+            return GetFontName(idName, fontData, out pdfFont);
+        }
+
+        string IContentStream.GetImageName(XImage image)
+        {
+            throw new NotImplementedException();
+        }
+
+        string IContentStream.GetFormName(XForm form)
+        {
+            throw new NotImplementedException();
+        }
 
 
+        public sealed new class Keys : PdfXObject.Keys
+        {
+            [KeyInfo(KeyType.Name | KeyType.Optional)]
+            public const string Type = "/Type";
+
+            [KeyInfo(KeyType.Name | KeyType.Required)]
+            public const string Subtype = "/Subtype";
+
+            [KeyInfo(KeyType.Integer | KeyType.Optional)]
+            public const string FormType = "/FormType";
+
+            [KeyInfo(KeyType.Rectangle | KeyType.Required)]
+            public const string BBox = "/BBox";
+
+            [KeyInfo(KeyType.Array | KeyType.Optional)]
+            public const string Matrix = "/Matrix";
+
+            [KeyInfo(KeyType.Dictionary | KeyType.Optional, typeof(PdfResources))]
+            public const string Resources = "/Resources";
+
+            [KeyInfo(KeyType.Dictionary | KeyType.Optional)]
+            public const string Group = "/Group";
+
+            internal static DictionaryMeta Meta
+            {
+                get { return _meta ?? (_meta = CreateMeta(typeof(Keys))); }
+            }
+            static DictionaryMeta _meta;
+        }
+
+        internal override DictionaryMeta Meta
+        {
+            get { return Keys.Meta; }
+        }
+    }
+    internal sealed class PdfFormXObjectTable : PdfResourceTable
+    {
+        public PdfFormXObjectTable(PdfDocument document)
+            : base(document)
+        { }
+
+        public PdfFormXObject GetForm(XForm form)
+        {
+            if (form._pdfForm != null)
+            {
+                Debug.Assert(form.IsTemplate, "An XPdfForm must not have a PdfFormXObject.");
+                if (ReferenceEquals(form._pdfForm.Owner, Owner))
+                    return form._pdfForm;
+                form._pdfForm = null;
+            }
+
+            XPdfForm pdfForm = form as XPdfForm;
+            if (pdfForm != null)
+            {
+                Selector selector = new Selector(form);
+                PdfImportedObjectTable importedObjectTable;
+                if (!_forms.TryGetValue(selector, out importedObjectTable))
+                {
+                    PdfDocument doc = pdfForm.ExternalDocument;
+                    importedObjectTable = new PdfImportedObjectTable(Owner, doc);
+                    _forms[selector] = importedObjectTable;
+                }
+
+                PdfFormXObject xObject = importedObjectTable.GetXObject(pdfForm.PageNumber);
+                if (xObject == null)
+                {
+                    xObject = new PdfFormXObject(Owner, importedObjectTable, pdfForm);
+                    importedObjectTable.SetXObject(pdfForm.PageNumber, xObject);
+                }
+                return xObject;
+            }
+            Debug.Assert(form.GetType() == typeof(XForm));
+            form._pdfForm = new PdfFormXObject(Owner, form);
+            return form._pdfForm;
+        }
+
+        public PdfImportedObjectTable GetImportedObjectTable(PdfPage page)
+        {
+            Selector selector = new Selector(page);
+            PdfImportedObjectTable importedObjectTable;
+            if (!_forms.TryGetValue(selector, out importedObjectTable))
+            {
+                importedObjectTable = new PdfImportedObjectTable(Owner, page.Owner);
+                _forms[selector] = importedObjectTable;
+            }
+            return importedObjectTable;
+        }
+
+        public PdfImportedObjectTable GetImportedObjectTable(PdfDocument document)
+        {
+            if (document == null)
+                throw new ArgumentNullException("document");
+
+            Selector selector = new Selector(document);
+            PdfImportedObjectTable importedObjectTable;
+            if (!_forms.TryGetValue(selector, out importedObjectTable))
+            {
+                importedObjectTable = new PdfImportedObjectTable(Owner, document);
+                _forms[selector] = importedObjectTable;
+            }
+            return importedObjectTable;
+        }
+
+        public void DetachDocument(PdfDocument.DocumentHandle handle)
+        {
+            if (handle.IsAlive)
+            {
+                foreach (Selector selector in _forms.Keys)
+                {
+                    PdfImportedObjectTable table = _forms[selector];
+                    if (table.ExternalDocument != null && table.ExternalDocument.Handle == handle)
+                    {
+                        _forms.Remove(selector);
+                        break;
+                    }
+                }
+            }
+
+            bool itemRemoved = true;
+            while (itemRemoved)
+            {
+                itemRemoved = false;
+                foreach (Selector selector in _forms.Keys)
+                {
+                    PdfImportedObjectTable table = _forms[selector];
+                    if (table.ExternalDocument == null)
+                    {
+                        _forms.Remove(selector);
+                        itemRemoved = true;
+                        break;
+                    }
+                }
+            }
+        }
+
+        readonly Dictionary<Selector, PdfImportedObjectTable> _forms = new Dictionary<Selector, PdfImportedObjectTable>();
+
+        public class Selector
+        {
+            public Selector(XForm form)
+            {
+                _path = form._path.ToLowerInvariant();
+            }
+
+            public Selector(PdfPage page)
+            {
+                PdfDocument owner = page.Owner;
+                _path = "*" + owner.Guid.ToString("B");
+                _path = _path.ToLowerInvariant();
+            }
+
+            public Selector(PdfDocument document)
+            {
+                _path = "*" + document.Guid.ToString("B");
+                _path = _path.ToLowerInvariant();
+            }
+
+            public string Path
+            {
+                get { return _path; }
+                set { _path = value; }
+            }
+            string _path;
+
+            public override bool Equals(object obj)
+            {
+                Selector selector = obj as Selector;
+                if (selector == null)
+                    return false;
+                return _path == selector._path;
+            }
+
+            public override int GetHashCode()
+            {
+                return _path.GetHashCode();
+            }
+        }
+    }
+    public abstract class PdfGroupAttributes : PdfDictionary
+    {
+        internal PdfGroupAttributes(PdfDocument thisDocument)
+            : base(thisDocument)
+        {
+            Elements.SetName(Keys.Type, "/Group");
+        }
+
+        public class Keys : KeysBase
+        {
+            [KeyInfo(KeyType.Name | KeyType.Optional)]
+            public const string Type = "/Type";
+
+            [KeyInfo(KeyType.Name | KeyType.Required)]
+            public const string S = "/S";
+
+            internal static DictionaryMeta Meta
+            {
+                get { return _meta ?? (_meta = CreateMeta(typeof(Keys))); }
+            }
+            static DictionaryMeta _meta;
+        }
+
+        internal override DictionaryMeta Meta
+        {
+            get { return Keys.Meta; }
+        }
+    }
+    public sealed partial class PdfImage : PdfXObject
+    {
+        public PdfImage(PdfDocument document, XImage image)
+            : base(document)
+        {
+            Elements.SetName(Keys.Type, "/XObject");
+            Elements.SetName(Keys.Subtype, "/Image");
+
+            _image = image;
+
+#if !SILVERLIGHT
+            switch (_image.Format.Guid.ToString("B").ToUpper())
+            {
+                case "{B96B3CAE-0728-11D3-9D7B-0000F81EF32E}":
+                    InitializeJpeg();
+                    break;
+
+                case "{B96B3CAF-0728-11D3-9D7B-0000F81EF32E}":
+                case "{B96B3CB0-0728-11D3-9D7B-0000F81EF32E}":
+                case "{B96B3CB1-0728-11D3-9D7B-0000F81EF32E}":
+                case "{B96B3CB5-0728-11D3-9D7B-0000F81EF32E}":
+                    InitializeNonJpeg();
+                    break;
+
+                case "{84570158-DBF0-4C6B-8368-62D6A3CA76E0}":
+                    Debug.Assert(false, "XPdfForm not expected here.");
+                    break;
+
+                default:
+                    Debug.Assert(false, "Unexpected image type.");
+                    break;
+            }
+
+#endif
+        }
 
 
+        public XImage Image
+        {
+            get { return _image; }
+        }
 
+        readonly XImage _image;
 
+        public override string ToString()
+        {
+            return "Image";
+        }
 
+        void InitializeJpeg()
+        {
+            MemoryStream memory = null;
+            bool ownMemory = false;
 
+            byte[] imageBits = null;
+            int streamLength = 0;
 
+#if CORE || GDI || WPF
+            if (_image._importedImage != null)
+            {
+                ImageDataDct idd = (ImageDataDct)_image._importedImage.ImageData;
+                imageBits = idd.Data;
+                streamLength = idd.Length;
+            }
+#endif
 
+#if CORE || GDI
+            if (_image._importedImage == null)
+            {
+                if (!_image._path.StartsWith("*"))
+                {
+                    using (FileStream sourceFile = File.OpenRead(_image._path))
+                    {
+                        int count;
+                        byte[] buffer = new byte[8192];
+                        memory = new MemoryStream((int)sourceFile.Length);
+                        ownMemory = true;
+                        do
+                        {
+                            count = sourceFile.Read(buffer, 0, buffer.Length);
+                            memory.Write(buffer, 0, count);
+                        } while (count > 0);
+                    }
+                }
+                else
+                {
+                    memory = new MemoryStream();
+                    ownMemory = true;
+                    if (_image._stream != null && _image._stream.CanSeek)
+                    {
+                        Stream stream = _image._stream;
+                        stream.Seek(0, SeekOrigin.Begin);
+                        byte[] buffer = new byte[32 * 1024];   
+                        int bytesRead;
+                        while ((bytesRead = stream.Read(buffer, 0, buffer.Length)) > 0)
+                        {
+                            memory.Write(buffer, 0, bytesRead);
+                        }
+                    }
+                    else
+                    {
+#if CORE_WITH_GDI
+                        _image._gdiImage.Save(memory, ImageFormat.Jpeg);
+#endif
+                    }
+                }
 
+                if ((int)memory.Length == 0)
+                {
+                    Debug.Assert(false, "Internal error? JPEG image, but file not found!");
+                }
+            }
+#endif
 
+            if (imageBits == null)
+            {
+                streamLength = (int)memory.Length;
+                imageBits = new byte[streamLength];
+                memory.Seek(0, SeekOrigin.Begin);
+                memory.Read(imageBits, 0, streamLength);
+                if (ownMemory)
+                {
+#if UWP || true
+                    memory.Dispose();
+#endif
+                }
+            }
 
+            bool tryFlateDecode = _document.Options.UseFlateDecoderForJpegImages == PdfUseFlateDecoderForJpegImages.Automatic;
+            bool useFlateDecode = _document.Options.UseFlateDecoderForJpegImages == PdfUseFlateDecoderForJpegImages.Always;
 
+            FlateDecode fd = new FlateDecode();
+            byte[] imageDataCompressed = (useFlateDecode || tryFlateDecode) ? fd.Encode(imageBits, _document.Options.FlateEncodeMode) : null;
+            if (useFlateDecode || tryFlateDecode && imageDataCompressed.Length < imageBits.Length)
+            {
+                Stream = new PdfStream(imageDataCompressed, this);
+                Elements[PdfStream.Keys.Length] = new PdfInteger(imageDataCompressed.Length);
+                PdfArray arrayFilters = new PdfArray(_document);
+                arrayFilters.Elements.Add(new PdfName("/FlateDecode"));
+                arrayFilters.Elements.Add(new PdfName("/DCTDecode"));
+                Elements[PdfStream.Keys.Filter] = arrayFilters;
+            }
+            else
+            {
+                Stream = new PdfStream(imageBits, this);
+                Elements[PdfStream.Keys.Length] = new PdfInteger(streamLength);
+                Elements[PdfStream.Keys.Filter] = new PdfName("/DCTDecode");
+            }
+            if (_image.Interpolate)
+                Elements[Keys.Interpolate] = PdfBoolean.True;
+            Elements[Keys.Width] = new PdfInteger(_image.PixelWidth);
+            Elements[Keys.Height] = new PdfInteger(_image.PixelHeight);
+            Elements[Keys.BitsPerComponent] = new PdfInteger(8);
 
+#if CORE || GDI || WPF
+            if (_image._importedImage != null)
+            {
+                if (_image._importedImage.Information.ImageFormat == ImageInformation.ImageFormats.JPEGCMYK ||
+                    _image._importedImage.Information.ImageFormat == ImageInformation.ImageFormats.JPEGRGBW)
+                {
+                    Elements[Keys.ColorSpace] = new PdfName("/DeviceCMYK");
+                    if (_image._importedImage.Information.ImageFormat == ImageInformation.ImageFormats.JPEGRGBW)
+                        Elements["/Decode"] = new PdfLiteral("[1 0 1 0 1 0 1 0]");       
+                }
+                else if (_image._importedImage.Information.ImageFormat == ImageInformation.ImageFormats.JPEGGRAY)
+                {
+                    Elements[Keys.ColorSpace] = new PdfName("/DeviceGray");
+                }
+                else
+                {
+                    Elements[Keys.ColorSpace] = new PdfName("/DeviceRGB");
+                }
+            }
+#endif
+#if CORE_WITH_GDI
+            if (_image._importedImage == null)
+            {
+                if ((_image._gdiImage.Flags & ((int)ImageFlags.ColorSpaceCmyk | (int)ImageFlags.ColorSpaceYcck)) != 0)
+                {
+                    Elements[Keys.ColorSpace] = new PdfName("/DeviceCMYK");
+                    if ((_image._gdiImage.Flags & (int)ImageFlags.ColorSpaceYcck) != 0)
+                        Elements["/Decode"] = new PdfLiteral("[1 0 1 0 1 0 1 0]");    
+                }
+                else if ((_image._gdiImage.Flags & (int)ImageFlags.ColorSpaceGray) != 0)
+                {
+                    Elements[Keys.ColorSpace] = new PdfName("/DeviceGray");
+                }
+                else
+                {
+                    Elements[Keys.ColorSpace] = new PdfName("/DeviceRGB");
+                }
+            }
+#endif
 
+        }
 
+        void InitializeNonJpeg()
+        {
+#if CORE || GDI || WPF
+            if (_image._importedImage != null)
+            {
+                switch (_image._importedImage.Information.ImageFormat)
+                {
+                    case ImageInformation.ImageFormats.RGB24:
+                        CreateTrueColorMemoryBitmap(3, 8, false);
+                        break;
 
+                    case ImageInformation.ImageFormats.Palette8:
+                        CreateIndexedMemoryBitmap(8);
+                        break;
 
+                    case ImageInformation.ImageFormats.Palette4:
+                        CreateIndexedMemoryBitmap(4);
+                        break;
 
+                    case ImageInformation.ImageFormats.Palette1:
+                        CreateIndexedMemoryBitmap(1);
+                        break;
 
+                    default:
+                        throw new NotImplementedException("Image format not supported.");
+                }
+                return;
+            }
+#endif
 
+#if (CORE_WITH_GDI || GDI) && !WPF
+            switch (_image._gdiImage.PixelFormat)
+            {
+                case PixelFormat.Format24bppRgb:
+                    ReadTrueColorMemoryBitmap(3, 8, false);
+                    break;
 
+                case PixelFormat.Format32bppRgb:
+                    ReadTrueColorMemoryBitmap(4, 8, false);
+                    break;
 
+                case PixelFormat.Format32bppArgb:
+                case PixelFormat.Format32bppPArgb:
+                    ReadTrueColorMemoryBitmap(3, 8, true);
+                    break;
 
+                case PixelFormat.Format8bppIndexed:
+                    ReadIndexedMemoryBitmap(8);
+                    break;
+
+                case PixelFormat.Format4bppIndexed:
+                    ReadIndexedMemoryBitmap(4);
+                    break;
+
+                case PixelFormat.Format1bppIndexed:
+                    ReadIndexedMemoryBitmap(1);
+                    break;
+
+                default:
+#if DEBUGxxx
+          image.image.Save("$$$.bmp", ImageFormat.Bmp);
+#endif
+                    throw new NotImplementedException("Image format not supported.");
+            }
+#endif
+        }
+
+#if CORE || GDI || WPF
+        private void CreateIndexedMemoryBitmap(int bits)
+        {
+            ImageDataBitmap idb = (ImageDataBitmap)_image._importedImage.ImageData;
+            ImageInformation ii = _image._importedImage.Information;
+
+            int pdfVersion = Owner.Version;
+            int firstMaskColor = -1, lastMaskColor = -1;
+            bool segmentedColorMask = idb.SegmentedColorMask;
+
+            {
+
+                FlateDecode fd = new FlateDecode();
+                if (firstMaskColor != -1 &&
+                  lastMaskColor != -1)
+                {
+                    if (!segmentedColorMask && pdfVersion >= 13 && !idb.IsGray)
+                    {
+                        PdfArray array = new PdfArray(_document);
+                        array.Elements.Add(new PdfInteger(firstMaskColor));
+                        array.Elements.Add(new PdfInteger(lastMaskColor));
+                        Elements[Keys.Mask] = array;
+                    }
+                    else
+                    {
+                        byte[] maskDataCompressed = fd.Encode(idb.BitmapMask, _document.Options.FlateEncodeMode);
+                        PdfDictionary pdfMask = new PdfDictionary(_document);
+                        pdfMask.Elements.SetName(Keys.Type, "/XObject");
+                        pdfMask.Elements.SetName(Keys.Subtype, "/Image");
+
+                        Owner._irefTable.Add(pdfMask);
+                        pdfMask.Stream = new PdfStream(maskDataCompressed, pdfMask);
+                        pdfMask.Elements[PdfStream.Keys.Length] = new PdfInteger(maskDataCompressed.Length);
+                        pdfMask.Elements[PdfStream.Keys.Filter] = new PdfName("/FlateDecode");
+                        pdfMask.Elements[Keys.Width] = new PdfInteger((int)ii.Width);
+                        pdfMask.Elements[Keys.Height] = new PdfInteger((int)ii.Height);
+                        pdfMask.Elements[Keys.BitsPerComponent] = new PdfInteger(1);
+                        pdfMask.Elements[Keys.ImageMask] = new PdfBoolean(true);
+                        Elements[Keys.Mask] = pdfMask.Reference;
+                    }
+                }
+
+                byte[] imageDataCompressed = fd.Encode(idb.Data, _document.Options.FlateEncodeMode);
+                byte[] imageDataFaxCompressed = idb.DataFax != null ? fd.Encode(idb.DataFax, _document.Options.FlateEncodeMode) : null;
+
+                bool usesCcittEncoding = false;
+                if (idb.DataFax != null &&
+                  (idb.LengthFax < imageDataCompressed.Length ||
+                  imageDataFaxCompressed.Length < imageDataCompressed.Length))
+                {
+                    usesCcittEncoding = true;
+
+                    if (idb.LengthFax < imageDataCompressed.Length)
+                    {
+                        Stream = new PdfStream(idb.DataFax, this);
+                        Elements[PdfStream.Keys.Length] = new PdfInteger(idb.LengthFax);
+                        Elements[PdfStream.Keys.Filter] = new PdfName("/CCITTFaxDecode");
+                        PdfDictionary dictionary = new PdfDictionary();
+                        if (idb.K != 0)
+                            dictionary.Elements.Add("/K", new PdfInteger(idb.K));
+                        if (idb.IsBitonal < 0)
+                            dictionary.Elements.Add("/BlackIs1", new PdfBoolean(true));
+                        dictionary.Elements.Add("/EndOfBlock", new PdfBoolean(false));
+                        dictionary.Elements.Add("/Columns", new PdfInteger((int)ii.Width));
+                        dictionary.Elements.Add("/Rows", new PdfInteger((int)ii.Height));
+                        Elements[PdfStream.Keys.DecodeParms] = dictionary;
+                    }
+                    else
+                    {
+                        Stream = new PdfStream(imageDataFaxCompressed, this);
+                        Elements[PdfStream.Keys.Length] = new PdfInteger(imageDataFaxCompressed.Length);
+                        PdfArray arrayFilters = new PdfArray(_document);
+                        arrayFilters.Elements.Add(new PdfName("/FlateDecode"));
+                        arrayFilters.Elements.Add(new PdfName("/CCITTFaxDecode"));
+                        Elements[PdfStream.Keys.Filter] = arrayFilters;
+                        PdfArray arrayDecodeParms = new PdfArray(_document);
+
+                        PdfDictionary dictFlateDecodeParms = new PdfDictionary();
+
+                        PdfDictionary dictCcittFaxDecodeParms = new PdfDictionary();
+                        if (idb.K != 0)
+                            dictCcittFaxDecodeParms.Elements.Add("/K", new PdfInteger(idb.K));
+                        if (idb.IsBitonal < 0)
+                            dictCcittFaxDecodeParms.Elements.Add("/BlackIs1", new PdfBoolean(true));
+                        dictCcittFaxDecodeParms.Elements.Add("/EndOfBlock", new PdfBoolean(false));
+                        dictCcittFaxDecodeParms.Elements.Add("/Columns", new PdfInteger((int)ii.Width));
+                        dictCcittFaxDecodeParms.Elements.Add("/Rows", new PdfInteger((int)ii.Height));
+
+                        arrayDecodeParms.Elements.Add(dictFlateDecodeParms);       
+                        arrayDecodeParms.Elements.Add(dictCcittFaxDecodeParms);
+                        Elements[PdfStream.Keys.DecodeParms] = arrayDecodeParms;
+                    }
+                }
+                else
+                {
+                    Stream = new PdfStream(imageDataCompressed, this);
+                    Elements[PdfStream.Keys.Length] = new PdfInteger(imageDataCompressed.Length);
+                    Elements[PdfStream.Keys.Filter] = new PdfName("/FlateDecode");
+                }
+
+                Elements[Keys.Width] = new PdfInteger((int)ii.Width);
+                Elements[Keys.Height] = new PdfInteger((int)ii.Height);
+                Elements[Keys.BitsPerComponent] = new PdfInteger(bits);
+                if ((usesCcittEncoding && idb.IsBitonal == 0) ||
+                  (!usesCcittEncoding && idb.IsBitonal <= 0 && !idb.IsGray))
+                {
+                    PdfDictionary colorPalette = null;
+                    colorPalette = new PdfDictionary(_document);
+                    byte[] packedPaletteData = idb.PaletteDataLength >= 48 ? fd.Encode(idb.PaletteData, _document.Options.FlateEncodeMode) : null;     
+                    if (packedPaletteData != null && packedPaletteData.Length + 20 < idb.PaletteDataLength)        
+                    {
+                        colorPalette.CreateStream(packedPaletteData);
+                        colorPalette.Elements[PdfStream.Keys.Length] = new PdfInteger(packedPaletteData.Length);
+                        colorPalette.Elements[PdfStream.Keys.Filter] = new PdfName("/FlateDecode");
+                    }
+                    else
+                    {
+                        colorPalette.CreateStream(idb.PaletteData);
+                        colorPalette.Elements[PdfStream.Keys.Length] = new PdfInteger(idb.PaletteDataLength);
+                    }
+                    Owner._irefTable.Add(colorPalette);
+
+                    PdfArray arrayColorSpace = new PdfArray(_document);
+                    arrayColorSpace.Elements.Add(new PdfName("/Indexed"));
+                    arrayColorSpace.Elements.Add(new PdfName("/DeviceRGB"));
+                    arrayColorSpace.Elements.Add(new PdfInteger((int)ii.ColorsUsed - 1));
+                    arrayColorSpace.Elements.Add(colorPalette.Reference);
+                    Elements[Keys.ColorSpace] = arrayColorSpace;
+                }
+                else
+                {
+                    Elements[Keys.ColorSpace] = new PdfName("/DeviceGray");
+                }
+                if (_image.Interpolate)
+                    Elements[Keys.Interpolate] = PdfBoolean.True;
+            }
+        }
+
+        private void CreateTrueColorMemoryBitmap(int components, int bits, bool hasAlpha)
+        {
+            int pdfVersion = Owner.Version;
+            FlateDecode fd = new FlateDecode();
+            ImageDataBitmap idb = (ImageDataBitmap)_image._importedImage.ImageData;
+            ImageInformation ii = _image._importedImage.Information;
+            bool hasMask = idb.AlphaMaskLength > 0 || idb.BitmapMaskLength > 0;
+            bool hasAlphaMask = idb.AlphaMaskLength > 0;
+
+            if (hasMask)
+            {
+                byte[] maskDataCompressed = fd.Encode(idb.BitmapMask, _document.Options.FlateEncodeMode);
+                PdfDictionary pdfMask = new PdfDictionary(_document);
+                pdfMask.Elements.SetName(Keys.Type, "/XObject");
+                pdfMask.Elements.SetName(Keys.Subtype, "/Image");
+
+                Owner._irefTable.Add(pdfMask);
+                pdfMask.Stream = new PdfStream(maskDataCompressed, pdfMask);
+                pdfMask.Elements[PdfStream.Keys.Length] = new PdfInteger(maskDataCompressed.Length);
+                pdfMask.Elements[PdfStream.Keys.Filter] = new PdfName("/FlateDecode");
+                pdfMask.Elements[Keys.Width] = new PdfInteger((int)ii.Width);
+                pdfMask.Elements[Keys.Height] = new PdfInteger((int)ii.Height);
+                pdfMask.Elements[Keys.BitsPerComponent] = new PdfInteger(1);
+                pdfMask.Elements[Keys.ImageMask] = new PdfBoolean(true);
+                Elements[Keys.Mask] = pdfMask.Reference;
+            }
+            if (hasMask && hasAlphaMask && pdfVersion >= 14)
+            {
+                byte[] alphaMaskCompressed = fd.Encode(idb.AlphaMask, _document.Options.FlateEncodeMode);
+                PdfDictionary smask = new PdfDictionary(_document);
+                smask.Elements.SetName(Keys.Type, "/XObject");
+                smask.Elements.SetName(Keys.Subtype, "/Image");
+
+                Owner._irefTable.Add(smask);
+                smask.Stream = new PdfStream(alphaMaskCompressed, smask);
+                smask.Elements[PdfStream.Keys.Length] = new PdfInteger(alphaMaskCompressed.Length);
+                smask.Elements[PdfStream.Keys.Filter] = new PdfName("/FlateDecode");
+                smask.Elements[Keys.Width] = new PdfInteger((int)ii.Width);
+                smask.Elements[Keys.Height] = new PdfInteger((int)ii.Height);
+                smask.Elements[Keys.BitsPerComponent] = new PdfInteger(8);
+                smask.Elements[Keys.ColorSpace] = new PdfName("/DeviceGray");
+                Elements[Keys.SMask] = smask.Reference;
+            }
+
+            byte[] imageDataCompressed = fd.Encode(idb.Data, _document.Options.FlateEncodeMode);
+
+            Stream = new PdfStream(imageDataCompressed, this);
+            Elements[PdfStream.Keys.Length] = new PdfInteger(imageDataCompressed.Length);
+            Elements[PdfStream.Keys.Filter] = new PdfName("/FlateDecode");
+            Elements[Keys.Width] = new PdfInteger((int)ii.Width);
+            Elements[Keys.Height] = new PdfInteger((int)ii.Height);
+            Elements[Keys.BitsPerComponent] = new PdfInteger(8);
+            Elements[Keys.ColorSpace] = new PdfName("/DeviceRGB");
+            if (_image.Interpolate)
+                Elements[Keys.Interpolate] = PdfBoolean.True;
+        }
+#endif
+
+        private static int ReadWord(byte[] ab, int offset)
+        {
+            return ab[offset] + 256 * ab[offset + 1];
+        }
+
+        private static int ReadDWord(byte[] ab, int offset)
+        {
+            return ReadWord(ab, offset) + 0x10000 * ReadWord(ab, offset + 2);
+        }
+
+        private void ReadTrueColorMemoryBitmap(int components, int bits, bool hasAlpha)
+        {
+
+            int pdfVersion = Owner.Version;
+            MemoryStream memory = new MemoryStream();
+#if CORE_WITH_GDI
+            _image._gdiImage.Save(memory, ImageFormat.Bmp);
+#endif
+
+            int streamLength = (int)memory.Length;
+            Debug.Assert(streamLength > 0, "Bitmap image encoding failed.");
+            if (streamLength > 0)
+            {
+#if !NETFX_CORE && !UWP
+                byte[] imageBits = memory.GetBuffer();
+
+#endif
+
+                int height = _image.PixelHeight;
+                int width = _image.PixelWidth;
+
+                if (ReadWord(imageBits, 0) != 0x4d42 ||
+                    ReadDWord(imageBits, 2) != streamLength ||
+                    ReadDWord(imageBits, 14) != 40 ||
+                    ReadDWord(imageBits, 18) != width ||
+                    ReadDWord(imageBits, 22) != height)
+                {
+                    throw new NotImplementedException("ReadTrueColorMemoryBitmap: unsupported format");
+                }
+                if (ReadWord(imageBits, 26) != 1 ||
+                  (!hasAlpha && ReadWord(imageBits, 28) != components * bits ||
+                   hasAlpha && ReadWord(imageBits, 28) != (components + 1) * bits) ||
+                  ReadDWord(imageBits, 30) != 0)
+                {
+                    throw new NotImplementedException("ReadTrueColorMemoryBitmap: unsupported format #2");
+                }
+
+                int nFileOffset = ReadDWord(imageBits, 10);
+                int logicalComponents = components;
+                if (components == 4)
+                    logicalComponents = 3;
+
+                byte[] imageData = new byte[components * width * height];
+
+                bool hasMask = false;
+                bool hasAlphaMask = false;
+                byte[] alphaMask = hasAlpha ? new byte[width * height] : null;
+                MonochromeMask mask = hasAlpha ?
+                  new MonochromeMask(width, height) : null;
+
+                int nOffsetRead = 0;
+                if (logicalComponents == 3)
+                {
+                    for (int y = 0; y < height; ++y)
+                    {
+                        int nOffsetWrite = 3 * (height - 1 - y) * width;
+                        int nOffsetWriteAlpha = 0;
+                        if (hasAlpha)
+                        {
+                            mask.StartLine(y);
+                            nOffsetWriteAlpha = (height - 1 - y) * width;
+                        }
+
+                        for (int x = 0; x < width; ++x)
+                        {
+                            imageData[nOffsetWrite] = imageBits[nFileOffset + nOffsetRead + 2];
+                            imageData[nOffsetWrite + 1] = imageBits[nFileOffset + nOffsetRead + 1];
+                            imageData[nOffsetWrite + 2] = imageBits[nFileOffset + nOffsetRead];
+                            if (hasAlpha)
+                            {
+                                mask.AddPel(imageBits[nFileOffset + nOffsetRead + 3]);
+                                alphaMask[nOffsetWriteAlpha] = imageBits[nFileOffset + nOffsetRead + 3];
+                                if (!hasMask || !hasAlphaMask)
+                                {
+                                    if (imageBits[nFileOffset + nOffsetRead + 3] != 255)
+                                    {
+                                        hasMask = true;
+                                        if (imageBits[nFileOffset + nOffsetRead + 3] != 0)
+                                            hasAlphaMask = true;
+                                    }
+                                }
+                                ++nOffsetWriteAlpha;
+                            }
+                            nOffsetRead += hasAlpha ? 4 : components;
+                            nOffsetWrite += 3;
+                        }
+                        nOffsetRead = 4 * ((nOffsetRead + 3) / 4);
+                    }
+                }
+                else if (components == 1)
+                {
+                    throw new NotImplementedException("Image format not supported (grayscales).");
+                }
+
+                FlateDecode fd = new FlateDecode();
+                if (hasMask)
+                {
+                    byte[] maskDataCompressed = fd.Encode(mask.MaskData, _document.Options.FlateEncodeMode);
+                    PdfDictionary pdfMask = new PdfDictionary(_document);
+                    pdfMask.Elements.SetName(Keys.Type, "/XObject");
+                    pdfMask.Elements.SetName(Keys.Subtype, "/Image");
+
+                    Owner._irefTable.Add(pdfMask);
+                    pdfMask.Stream = new PdfStream(maskDataCompressed, pdfMask);
+                    pdfMask.Elements[PdfStream.Keys.Length] = new PdfInteger(maskDataCompressed.Length);
+                    pdfMask.Elements[PdfStream.Keys.Filter] = new PdfName("/FlateDecode");
+                    pdfMask.Elements[Keys.Width] = new PdfInteger(width);
+                    pdfMask.Elements[Keys.Height] = new PdfInteger(height);
+                    pdfMask.Elements[Keys.BitsPerComponent] = new PdfInteger(1);
+                    pdfMask.Elements[Keys.ImageMask] = new PdfBoolean(true);
+                    Elements[Keys.Mask] = pdfMask.Reference;
+                }
+                if (hasMask && hasAlphaMask && pdfVersion >= 14)
+                {
+                    byte[] alphaMaskCompressed = fd.Encode(alphaMask, _document.Options.FlateEncodeMode);
+                    PdfDictionary smask = new PdfDictionary(_document);
+                    smask.Elements.SetName(Keys.Type, "/XObject");
+                    smask.Elements.SetName(Keys.Subtype, "/Image");
+
+                    Owner._irefTable.Add(smask);
+                    smask.Stream = new PdfStream(alphaMaskCompressed, smask);
+                    smask.Elements[PdfStream.Keys.Length] = new PdfInteger(alphaMaskCompressed.Length);
+                    smask.Elements[PdfStream.Keys.Filter] = new PdfName("/FlateDecode");
+                    smask.Elements[Keys.Width] = new PdfInteger(width);
+                    smask.Elements[Keys.Height] = new PdfInteger(height);
+                    smask.Elements[Keys.BitsPerComponent] = new PdfInteger(8);
+                    smask.Elements[Keys.ColorSpace] = new PdfName("/DeviceGray");
+                    Elements[Keys.SMask] = smask.Reference;
+                }
+
+                byte[] imageDataCompressed = fd.Encode(imageData, _document.Options.FlateEncodeMode);
+
+                Stream = new PdfStream(imageDataCompressed, this);
+                Elements[PdfStream.Keys.Length] = new PdfInteger(imageDataCompressed.Length);
+                Elements[PdfStream.Keys.Filter] = new PdfName("/FlateDecode");
+                Elements[Keys.Width] = new PdfInteger(width);
+                Elements[Keys.Height] = new PdfInteger(height);
+                Elements[Keys.BitsPerComponent] = new PdfInteger(8);
+                Elements[Keys.ColorSpace] = new PdfName("/DeviceRGB");
+                if (_image.Interpolate)
+                    Elements[Keys.Interpolate] = PdfBoolean.True;
+            }
+        }
+
+        private void ReadIndexedMemoryBitmap(int bits)
+        {
+            int pdfVersion = Owner.Version;
+            int firstMaskColor = -1, lastMaskColor = -1;
+            bool segmentedColorMask = false;
+
+            MemoryStream memory = new MemoryStream();
+#if CORE_WITH_GDI
+            _image._gdiImage.Save(memory, ImageFormat.Bmp);
+#endif
+
+            int streamLength = (int)memory.Length;
+            Debug.Assert(streamLength > 0, "Bitmap image encoding failed.");
+            if (streamLength > 0)
+            {
+                byte[] imageBits = new byte[streamLength];
+                memory.Seek(0, SeekOrigin.Begin);
+                memory.Read(imageBits, 0, streamLength);
+#if !UWP
+                memory.Close();
+#endif
+
+                int height = _image.PixelHeight;
+                int width = _image.PixelWidth;
+
+                if (ReadWord(imageBits, 0) != 0x4d42 ||
+                  ReadDWord(imageBits, 2) != streamLength ||
+                  ReadDWord(imageBits, 14) != 40 ||
+#if WPF
+#else
+                  ReadDWord(imageBits, 18) != width ||
+                  ReadDWord(imageBits, 22) != height)
+#endif
+                {
+                    throw new NotImplementedException("ReadIndexedMemoryBitmap: unsupported format");
+                }
+                int fileBits = ReadWord(imageBits, 28);
+                if (fileBits != bits)
+                {
+                    if (fileBits == 1 || fileBits == 4 || fileBits == 8)
+                        bits = fileBits;
+                }
+
+                if (ReadWord(imageBits, 26) != 1 ||
+                    ReadWord(imageBits, 28) != bits ||
+                    ReadDWord(imageBits, 30) != 0)
+                {
+                    throw new NotImplementedException("ReadIndexedMemoryBitmap: unsupported format #2");
+                }
+
+                int bytesFileOffset = ReadDWord(imageBits, 10);
+                const int bytesColorPaletteOffset = 0x36;
+                int paletteColors = ReadDWord(imageBits, 46);
+                if ((bytesFileOffset - bytesColorPaletteOffset) / 4 != paletteColors)
+                {
+                    throw new NotImplementedException("ReadIndexedMemoryBitmap: unsupported format #3");
+                }
+
+                MonochromeMask mask = new MonochromeMask(width, height);
+
+                bool isGray = bits == 8 && (paletteColors == 256 || paletteColors == 0);
+                int isBitonal = 0;
+                byte[] paletteData = new byte[3 * paletteColors];
+                for (int color = 0; color < paletteColors; ++color)
+                {
+                    paletteData[3 * color] = imageBits[bytesColorPaletteOffset + 4 * color + 2];
+                    paletteData[3 * color + 1] = imageBits[bytesColorPaletteOffset + 4 * color + 1];
+                    paletteData[3 * color + 2] = imageBits[bytesColorPaletteOffset + 4 * color + 0];
+                    if (isGray)
+                        isGray = paletteData[3 * color] == paletteData[3 * color + 1] &&
+                          paletteData[3 * color] == paletteData[3 * color + 2];
+
+                    if (imageBits[bytesColorPaletteOffset + 4 * color + 3] < 128)
+                    {
+                        if (firstMaskColor == -1)
+                            firstMaskColor = color;
+                        if (lastMaskColor == -1 || lastMaskColor == color - 1)
+                            lastMaskColor = color;
+                        if (lastMaskColor != color)
+                            segmentedColorMask = true;
+                    }
+                }
+
+                if (bits == 1)
+                {
+                    if (paletteColors == 0)
+                        isBitonal = 1;
+                    if (paletteColors == 2)
+                    {
+                        if (paletteData[0] == 0 &&
+                          paletteData[1] == 0 &&
+                          paletteData[2] == 0 &&
+                          paletteData[3] == 255 &&
+                          paletteData[4] == 255 &&
+                          paletteData[5] == 255)
+                            isBitonal = 1;
+                        if (paletteData[5] == 0 &&
+                          paletteData[4] == 0 &&
+                          paletteData[3] == 0 &&
+                          paletteData[2] == 255 &&
+                          paletteData[1] == 255 &&
+                          paletteData[0] == 255)
+                            isBitonal = -1;
+                    }
+                }
+
+                bool hasMask = firstMaskColor != -1 && lastMaskColor != -1;
+
+                bool isFaxEncoding = false;
+                byte[] imageData = new byte[((width * bits + 7) / 8) * height];
+                byte[] imageDataFax = null;
+                int k = 0;
+
+                if (bits == 1 && _document.Options.EnableCcittCompressionForBilevelImages)
+                {
+                    byte[] tempG4 = new byte[imageData.Length];
+                    int ccittSizeG4 = DoFaxEncodingGroup4(ref tempG4, imageBits, (uint)bytesFileOffset, (uint)width, (uint)height);
+
+                    isFaxEncoding = ccittSizeG4 > 0;
+                    if (isFaxEncoding)
+                    {
+                        if (ccittSizeG4 == 0)
+                            ccittSizeG4 = 0x7fffffff;
+                        {
+                            Array.Resize(ref tempG4, ccittSizeG4);
+                            imageDataFax = tempG4;
+                            k = -1;
+                        }
+                    }
+                }
+
+                {
+                    int bytesOffsetRead = 0;
+                    if (bits == 8 || bits == 4 || bits == 1)
+                    {
+                        int bytesPerLine = (width * bits + 7) / 8;
+                        for (int y = 0; y < height; ++y)
+                        {
+                            mask.StartLine(y);
+                            int bytesOffsetWrite = (height - 1 - y) * ((width * bits + 7) / 8);
+                            for (int x = 0; x < bytesPerLine; ++x)
+                            {
+                                if (isGray)
+                                {
+                                    imageData[bytesOffsetWrite] = paletteData[3 * imageBits[bytesFileOffset + bytesOffsetRead]];
+                                }
+                                else
+                                {
+                                    imageData[bytesOffsetWrite] = imageBits[bytesFileOffset + bytesOffsetRead];
+                                }
+                                if (firstMaskColor != -1)
+                                {
+                                    int n = imageBits[bytesFileOffset + bytesOffsetRead];
+                                    if (bits == 8)
+                                    {
+                                        mask.AddPel((n >= firstMaskColor) && (n <= lastMaskColor));
+                                    }
+                                    else if (bits == 4)
+                                    {
+                                        int n1 = (n & 0xf0) / 16;
+                                        int n2 = (n & 0x0f);
+                                        mask.AddPel((n1 >= firstMaskColor) && (n1 <= lastMaskColor));
+                                        mask.AddPel((n2 >= firstMaskColor) && (n2 <= lastMaskColor));
+                                    }
+                                    else if (bits == 1)
+                                    {
+                                        for (int bit = 1; bit <= 8; ++bit)
+                                        {
+                                            int n1 = (n & 0x80) / 128;
+                                            mask.AddPel((n1 >= firstMaskColor) && (n1 <= lastMaskColor));
+                                            n *= 2;
+                                        }
+                                    }
+                                }
+                                bytesOffsetRead += 1;
+                                bytesOffsetWrite += 1;
+                            }
+                            bytesOffsetRead = 4 * ((bytesOffsetRead + 3) / 4);
+                        }
+                    }
+                    else
+                    {
+                        throw new NotImplementedException("ReadIndexedMemoryBitmap: unsupported format #3");
+                    }
+                }
+
+                FlateDecode fd = new FlateDecode();
+                if (hasMask)
+                {
+                    if (!segmentedColorMask && pdfVersion >= 13 && !isGray)
+                    {
+                        PdfArray array = new PdfArray(_document);
+                        array.Elements.Add(new PdfInteger(firstMaskColor));
+                        array.Elements.Add(new PdfInteger(lastMaskColor));
+                        Elements[Keys.Mask] = array;
+                    }
+                    else
+                    {
+                        byte[] maskDataCompressed = fd.Encode(mask.MaskData, _document.Options.FlateEncodeMode);
+                        PdfDictionary pdfMask = new PdfDictionary(_document);
+                        pdfMask.Elements.SetName(Keys.Type, "/XObject");
+                        pdfMask.Elements.SetName(Keys.Subtype, "/Image");
+
+                        Owner._irefTable.Add(pdfMask);
+                        pdfMask.Stream = new PdfStream(maskDataCompressed, pdfMask);
+                        pdfMask.Elements[PdfStream.Keys.Length] = new PdfInteger(maskDataCompressed.Length);
+                        pdfMask.Elements[PdfStream.Keys.Filter] = new PdfName("/FlateDecode");
+                        pdfMask.Elements[Keys.Width] = new PdfInteger(width);
+                        pdfMask.Elements[Keys.Height] = new PdfInteger(height);
+                        pdfMask.Elements[Keys.BitsPerComponent] = new PdfInteger(1);
+                        pdfMask.Elements[Keys.ImageMask] = new PdfBoolean(true);
+                        Elements[Keys.Mask] = pdfMask.Reference;
+                    }
+                }
+
+                byte[] imageDataCompressed = fd.Encode(imageData, _document.Options.FlateEncodeMode);
+                byte[] imageDataFaxCompressed = isFaxEncoding ? fd.Encode(imageDataFax, _document.Options.FlateEncodeMode) : null;
+
+                bool usesCcittEncoding = false;
+                if (isFaxEncoding &&
+                  (imageDataFax.Length < imageDataCompressed.Length ||
+                  imageDataFaxCompressed.Length < imageDataCompressed.Length))
+                {
+                    usesCcittEncoding = true;
+
+                    if (imageDataFax.Length < imageDataCompressed.Length)
+                    {
+                        Stream = new PdfStream(imageDataFax, this);
+                        Elements[PdfStream.Keys.Length] = new PdfInteger(imageDataFax.Length);
+                        Elements[PdfStream.Keys.Filter] = new PdfName("/CCITTFaxDecode");
+                        PdfDictionary dictionary = new PdfDictionary();
+                        if (k != 0)
+                            dictionary.Elements.Add("/K", new PdfInteger(k));
+                        if (isBitonal < 0)
+                            dictionary.Elements.Add("/BlackIs1", new PdfBoolean(true));
+                        dictionary.Elements.Add("/EndOfBlock", new PdfBoolean(false));
+                        dictionary.Elements.Add("/Columns", new PdfInteger(width));
+                        dictionary.Elements.Add("/Rows", new PdfInteger(height));
+                        Elements[PdfStream.Keys.DecodeParms] = dictionary;
+                    }
+                    else
+                    {
+                        Stream = new PdfStream(imageDataFaxCompressed, this);
+                        Elements[PdfStream.Keys.Length] = new PdfInteger(imageDataFaxCompressed.Length);
+                        PdfArray arrayFilters = new PdfArray(_document);
+                        arrayFilters.Elements.Add(new PdfName("/FlateDecode"));
+                        arrayFilters.Elements.Add(new PdfName("/CCITTFaxDecode"));
+                        Elements[PdfStream.Keys.Filter] = arrayFilters;
+                        PdfArray arrayDecodeParms = new PdfArray(_document);
+
+                        PdfDictionary dictFlateDecodeParms = new PdfDictionary();
+
+                        PdfDictionary dictCcittFaxDecodeParms = new PdfDictionary();
+                        if (k != 0)
+                            dictCcittFaxDecodeParms.Elements.Add("/K", new PdfInteger(k));
+                        if (isBitonal < 0)
+                            dictCcittFaxDecodeParms.Elements.Add("/BlackIs1", new PdfBoolean(true));
+                        dictCcittFaxDecodeParms.Elements.Add("/EndOfBlock", new PdfBoolean(false));
+                        dictCcittFaxDecodeParms.Elements.Add("/Columns", new PdfInteger(width));
+                        dictCcittFaxDecodeParms.Elements.Add("/Rows", new PdfInteger(height));
+
+                        arrayDecodeParms.Elements.Add(dictFlateDecodeParms);
+                        arrayDecodeParms.Elements.Add(dictCcittFaxDecodeParms);
+                        Elements[PdfStream.Keys.DecodeParms] = arrayDecodeParms;
+                    }
+                }
+                else
+                {
+                    Stream = new PdfStream(imageDataCompressed, this);
+                    Elements[PdfStream.Keys.Length] = new PdfInteger(imageDataCompressed.Length);
+                    Elements[PdfStream.Keys.Filter] = new PdfName("/FlateDecode");
+                }
+
+                Elements[Keys.Width] = new PdfInteger(width);
+                Elements[Keys.Height] = new PdfInteger(height);
+                Elements[Keys.BitsPerComponent] = new PdfInteger(bits);
+                if ((usesCcittEncoding && isBitonal == 0) ||
+                  (!usesCcittEncoding && isBitonal <= 0 && !isGray))
+                {
+                    PdfDictionary colorPalette = null;
+                    colorPalette = new PdfDictionary(_document);
+                    byte[] packedPaletteData = paletteData.Length >= 48 ? fd.Encode(paletteData, _document.Options.FlateEncodeMode) : null;
+                    if (packedPaletteData != null && packedPaletteData.Length + 20 < paletteData.Length)
+                    {
+                        colorPalette.CreateStream(packedPaletteData);
+                        colorPalette.Elements[PdfStream.Keys.Length] = new PdfInteger(packedPaletteData.Length);
+                        colorPalette.Elements[PdfStream.Keys.Filter] = new PdfName("/FlateDecode");
+                    }
+                    else
+                    {
+                        colorPalette.CreateStream(paletteData);
+                        colorPalette.Elements[PdfStream.Keys.Length] = new PdfInteger(paletteData.Length);
+                    }
+                    Owner._irefTable.Add(colorPalette);
+
+                    PdfArray arrayColorSpace = new PdfArray(_document);
+                    arrayColorSpace.Elements.Add(new PdfName("/Indexed"));
+                    arrayColorSpace.Elements.Add(new PdfName("/DeviceRGB"));
+                    arrayColorSpace.Elements.Add(new PdfInteger(paletteColors - 1));
+                    arrayColorSpace.Elements.Add(colorPalette.Reference);
+                    Elements[Keys.ColorSpace] = arrayColorSpace;
+                }
+                else
+                {
+                    Elements[Keys.ColorSpace] = new PdfName("/DeviceGray");
+                }
+                if (_image.Interpolate)
+                    Elements[Keys.Interpolate] = PdfBoolean.True;
+            }
+        }
+
+        public sealed new class Keys : PdfXObject.Keys
+        {
+            [KeyInfo(KeyType.Name | KeyType.Optional)]
+            public const string Type = "/Type";
+
+            [KeyInfo(KeyType.Name | KeyType.Required)]
+            public const string Subtype = "/Subtype";
+
+            [KeyInfo(KeyType.Integer | KeyType.Required)]
+            public const string Width = "/Width";
+
+            [KeyInfo(KeyType.Integer | KeyType.Required)]
+            public const string Height = "/Height";
+
+            [KeyInfo(KeyType.NameOrArray | KeyType.Required)]
+            public const string ColorSpace = "/ColorSpace";
+
+            [KeyInfo(KeyType.Integer | KeyType.Required)]
+            public const string BitsPerComponent = "/BitsPerComponent";
+
+            [KeyInfo(KeyType.Name | KeyType.Optional)]
+            public const string Intent = "/Intent";
+
+            [KeyInfo(KeyType.Boolean | KeyType.Optional)]
+            public const string ImageMask = "/ImageMask";
+
+            [KeyInfo(KeyType.StreamOrArray | KeyType.Optional)]
+            public const string Mask = "/Mask";
+
+            [KeyInfo(KeyType.Array | KeyType.Optional)]
+            public const string Decode = "/Decode";
+
+            [KeyInfo(KeyType.Boolean | KeyType.Optional)]
+            public const string Interpolate = "/Interpolate";
+
+            [KeyInfo(KeyType.Array | KeyType.Optional)]
+            public const string Alternates = "/Alternates";
+
+            [KeyInfo(KeyType.Integer | KeyType.Required)]
+            public const string SMask = "/SMask";
+
+            [KeyInfo(KeyType.Integer | KeyType.Optional)]
+            public const string SMaskInData = "/SMaskInData";
+
+            [KeyInfo(KeyType.Name | KeyType.Optional)]
+            public const string Name = "/Name";
+
+            [KeyInfo(KeyType.Integer | KeyType.Required)]
+            public const string StructParent = "/StructParent";
+
+            [KeyInfo(KeyType.String | KeyType.Optional)]
+            public const string ID = "/ID";
+
+            [KeyInfo(KeyType.Dictionary | KeyType.Optional)]
+            public const string OPI = "/OPI";
+
+            [KeyInfo(KeyType.Stream | KeyType.Optional)]
+            public const string Metadata = "/Metadata";
+
+            [KeyInfo(KeyType.Dictionary | KeyType.Optional)]
+            public const string OC = "/OC";
+
+        }
+    }
+    class MonochromeMask
+    {
+        public byte[] MaskData
+        {
+            get { return _maskData; }
+        }
+        private readonly byte[] _maskData;
+
+        public MonochromeMask(int sizeX, int sizeY)
+        {
+            _sizeX = sizeX;
+            _sizeY = sizeY;
+            int byteSize = ((sizeX + 7) / 8) * sizeY;
+            _maskData = new byte[byteSize];
+            StartLine(0);
+        }
+
+        public void StartLine(int newCurrentLine)
+        {
+            _bitsWritten = 0;
+            _byteBuffer = 0;
+            _writeOffset = ((_sizeX + 7) / 8) * (_sizeY - 1 - newCurrentLine);
+        }
+
+        public void AddPel(bool isTransparent)
+        {
+            if (_bitsWritten < _sizeX)
+            {
+                if (isTransparent)
+                    _byteBuffer = (_byteBuffer << 1) + 1;
+                else
+                    _byteBuffer = _byteBuffer << 1;
+                ++_bitsWritten;
+                if ((_bitsWritten & 7) == 0)
+                {
+                    _maskData[_writeOffset] = (byte)_byteBuffer;
+                    ++_writeOffset;
+                    _byteBuffer = 0;
+                }
+                else if (_bitsWritten == _sizeX)
+                {
+                    int n = 8 - (_bitsWritten & 7);
+                    _byteBuffer = _byteBuffer << n;
+                    _maskData[_writeOffset] = (byte)_byteBuffer;
+                }
+            }
+        }
+
+        public void AddPel(int shade)
+        {
+            AddPel(shade < 128);
+        }
+
+        private readonly int _sizeX;
+        private readonly int _sizeY;
+        private int _writeOffset;
+        private int _byteBuffer;
+        private int _bitsWritten;
+    }
+    partial class PdfImage
+    {
+        internal readonly static uint[] WhiteTerminatingCodes =
+        {
+              0x35, 8,
+              0x07, 6,
+              0x07, 4,
+              0x08, 4,
+              0x0b, 4,
+              0x0c, 4,
+              0x0e, 4,
+              0x0f, 4,
+              0x13, 5,
+              0x14, 5,
+              0x07, 5,
+              0x08, 5,
+              0x08, 6,
+              0x03, 6,
+              0x34, 6,
+              0x35, 6,
+              0x2a, 6,
+              0x2b, 6,
+              0x27, 7,
+              0x0c, 7,
+              0x08, 7,
+              0x17, 7,
+              0x03, 7,
+              0x04, 7,
+              0x28, 7,
+              0x2b, 7,
+              0x13, 7,
+              0x24, 7,
+              0x18, 7,
+              0x02, 8,
+              0x03, 8,
+              0x1a, 8,
+              0x1b, 8,
+              0x12, 8,
+              0x13, 8,
+              0x14, 8,
+              0x15, 8,
+              0x16, 8,
+              0x17, 8,
+              0x28, 8,
+              0x29, 8,
+              0x2a, 8,
+              0x2b, 8,
+              0x2c, 8,
+              0x2d, 8,
+              0x04, 8,
+              0x05, 8,
+              0x0a, 8,
+              0x0b, 8,
+              0x52, 8,
+              0x53, 8,
+              0x54, 8,
+              0x55, 8,
+              0x24, 8,
+              0x25, 8,
+              0x58, 8,
+              0x59, 8,
+              0x5a, 8,
+              0x5b, 8,
+              0x4a, 8,
+              0x4b, 8,
+              0x32, 8,
+              0x33, 8,
+              0x34, 8,
+        };
+
+        internal readonly static uint[] BlackTerminatingCodes =
+        {
+              0x37, 10,
+              0x02,  3,
+              0x03,  2,
+              0x02,  2,
+              0x03,  3,
+              0x03,  4,
+              0x02,  4,
+              0x03,  5,
+              0x05,  6,
+              0x04,  6,
+              0x04,  7,
+              0x05,  7,
+              0x07,  7,
+              0x04,  8,
+              0x07,  8,
+              0x18,  9,
+              0x17, 10,
+              0x18, 10,
+              0x08, 10,
+              0x67, 11,
+              0x68, 11,
+              0x6c, 11,
+              0x37, 11,
+              0x28, 11,
+              0x17, 11,
+              0x18, 11,
+              0xca, 12,
+              0xcb, 12,
+              0xcc, 12,
+              0xcd, 12,
+              0x68, 12,
+              0x69, 12,
+              0x6a, 12,
+              0x6b, 12,
+              0xd2, 12,
+              0xd3, 12,
+              0xd4, 12,
+              0xd5, 12,
+              0xd6, 12,
+              0xd7, 12,
+              0x6c, 12,
+              0x6d, 12,
+              0xda, 12,
+              0xdb, 12,
+              0x54, 12,
+              0x55, 12,
+              0x56, 12,
+              0x57, 12,
+              0x64, 12,
+              0x65, 12,
+              0x52, 12,
+              0x53, 12,
+              0x24, 12,
+              0x37, 12,
+              0x38, 12,
+              0x27, 12,
+              0x28, 12,
+              0x58, 12,
+              0x59, 12,
+              0x2b, 12,
+              0x2c, 12,
+              0x5a, 12,
+              0x66, 12,
+              0x67, 12,
+        };
+
+        internal readonly static uint[] WhiteMakeUpCodes =
+        {
+              0x1b,  5,
+              0x12,  5,
+              0x17,  6,
+              0x37,  7,
+              0x36,  8,
+              0x37,  8,
+              0x64,  8,
+              0x65,  8,
+              0x68,  8,
+              0x67,  8,
+              0xcc,  9,
+              0xcd,  9,
+              0xd2,  9,
+              0xd3,  9,
+              0xd4,  9,
+              0xd5,  9,
+              0xd6,  9,
+              0xd7,  9,
+              0xd8,  9,
+              0xd9,  9,
+              0xda,  9,
+              0xdb,  9,
+              0x98,  9,
+              0x99,  9,
+              0x9a,  9,
+              0x18,  6,
+              0x9b,  9,
+              0x08, 11,
+              0x0c, 11,
+              0x0d, 11,
+              0x12, 12,
+              0x13, 12,
+              0x14, 12,
+              0x15, 12,
+              0x16, 12,
+              0x17, 12,
+              0x1c, 12,
+              0x1d, 12,
+              0x1e, 12,
+              0x1f, 12,
+              0x01, 12,
+        };
+
+        internal readonly static uint[] BlackMakeUpCodes =
+        {
+              0x0f, 10,
+              0xc8, 12,
+              0xc9, 12,
+              0x5b, 12,
+              0x33, 12,
+              0x34, 12,
+              0x35, 12,
+              0x6c, 13,
+              0x6d, 13,
+              0x4a, 13,
+              0x4b, 13,
+              0x4c, 13,
+              0x4d, 13,
+              0x72, 13,
+              0x73, 13,
+              0x74, 13,
+              0x75, 13,
+              0x76, 13,
+              0x77, 13,
+              0x52, 13,
+              0x53, 13,
+              0x54, 13,
+              0x55, 13,
+              0x5a, 13,
+              0x5b, 13,
+              0x64, 13,
+              0x65, 13,
+              0x08, 11,
+              0x0c, 11,
+              0x0d, 11,
+              0x12, 12,
+              0x13, 12,
+              0x14, 12,
+              0x15, 12,
+              0x16, 12,
+              0x17, 12,
+              0x1c, 12,
+              0x1d, 12,
+              0x1e, 12,
+              0x1f, 12,
+              0x01, 12,
+        };
+
+        internal readonly static uint[] HorizontalCodes = { 0x1, 3 };
+        internal readonly static uint[] PassCodes = { 0x1, 4, };
+        internal readonly static uint[] VerticalCodes =
+        {
+              0x03, 7,
+              0x03, 6,
+              0x03, 3,
+              0x1,  1,
+              0x2,  3,
+              0x02, 6,
+              0x02, 7,
+        };
+
+        readonly static uint[] _zeroRuns =
+        {
+              8, 7, 6, 6, 5, 5, 5, 5, 4, 4, 4, 4, 4, 4, 4, 4,
+              3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3,
+              2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2,
+              2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2,
+              1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+              1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+              1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+              1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+              0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+              0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+              0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+              0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+              0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+              0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+              0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+              0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+        };
+
+        readonly static uint[] _oneRuns =
+        {
+              0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+              0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+              0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+              0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+              0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+              0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+              0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+              0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+              1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+              1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+              1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+              1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+              2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2,
+              2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2,
+              3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3,
+              4, 4, 4, 4, 4, 4, 4, 4, 5, 5, 5, 5, 6, 6, 7, 8,
+        };
+
+        private static uint CountOneBits(BitReader reader, uint bitsLeft)
+        {
+            uint found = 0;
+            for (; ; )
+            {
+                uint bits;
+                int @byte = reader.PeekByte(out bits);
+                uint hits = _oneRuns[@byte];
+                if (hits < bits)
+                {
+                    if (hits > 0)
+                        reader.SkipBits(hits);
+                    found += hits;
+                    return found >= bitsLeft ? bitsLeft : found;
+                }
+                found += bits;
+                if (found >= bitsLeft)
+                    return bitsLeft;
+                reader.NextByte();
+            }
+        }
+
+        private static uint CountZeroBits(BitReader reader, uint bitsLeft)
+        {
+            uint found = 0;
+            for (; ; )
+            {
+                uint bits;
+                int @byte = reader.PeekByte(out bits);
+                uint hits = _zeroRuns[@byte];
+                if (hits < bits)
+                {
+                    if (hits > 0)
+                        reader.SkipBits(hits);
+                    found += hits;
+                    return found >= bitsLeft ? bitsLeft : found;
+                }
+                found += bits;
+                if (found >= bitsLeft)
+                    return bitsLeft;
+                reader.NextByte();
+            }
+        }
+
+        private static uint FindDifference(BitReader reader, uint bitStart, uint bitEnd, bool searchOne)
+        {
+            reader.SetPosition(bitStart);
+            return (bitStart + (searchOne ? CountOneBits(reader, bitEnd - bitStart) : CountZeroBits(reader, bitEnd - bitStart)));
+        }
+
+        private static uint FindDifferenceWithCheck(BitReader reader, uint bitStart, uint bitEnd, bool searchOne)
+        {
+            return ((bitStart < bitEnd) ? FindDifference(reader, bitStart, bitEnd, searchOne) : bitEnd);
+        }
+
+        static void FaxEncode2DRow(BitWriter writer, uint bytesFileOffset, byte[] imageBits, uint currentRow, uint referenceRow, uint width, uint height, uint bytesPerLineBmp)
+        {
+            uint bytesOffsetRead = bytesFileOffset + (height - 1 - currentRow) * bytesPerLineBmp;
+            BitReader reader = new BitReader(imageBits, bytesOffsetRead, width);
+            BitReader readerReference;
+            if (referenceRow != 0xffffffff)
+            {
+                uint bytesOffsetReadReference = bytesFileOffset + (height - 1 - referenceRow) * bytesPerLineBmp;
+                readerReference = new BitReader(imageBits, bytesOffsetReadReference, width);
+            }
+            else
+            {
+                byte[] tmpImageBits = new byte[bytesPerLineBmp];
+                for (int i = 0; i < bytesPerLineBmp; ++i)
+                    tmpImageBits[i] = 255;
+                readerReference = new BitReader(tmpImageBits, 0, width);
+            }
+
+            uint a0 = 0;
+            uint a1 = !reader.GetBit(0) ? 0 : FindDifference(reader, 0, width, true);
+            uint b1 = !readerReference.GetBit(0) ? 0 : FindDifference(readerReference, 0, width, true);
+            uint a2, b2;
+            for (; ; )
+            {
+                b2 = FindDifferenceWithCheck(readerReference, b1, width, readerReference.GetBit(b1));
+                if (b2 >= a1)
+                {
+                    int d = (int)b1 - (int)a1;
+                    if (!(-3 <= d && d <= 3))
+                    {
+                        a2 = FindDifferenceWithCheck(reader, a1, width, reader.GetBit(a1));
+                        writer.WriteTableLine(HorizontalCodes, 0);
+
+                        if (a0 + a1 == 0 || reader.GetBit(a0))
+                        {
+                            WriteSample(writer, a1 - a0, true);
+                            WriteSample(writer, a2 - a1, false);
+                        }
+                        else
+                        {
+                            WriteSample(writer, a1 - a0, false);
+                            WriteSample(writer, a2 - a1, true);
+                        }
+                        a0 = a2;
+                    }
+                    else
+                    {
+                        writer.WriteTableLine(VerticalCodes, (uint)(d + 3));
+                        a0 = a1;
+                    }
+                }
+                else
+                {
+                    writer.WriteTableLine(PassCodes, 0);
+                    a0 = b2;
+                }
+                if (a0 >= width)
+                    break;
+                bool bitA0 = reader.GetBit(a0);
+                a1 = FindDifference(reader, a0, width, bitA0);
+                b1 = FindDifference(readerReference, a0, width, !bitA0);
+                b1 = FindDifferenceWithCheck(readerReference, b1, width, bitA0);
+            }
+        }
+
+        private static int DoFaxEncoding(ref byte[] imageData, byte[] imageBits, uint bytesFileOffset, uint width, uint height)
+        {
+            try
+            {
+                uint bytesPerLineBmp = ((width + 31) / 32) * 4;
+                BitWriter writer = new BitWriter(ref imageData);
+                for (uint y = 0; y < height; ++y)
+                {
+                    uint bytesOffsetRead = bytesFileOffset + (height - 1 - y) * bytesPerLineBmp;
+                    BitReader reader = new BitReader(imageBits, bytesOffsetRead, width);
+                    for (uint bitsRead = 0; bitsRead < width;)
+                    {
+                        uint white = CountOneBits(reader, width - bitsRead);
+                        WriteSample(writer, white, true);
+                        bitsRead += white;
+                        if (bitsRead < width)
+                        {
+                            uint black = CountZeroBits(reader, width - bitsRead);
+                            WriteSample(writer, black, false);
+                            bitsRead += black;
+                        }
+                    }
+                }
+                writer.FlushBuffer();
+                return writer.BytesWritten();
+            }
+            catch (Exception)
+            {
+                return 0;
+            }
+        }
+
+        internal static int DoFaxEncodingGroup4(ref byte[] imageData, byte[] imageBits, uint bytesFileOffset, uint width, uint height)
+        {
+            try
+            {
+                uint bytesPerLineBmp = ((width + 31) / 32) * 4;
+                BitWriter writer = new BitWriter(ref imageData);
+                for (uint y = 0; y < height; ++y)
+                {
+                    FaxEncode2DRow(writer, bytesFileOffset, imageBits, y, (y != 0) ? y - 1 : 0xffffffff, width, height, bytesPerLineBmp);
+                }
+                writer.FlushBuffer();
+                return writer.BytesWritten();
+            }
+            catch (Exception ex)
+            {
+                ex.GetType();
+                return 0;
+            }
+        }
+
+        private static void WriteSample(BitWriter writer, uint count, bool white)
+        {
+            uint[] terminatingCodes = white ? WhiteTerminatingCodes : BlackTerminatingCodes;
+            uint[] makeUpCodes = white ? WhiteMakeUpCodes : BlackMakeUpCodes;
+
+            while (count >= 2624)
+            {
+                writer.WriteTableLine(makeUpCodes, 39);
+                count -= 2560;
+            }
+            if (count > 63)
+            {
+                uint line = count / 64 - 1;
+                writer.WriteTableLine(makeUpCodes, line);
+                count -= (line + 1) * 64;
+            }
+            writer.WriteTableLine(terminatingCodes, count);
+        }
+    }
+    class BitReader
+    {
+        readonly byte[] _imageBits;
+        uint _bytesOffsetRead;
+        readonly uint _bytesFileOffset;
+        byte _buffer;
+        uint _bitsInBuffer;
+        readonly uint _bitsTotal;
+
+        internal BitReader(byte[] imageBits, uint bytesFileOffset, uint bits)
+        {
+            _imageBits = imageBits;
+            _bytesFileOffset = bytesFileOffset;
+            _bitsTotal = bits;
+            _bytesOffsetRead = bytesFileOffset;
+            _buffer = imageBits[_bytesOffsetRead];
+            _bitsInBuffer = 8;
+        }
+
+        internal void SetPosition(uint position)
+        {
+            _bytesOffsetRead = _bytesFileOffset + (position >> 3);
+            _buffer = _imageBits[_bytesOffsetRead];
+            _bitsInBuffer = 8 - (position & 0x07);
+        }
+
+        internal bool GetBit(uint position)
+        {
+            if (position >= _bitsTotal)
+                return false;
+            SetPosition(position);
+            uint dummy;
+            return (PeekByte(out dummy) & 0x80) > 0;
+        }
+
+        internal byte PeekByte(out uint bits)
+        {
+            if (_bitsInBuffer == 8)
+            {
+                bits = 8;
+                return _buffer;
+            }
+            bits = _bitsInBuffer;
+            return (byte)(_buffer << (int)(8 - _bitsInBuffer));
+        }
+
+        internal void NextByte()
+        {
+            _buffer = _imageBits[++_bytesOffsetRead];
+            _bitsInBuffer = 8;
+        }
+
+        internal void SkipBits(uint bits)
+        {
+            Debug.Assert(bits <= _bitsInBuffer, "Buffer underrun");
+            if (bits == _bitsInBuffer)
+            {
+                NextByte();
+                return;
+            }
+            _bitsInBuffer -= bits;
+        }
+    }
+    class BitWriter
+    {
+        internal BitWriter(ref byte[] imageData)
+        {
+            _imageData = imageData;
+        }
+
+        internal void FlushBuffer()
+        {
+            if (_bitsInBuffer > 0)
+            {
+                uint bits = 8 - _bitsInBuffer;
+                WriteBits(0, bits);
+            }
+        }
+
+        static readonly uint[] masks = { 0, 1, 3, 7, 15, 31, 63, 127, 255 };
+
+        internal void WriteBits(uint value, uint bits)
+        {
+#if true
+
+            if (bits + _bitsInBuffer > 8)
+            {
+                uint bitsNow = 8 - _bitsInBuffer;
+                uint bitsRemainder = bits - bitsNow;
+                WriteBits(value >> (int)(bitsRemainder), bitsNow);
+#if USE_GOTO
+#else
+                WriteBits(value, bitsRemainder);
+                return;
+#endif
+            }
+
+            _buffer = (_buffer << (int)bits) + (value & masks[bits]);
+            _bitsInBuffer += bits;
+
+            if (_bitsInBuffer == 8)
+            {
+                _imageData[_bytesOffsetWrite] = (byte)_buffer;
+                _bitsInBuffer = 0;
+                ++_bytesOffsetWrite;
+            }
+#endif
+        }
+
+        internal void WriteTableLine(uint[] table, uint line)
+        {
+            uint value = table[line * 2];
+            uint bits = table[line * 2 + 1];
+            WriteBits(value, bits);
+        }
+
+        [Obsolete]
+        internal void WriteEOL()
+        {
+            WriteTableLine(PdfImage.WhiteMakeUpCodes, 40);
+        }
+
+        internal int BytesWritten()
+        {
+            FlushBuffer();
+            return _bytesOffsetWrite;
+        }
+
+        int _bytesOffsetWrite;
+        readonly byte[] _imageData;
+        uint _buffer;
+        uint _bitsInBuffer;
+    }
+    internal sealed class PdfImageTable : PdfResourceTable
+    {
+        public PdfImageTable(PdfDocument document)
+            : base(document)
+        { }
+
+        public PdfImage GetImage(XImage image)
+        {
+            ImageSelector selector = image._selector;
+            if (selector == null)
+            {
+                selector = new ImageSelector(image);
+                image._selector = selector;
+            }
+            PdfImage pdfImage;
+            if (!_images.TryGetValue(selector, out pdfImage))
+            {
+                pdfImage = new PdfImage(Owner, image);
+                Debug.Assert(pdfImage.Owner == Owner);
+                _images[selector] = pdfImage;
+            }
+            return pdfImage;
+        }
+
+        readonly Dictionary<ImageSelector, PdfImage> _images = new Dictionary<ImageSelector, PdfImage>();
+
+        public class ImageSelector
+        {
+            public ImageSelector(XImage image)
+            {
+                if (image._path == null)
+                    image._path = "*" + Guid.NewGuid().ToString("B");
+
+                _path = image._path.ToLowerInvariant();
+            }
+
+            public string Path
+            {
+                get { return _path; }
+                set { _path = value; }
+            }
+            string _path;
+
+            public override bool Equals(object obj)
+            {
+                ImageSelector selector = obj as ImageSelector;
+                if (selector == null)
+                    return false;
+                return _path == selector._path;
+            }
+
+            public override int GetHashCode()
+            {
+                return _path.GetHashCode();
+            }
+        }
+    }
+    internal sealed class PdfImportedObjectTable
+    {
+        public PdfImportedObjectTable(PdfDocument owner, PdfDocument externalDocument)
+        {
+            if (owner == null)
+                throw new ArgumentNullException("owner");
+            if (externalDocument == null)
+                throw new ArgumentNullException("externalDocument");
+            _owner = owner;
+            _externalDocumentHandle = externalDocument.Handle;
+            _xObjects = new PdfFormXObject[externalDocument.PageCount];
+        }
+        readonly PdfFormXObject[] _xObjects;
+
+        public PdfDocument Owner
+        {
+            get { return _owner; }
+        }
+        readonly PdfDocument _owner;
+
+        public PdfDocument ExternalDocument
+        {
+            get { return _externalDocumentHandle.IsAlive ? _externalDocumentHandle.Target : null; }
+        }
+        readonly PdfDocument.DocumentHandle _externalDocumentHandle;
+
+        public PdfFormXObject GetXObject(int pageNumber)
+        {
+            return _xObjects[pageNumber - 1];
+        }
+
+        public void SetXObject(int pageNumber, PdfFormXObject xObject)
+        {
+            _xObjects[pageNumber - 1] = xObject;
+        }
+
+        public bool Contains(PdfObjectID externalID)
+        {
+            return _externalIDs.ContainsKey(externalID.ToString());
+        }
+
+        public void Add(PdfObjectID externalID, PdfReference iref)
+        {
+            _externalIDs[externalID.ToString()] = iref;
+        }
+
+        public PdfReference this[PdfObjectID externalID]
+        {
+            get { return _externalIDs[externalID.ToString()]; }
+        }
+
+        readonly Dictionary<string, PdfReference> _externalIDs = new Dictionary<string, PdfReference>();
+    }
+    public class PdfInternals
+    {
+        internal PdfInternals(PdfDocument document)
+        {
+            _document = document;
+        }
+        readonly PdfDocument _document;
+
+        public string FirstDocumentID
+        {
+            get { return _document._trailer.GetDocumentID(0); }
+            set { _document._trailer.SetDocumentID(0, value); }
+        }
+
+        public Guid FirstDocumentGuid
+        {
+            get { return GuidFromString(_document._trailer.GetDocumentID(0)); }
+        }
+
+        public string SecondDocumentID
+        {
+            get { return _document._trailer.GetDocumentID(1); }
+            set { _document._trailer.SetDocumentID(1, value); }
+        }
+
+        public Guid SecondDocumentGuid
+        {
+            get { return GuidFromString(_document._trailer.GetDocumentID(0)); }
+        }
+
+        Guid GuidFromString(string id)
+        {
+            if (id == null || id.Length != 16)
+                return Guid.Empty;
+
+            StringBuilder guid = new StringBuilder();
+            for (int idx = 0; idx < 16; idx++)
+                guid.AppendFormat("{0:X2}", (byte)id[idx]);
+
+            return new Guid(guid.ToString());
+        }
+
+        public PdfCatalog Catalog
+        {
+            get { return _document.Catalog; }
+        }
+
+        public PdfExtGStateTable ExtGStateTable
+        {
+            get { return _document.ExtGStateTable; }
+        }
+
+        public PdfObject GetObject(PdfObjectID objectID)
+        {
+            return _document._irefTable[objectID].Value;
+        }
+
+        public PdfObject MapExternalObject(PdfObject externalObject)
+        {
+            PdfFormXObjectTable table = _document.FormTable;
+            PdfImportedObjectTable iot = table.GetImportedObjectTable(externalObject.Owner);
+            PdfReference reference = iot[externalObject.ObjectID];
+            return reference == null ? null : reference.Value;
+        }
+
+        public static PdfReference GetReference(PdfObject obj)
+        {
+            if (obj == null)
+                throw new ArgumentNullException("obj");
+            return obj.Reference;
+        }
+
+        public static PdfObjectID GetObjectID(PdfObject obj)
+        {
+            if (obj == null)
+                throw new ArgumentNullException("obj");
+            return obj.ObjectID;
+        }
+
+        public static int GetObjectNumber(PdfObject obj)
+        {
+            if (obj == null)
+                throw new ArgumentNullException("obj");
+            return obj.ObjectNumber;
+        }
+
+        public static int GenerationNumber(PdfObject obj)
+        {
+            if (obj == null)
+                throw new ArgumentNullException("obj");
+            return obj.GenerationNumber;
+        }
+
+        public PdfObject[] GetAllObjects()
+        {
+            PdfReference[] irefs = _document._irefTable.AllReferences;
+            int count = irefs.Length;
+            PdfObject[] objects = new PdfObject[count];
+            for (int idx = 0; idx < count; idx++)
+                objects[idx] = irefs[idx].Value;
+            return objects;
+        }
+
+        [Obsolete("Use GetAllObjects.")]
+        public PdfObject[] AllObjects
+        {
+            get { return GetAllObjects(); }
+        }
+
+        public T CreateIndirectObject<T>() where T : PdfObject
+        {
+#if true
+            T obj = Activator.CreateInstance<T>();
+            _document._irefTable.Add(obj);
+#endif
+            return obj;
+        }
+
+        public void AddObject(PdfObject obj)
+        {
+            if (obj == null)
+                throw new ArgumentNullException("obj");
+            if (obj.Owner == null)
+                obj.Document = _document;
+            else if (obj.Owner != _document)
+                throw new InvalidOperationException("Object does not belong to this document.");
+            _document._irefTable.Add(obj);
+        }
+
+        public void RemoveObject(PdfObject obj)
+        {
+            if (obj == null)
+                throw new ArgumentNullException("obj");
+            if (obj.Reference == null)
+                throw new InvalidOperationException("Only indirect objects can be removed.");
+            if (obj.Owner != _document)
+                throw new InvalidOperationException("Object does not belong to this document.");
+
+            _document._irefTable.Remove(obj.Reference);
+        }
+
+        public PdfObject[] GetClosure(PdfObject obj)
+        {
+            return GetClosure(obj, Int32.MaxValue);
+        }
+
+        public PdfObject[] GetClosure(PdfObject obj, int depth)
+        {
+            PdfReference[] references = _document._irefTable.TransitiveClosure(obj, depth);
+            int count = references.Length + 1;
+            PdfObject[] objects = new PdfObject[count];
+            objects[0] = obj;
+            for (int idx = 1; idx < count; idx++)
+                objects[idx] = references[idx - 1].Value;
+            return objects;
+        }
+
+        public void WriteObject(Stream stream, PdfItem item)
+        {
+            PdfWriter writer = new PdfWriter(stream, null);
+            writer.Options = PdfWriterOptions.OmitStream;
+            item.WriteObject(writer);
+        }
+
+        public string CustomValueKey = "/PdfSharp.CustomValue";
+    }
+    public class PdfObjectInternals
+    {
+        internal PdfObjectInternals(PdfObject obj)
+        {
+            _obj = obj;
+        }
+        readonly PdfObject _obj;
+
+        public PdfObjectID ObjectID
+        {
+            get { return _obj.ObjectID; }
+        }
+
+        public int ObjectNumber
+        {
+            get { return _obj.ObjectID.ObjectNumber; }
+        }
+
+        public int GenerationNumber
+        {
+            get { return _obj.ObjectID.GenerationNumber; }
+        }
+
+        public string TypeID
+        {
+            get
+            {
+                if (_obj is PdfArray)
+                    return "array";
+                if (_obj is PdfDictionary)
+                    return "dictionary";
+                return _obj.GetType().Name;
+            }
+        }
+    }
+    public class PdfObjectStream : PdfDictionary
+    {
+        public PdfObjectStream(PdfDocument document)
+            : base(document)
+        {
+        }
+
+        internal PdfObjectStream(PdfDictionary dict)
+            : base(dict)
+        {
+            int n = Elements.GetInteger(Keys.N);
+            int first = Elements.GetInteger(Keys.First);
+            Stream.TryUnfilter();
+
+            Parser parser = new Parser(null, new MemoryStream(Stream.Value));
+            _header = parser.ReadObjectStreamHeader(n, first);
+
+        }
+
+        internal void ReadReferences(PdfCrossReferenceTable xrefTable)
+        {
+            for (int idx = 0; idx < _header.Length; idx++)
+            {
+                int objectNumber = _header[idx][0];
+                int offset = _header[idx][1];
+
+                PdfObjectID objectID = new PdfObjectID(objectNumber);
+
+                PdfReference iref = new PdfReference(objectID, -1);
+                if (!xrefTable.Contains(iref.ObjectID))
+                {
+                    xrefTable.Add(iref);
+                }
+                else
+                {
+                    GetType();
+                }
+            }
+        }
+
+        internal PdfReference ReadCompressedObject(int index)
+        {
+            Parser parser = new Parser(_document, new MemoryStream(Stream.Value));
+            int objectNumber = _header[index][0];
+            int offset = _header[index][1];
+            return parser.ReadCompressedObject(objectNumber, offset);
+        }
+
+        private readonly int[][] _header;
+
+        public class Keys : PdfStream.Keys
+        {
+            [KeyInfo(KeyType.Name | KeyType.Required, FixedValue = "ObjStm")]
+            public const string Type = "/Type";
+
+            [KeyInfo(KeyType.Integer | KeyType.Required)]
+            public const string N = "/N";
+
+            [KeyInfo(KeyType.Integer | KeyType.Required)]
+            public const string First = "/First";
+
+            [KeyInfo(KeyType.Stream | KeyType.Optional)]
+            public const string Extends = "/Extends";
+        }
+    }
+    internal class PdfPageInheritableObjects : PdfDictionary
+    {
+        public PdfPageInheritableObjects()
+        { }
+
+        public PdfRectangle MediaBox
+        {
+            get { return _mediaBox; }
+            set { _mediaBox = value; }
+        }
+        PdfRectangle _mediaBox;
+
+        public PdfRectangle CropBox
+        {
+            get { return _cropBox; }
+            set { _cropBox = value; }
+        }
+        PdfRectangle _cropBox;
+
+        public int Rotate
+        {
+            get { return _rotate; }
+            set
+            {
+                if (value % 90 != 0)
+                    throw new ArgumentException("The value must be a multiple of 90.", nameof(value));
+                _rotate = value;
+            }
+        }
+        int _rotate;
+    }
+    public sealed class PdfReference : PdfItem
+    {
+        public PdfReference(PdfObject pdfObject)
+        {
+            if (pdfObject.Reference != null)
+                throw new InvalidOperationException("Must not create iref for an object that already has one.");
+            _value = pdfObject;
+            pdfObject.Reference = this;
+
+        }
+
+        public PdfReference(PdfObjectID objectID, int position)
+        {
+            _objectID = objectID;
+            _position = position;
+
+        }
+
+        internal void WriteXRefEnty(PdfWriter writer)
+        {
+            string text = String.Format("{0:0000000000} {1:00000} n\n",
+              _position, _objectID.GenerationNumber);
+            writer.WriteRaw(text);
+        }
+
+        internal override void WriteObject(PdfWriter writer)
+        {
+            writer.Write(this);
+        }
+
+        public PdfObjectID ObjectID
+        {
+            get { return _objectID; }
+            set
+            {
+                if (_objectID == value)
+                    return;
+
+                _objectID = value;
+                if (Document != null)
+                {
+                }
+            }
+        }
+        PdfObjectID _objectID;
+
+        public int ObjectNumber
+        {
+            get { return _objectID.ObjectNumber; }
+        }
+
+        public int GenerationNumber
+        {
+            get { return _objectID.GenerationNumber; }
+        }
+
+        public int Position
+        {
+            get { return _position; }
+            set { _position = value; }
+        }
+        int _position;
+
+        public PdfObject Value
+        {
+            get { return _value; }
+            set
+            {
+                Debug.Assert(value != null, "The value of a PdfReference must never be null.");
+                Debug.Assert(value.Reference == null || ReferenceEquals(value.Reference, this), "The reference of the value must be null or this.");
+                _value = value;
+                value.Reference = this;
+            }
+        }
+        PdfObject _value;
+
+        internal void SetObject(PdfObject value)
+        {
+            _value = value;
+        }
+
+        public PdfDocument Document
+        {
+            get { return _document; }
+            set { _document = value; }
+        }
+        PdfDocument _document;
+
+        public override string ToString()
+        {
+            return _objectID + " R";
+        }
+
+        internal static PdfReferenceComparer Comparer
+        {
+            get { return new PdfReferenceComparer(); }
+        }
+
+        internal class PdfReferenceComparer : IComparer<PdfReference>
+        {
+            public int Compare(PdfReference x, PdfReference y)
+            {
+                PdfReference l = x;
+                PdfReference r = y;
+                if (l != null)
+                {
+                    if (r != null)
+                        return l._objectID.CompareTo(r._objectID);
+                    return -1;
+                }
+                if (r != null)
+                    return 1;
+                return 0;
+            }
+        }
+    }
+    internal class PdfResourceMap : PdfDictionary
+    {
+        public PdfResourceMap()
+        { }
+
+        public PdfResourceMap(PdfDocument document)
+            : base(document)
+        { }
+
+        protected PdfResourceMap(PdfDictionary dict)
+            : base(dict)
+        { }
+
+        internal void CollectResourceNames(Dictionary<string, object> usedResourceNames)
+        {
+            PdfName[] names = Elements.KeyNames;
+            foreach (PdfName name in names)
+                usedResourceNames.Add(name.ToString(), null);
+        }
+    }
+    public sealed class PdfResources : PdfDictionary
+    {
+        public PdfResources(PdfDocument document)
+            : base(document)
+        {
+            Elements[Keys.ProcSet] = new PdfLiteral("[/PDF/Text/ImageB/ImageC/ImageI]");
+        }
+
+        internal PdfResources(PdfDictionary dict)
+            : base(dict)
+        { }
+
+        public string AddFont(PdfFont font)
+        {
+            string name;
+            if (!_resources.TryGetValue(font, out name))
+            {
+                name = NextFontName;
+                _resources[font] = name;
+                if (font.Reference == null)
+                    Owner._irefTable.Add(font);
+                Fonts.Elements[name] = font.Reference;
+            }
+            return name;
+        }
+
+        public string AddImage(PdfImage image)
+        {
+            string name;
+            if (!_resources.TryGetValue(image, out name))
+            {
+                name = NextImageName;
+                _resources[image] = name;
+                if (image.Reference == null)
+                    Owner._irefTable.Add(image);
+                XObjects.Elements[name] = image.Reference;
+            }
+            return name;
+        }
+
+        public string AddForm(PdfFormXObject form)
+        {
+            string name;
+            if (!_resources.TryGetValue(form, out name))
+            {
+                name = NextFormName;
+                _resources[form] = name;
+                if (form.Reference == null)
+                    Owner._irefTable.Add(form);
+                XObjects.Elements[name] = form.Reference;
+            }
+            return name;
+        }
+
+        public string AddExtGState(PdfExtGState extGState)
+        {
+            string name;
+            if (!_resources.TryGetValue(extGState, out name))
+            {
+                name = NextExtGStateName;
+                _resources[extGState] = name;
+                if (extGState.Reference == null)
+                    Owner._irefTable.Add(extGState);
+                ExtGStates.Elements[name] = extGState.Reference;
+            }
+            return name;
+        }
+
+        public string AddPattern(PdfShadingPattern pattern)
+        {
+            string name;
+            if (!_resources.TryGetValue(pattern, out name))
+            {
+                name = NextPatternName;
+                _resources[pattern] = name;
+                if (pattern.Reference == null)
+                    Owner._irefTable.Add(pattern);
+                Patterns.Elements[name] = pattern.Reference;
+            }
+            return name;
+        }
+
+        public string AddPattern(PdfTilingPattern pattern)
+        {
+            string name;
+            if (!_resources.TryGetValue(pattern, out name))
+            {
+                name = NextPatternName;
+                _resources[pattern] = name;
+                if (pattern.Reference == null)
+                    Owner._irefTable.Add(pattern);
+                Patterns.Elements[name] = pattern.Reference;
+            }
+            return name;
+        }
+
+        public string AddShading(PdfShading shading)
+        {
+            string name;
+            if (!_resources.TryGetValue(shading, out name))
+            {
+                name = NextShadingName;
+                _resources[shading] = name;
+                if (shading.Reference == null)
+                    Owner._irefTable.Add(shading);
+                Shadings.Elements[name] = shading.Reference;
+            }
+            return name;
+        }
+
+        internal PdfResourceMap Fonts
+        {
+            get { return _fonts ?? (_fonts = (PdfResourceMap)Elements.GetValue(Keys.Font, VCF.Create)); }
+        }
+        PdfResourceMap _fonts;
+
+        internal PdfResourceMap XObjects
+        {
+            get { return _xObjects ?? (_xObjects = (PdfResourceMap)Elements.GetValue(Keys.XObject, VCF.Create)); }
+        }
+        PdfResourceMap _xObjects;
+
+        internal PdfResourceMap ExtGStates
+        {
+            get
+            {
+                return _extGStates ?? (_extGStates = (PdfResourceMap)Elements.GetValue(Keys.ExtGState, VCF.Create));
+            }
+        }
+        PdfResourceMap _extGStates;
+
+        internal PdfResourceMap ColorSpaces
+        {
+            get { return _colorSpaces ?? (_colorSpaces = (PdfResourceMap)Elements.GetValue(Keys.ColorSpace, VCF.Create)); }
+        }
+        PdfResourceMap _colorSpaces;
+
+        internal PdfResourceMap Patterns
+        {
+            get { return _patterns ?? (_patterns = (PdfResourceMap)Elements.GetValue(Keys.Pattern, VCF.Create)); }
+        }
+        PdfResourceMap _patterns;
+
+        internal PdfResourceMap Shadings
+        {
+            get { return _shadings ?? (_shadings = (PdfResourceMap)Elements.GetValue(Keys.Shading, VCF.Create)); }
+        }
+        PdfResourceMap _shadings;
+
+        internal PdfResourceMap Properties
+        {
+            get { return _properties ?? (_properties = (PdfResourceMap)Elements.GetValue(Keys.Properties, VCF.Create)); }
+        }
+        PdfResourceMap _properties;
+
+        string NextFontName
+        {
+            get
+            {
+                string name;
+                while (ExistsResourceNames(name = string.Format("/F{0}", _fontNumber++))) { }
+                return name;
+            }
+        }
+        int _fontNumber;
+
+        string NextImageName
+        {
+            get
+            {
+                string name;
+                while (ExistsResourceNames(name = string.Format("/I{0}", _imageNumber++))) { }
+                return name;
+            }
+        }
+        int _imageNumber;
+
+        string NextFormName
+        {
+            get
+            {
+                string name;
+                while (ExistsResourceNames(name = string.Format("/Fm{0}", _formNumber++))) { }
+                return name;
+            }
+        }
+        int _formNumber;
+
+        string NextExtGStateName
+        {
+            get
+            {
+                string name;
+                while (ExistsResourceNames(name = string.Format("/GS{0}", _extGStateNumber++))) { }
+                return name;
+            }
+        }
+        int _extGStateNumber;
+
+        string NextPatternName
+        {
+            get
+            {
+                string name;
+                while (ExistsResourceNames(name = string.Format("/Pa{0}", _patternNumber++))) ;
+                return name;
+            }
+        }
+        int _patternNumber;
+
+        string NextShadingName
+        {
+            get
+            {
+                string name;
+                while (ExistsResourceNames(name = string.Format("/Sh{0}", _shadingNumber++))) ;
+                return name;
+            }
+        }
+        int _shadingNumber;
+
+        internal bool ExistsResourceNames(string name)
+        {
+            if (_importedResourceNames == null)
+            {
+                _importedResourceNames = new Dictionary<string, object>();
+
+                if (Elements[Keys.Font] != null)
+                    Fonts.CollectResourceNames(_importedResourceNames);
+
+                if (Elements[Keys.XObject] != null)
+                    XObjects.CollectResourceNames(_importedResourceNames);
+
+                if (Elements[Keys.ExtGState] != null)
+                    ExtGStates.CollectResourceNames(_importedResourceNames);
+
+                if (Elements[Keys.ColorSpace] != null)
+                    ColorSpaces.CollectResourceNames(_importedResourceNames);
+
+                if (Elements[Keys.Pattern] != null)
+                    Patterns.CollectResourceNames(_importedResourceNames);
+
+                if (Elements[Keys.Shading] != null)
+                    Shadings.CollectResourceNames(_importedResourceNames);
+
+                if (Elements[Keys.Properties] != null)
+                    Properties.CollectResourceNames(_importedResourceNames);
+            }
+            return _importedResourceNames.ContainsKey(name);
+        }
+
+        Dictionary<string, object> _importedResourceNames;
+
+        readonly Dictionary<PdfObject, string> _resources = new Dictionary<PdfObject, string>();
+
+        public sealed class Keys : KeysBase
+        {
+            [KeyInfo(KeyType.Dictionary | KeyType.Optional, typeof(PdfResourceMap))]
+            public const string ExtGState = "/ExtGState";
+
+            [KeyInfo(KeyType.Dictionary | KeyType.Optional, typeof(PdfResourceMap))]
+            public const string ColorSpace = "/ColorSpace";
+
+            [KeyInfo(KeyType.Dictionary | KeyType.Optional, typeof(PdfResourceMap))]
+            public const string Pattern = "/Pattern";
+
+            [KeyInfo("1.3", KeyType.Dictionary | KeyType.Optional, typeof(PdfResourceMap))]
+            public const string Shading = "/Shading";
+
+            [KeyInfo(KeyType.Dictionary | KeyType.Optional, typeof(PdfResourceMap))]
+            public const string XObject = "/XObject";
+
+            [KeyInfo(KeyType.Dictionary | KeyType.Optional, typeof(PdfResourceMap))]
+            public const string Font = "/Font";
+
+            [KeyInfo(KeyType.Array | KeyType.Optional)]
+            public const string ProcSet = "/ProcSet";
+
+            [KeyInfo(KeyType.Dictionary | KeyType.Optional, typeof(PdfResourceMap))]
+            public const string Properties = "/Properties";
+
+            internal static DictionaryMeta Meta
+            {
+                get { return _meta ?? (_meta = CreateMeta(typeof(Keys))); }
+            }
+            static DictionaryMeta _meta;
+        }
+
+        internal override DictionaryMeta Meta
+        {
+            get { return Keys.Meta; }
+        }
+    }
+    public class PdfResourceTable
+    {
+        public PdfResourceTable(PdfDocument owner)
+        {
+            if (owner == null)
+                throw new ArgumentNullException("owner");
+            _owner = owner;
+        }
+
+        protected PdfDocument Owner
+        {
+            get { return _owner; }
+        }
+        readonly PdfDocument _owner;
+    }
+    public sealed class PdfShading : PdfDictionary
+    {
+        public PdfShading(PdfDocument document)
+            : base(document)
+        { }
+
+        internal void SetupFromBrush(XLinearGradientBrush brush, XGraphicsPdfRenderer renderer)
+        {
+            if (brush == null)
+                throw new ArgumentNullException("brush");
+
+            PdfColorMode colorMode = _document.Options.ColorMode;
+            XColor color1 = ColorSpaceHelper.EnsureColorMode(colorMode, brush._color1);
+            XColor color2 = ColorSpaceHelper.EnsureColorMode(colorMode, brush._color2);
+
+            PdfDictionary function = new PdfDictionary();
+
+            Elements[Keys.ShadingType] = new PdfInteger(2);
+            if (colorMode != PdfColorMode.Cmyk)
+                Elements[Keys.ColorSpace] = new PdfName("/DeviceRGB");
+            else
+                Elements[Keys.ColorSpace] = new PdfName("/DeviceCMYK");
+
+            double x1 = 0, y1 = 0, x2 = 0, y2 = 0;
+            if (brush._useRect)
+            {
+                XPoint pt1 = renderer.WorldToView(brush._rect.TopLeft);
+                XPoint pt2 = renderer.WorldToView(brush._rect.BottomRight);
+
+                switch (brush._linearGradientMode)
+                {
+                    case XLinearGradientMode.Horizontal:
+                        x1 = pt1.X;
+                        y1 = pt1.Y;
+                        x2 = pt2.X;
+                        y2 = pt1.Y;
+                        break;
+
+                    case XLinearGradientMode.Vertical:
+                        x1 = pt1.X;
+                        y1 = pt1.Y;
+                        x2 = pt1.X;
+                        y2 = pt2.Y;
+                        break;
+
+                    case XLinearGradientMode.ForwardDiagonal:
+                        x1 = pt1.X;
+                        y1 = pt1.Y;
+                        x2 = pt2.X;
+                        y2 = pt2.Y;
+                        break;
+
+                    case XLinearGradientMode.BackwardDiagonal:
+                        x1 = pt2.X;
+                        y1 = pt1.Y;
+                        x2 = pt1.X;
+                        y2 = pt2.Y;
+                        break;
+                }
+            }
+            else
+            {
+                XPoint pt1 = renderer.WorldToView(brush._point1);
+                XPoint pt2 = renderer.WorldToView(brush._point2);
+
+                x1 = pt1.X;
+                y1 = pt1.Y;
+                x2 = pt2.X;
+                y2 = pt2.Y;
+            }
+
+            const string format = Config.SignificantFigures3;
+            Elements[Keys.Coords] = new PdfLiteral("[{0:" + format + "} {1:" + format + "} {2:" + format + "} {3:" + format + "}]", x1, y1, x2, y2);
+
+            Elements[Keys.Function] = function;
+            string clr1 = "[" + PdfEncoders.ToString(color1, colorMode) + "]";
+            string clr2 = "[" + PdfEncoders.ToString(color2, colorMode) + "]";
+
+            function.Elements["/FunctionType"] = new PdfInteger(2);
+            function.Elements["/C0"] = new PdfLiteral(clr1);
+            function.Elements["/C1"] = new PdfLiteral(clr2);
+            function.Elements["/Domain"] = new PdfLiteral("[0 1]");
+            function.Elements["/N"] = new PdfInteger(1);
+        }
+
+        internal sealed class Keys : KeysBase
+        {
+            [KeyInfo(KeyType.Integer | KeyType.Required)]
+            public const string ShadingType = "/ShadingType";
+
+            [KeyInfo(KeyType.NameOrArray | KeyType.Required)]
+            public const string ColorSpace = "/ColorSpace";
+
+            [KeyInfo(KeyType.Array | KeyType.Optional)]
+            public const string Background = "/Background";
+
+            [KeyInfo(KeyType.Rectangle | KeyType.Optional)]
+            public const string BBox = "/BBox";
+
+            [KeyInfo(KeyType.Boolean | KeyType.Optional)]
+            public const string AntiAlias = "/AntiAlias";
+
+            [KeyInfo(KeyType.Array | KeyType.Required)]
+            public const string Coords = "/Coords";
+
+            [KeyInfo(KeyType.Array | KeyType.Optional)]
+            public const string Domain = "/Domain";
+
+            [KeyInfo(KeyType.Function | KeyType.Required)]
+            public const string Function = "/Function";
+
+            [KeyInfo(KeyType.Array | KeyType.Optional)]
+            public const string Extend = "/Extend";
+
+            internal static DictionaryMeta Meta
+            {
+                get { return _meta ?? (_meta = CreateMeta(typeof(Keys))); }
+            }
+            static DictionaryMeta _meta;
+        }
+
+        internal override DictionaryMeta Meta
+        {
+            get { return Keys.Meta; }
+        }
+    }
+    public sealed class PdfShadingPattern : PdfDictionaryWithContentStream
+    {
+        public PdfShadingPattern(PdfDocument document)
+            : base(document)
+        {
+            Elements.SetName(Keys.Type, "/Pattern");
+            Elements[Keys.PatternType] = new PdfInteger(2);
+        }
+
+        internal void SetupFromBrush(XLinearGradientBrush brush, XMatrix matrix, XGraphicsPdfRenderer renderer)
+        {
+            if (brush == null)
+                throw new ArgumentNullException("brush");
+
+            PdfShading shading = new PdfShading(_document);
+            shading.SetupFromBrush(brush, renderer);
+            Elements[Keys.Shading] = shading;
+            Elements.SetMatrix(Keys.Matrix, matrix);
+        }
+
+        internal sealed new class Keys : PdfDictionaryWithContentStream.Keys
+        {
+            [KeyInfo(KeyType.Name | KeyType.Required)]
+            public const string Type = "/Type";
+
+            [KeyInfo(KeyType.Integer | KeyType.Required)]
+            public const string PatternType = "/PatternType";
+
+            [KeyInfo(KeyType.Dictionary | KeyType.Required)]
+            public const string Shading = "/Shading";
+
+            [KeyInfo(KeyType.Array | KeyType.Optional)]
+            public const string Matrix = "/Matrix";
+
+            [KeyInfo(KeyType.Dictionary | KeyType.Optional)]
+            public const string ExtGState = "/ExtGState";
+
+            internal static DictionaryMeta Meta
+            {
+                get { return _meta ?? (_meta = CreateMeta(typeof(Keys))); }
+            }
+            static DictionaryMeta _meta;
+        }
+
+        internal override DictionaryMeta Meta
+        {
+            get { return Keys.Meta; }
+        }
+    }
+    public class PdfSoftMask : PdfDictionary
+    {
+        public PdfSoftMask(PdfDocument document)
+            : base(document)
+        {
+            Elements.SetName(Keys.Type, "/Mask");
+        }
+
+        public class Keys : KeysBase
+        {
+            [KeyInfo(KeyType.Name | KeyType.Optional, FixedValue = "Mask")]
+            public const string Type = "/Type";
+
+            [KeyInfo(KeyType.Name | KeyType.Required)]
+            public const string S = "/S";
+
+            [KeyInfo(KeyType.Stream | KeyType.Required)]
+            public const string G = "/G";
+
+            [KeyInfo(KeyType.Array | KeyType.Optional)]
+            public const string BC = "/BC";
+
+            [KeyInfo(KeyType.FunctionOrName | KeyType.Optional)]
+            public const string TR = "/TR";
+        }
+    }
+    public sealed class PdfTilingPattern : PdfDictionaryWithContentStream
+    {
+        public PdfTilingPattern(PdfDocument document)
+            : base(document)
+        {
+            Elements.SetName(Keys.Type, "/Pattern");
+            Elements[Keys.PatternType] = new PdfInteger(1);
+        }
+
+        internal sealed new class Keys : PdfDictionaryWithContentStream.Keys
+        {
+            [KeyInfo(KeyType.Name | KeyType.Required)]
+            public const string Type = "/Type";
+
+            [KeyInfo(KeyType.Integer | KeyType.Required)]
+            public const string PatternType = "/PatternType";
+
+            [KeyInfo(KeyType.Integer | KeyType.Required)]
+            public const string PaintType = "/PaintType";
+
+            [KeyInfo(KeyType.Integer | KeyType.Required)]
+            public const string TilingType = "/TilingType";
+
+            [KeyInfo(KeyType.Rectangle | KeyType.Optional)]
+            public const string BBox = "/BBox";
+
+            [KeyInfo(KeyType.Real | KeyType.Required)]
+            public const string XStep = "/XStep";
+
+            [KeyInfo(KeyType.Real | KeyType.Required)]
+            public const string YStep = "/YStep";
+
+            [KeyInfo(KeyType.Dictionary | KeyType.Required)]
+            public new const string Resources = "/Resources";
+
+            [KeyInfo(KeyType.Array | KeyType.Optional)]
+            public const string Matrix = "/Matrix";
+
+            internal static DictionaryMeta Meta
+            {
+                get { return _meta ?? (_meta = CreateMeta(typeof(Keys))); }
+            }
+            static DictionaryMeta _meta;
+        }
+
+        internal override DictionaryMeta Meta
+        {
+            get { return Keys.Meta; }
+        }
+    }
+    internal sealed class PdfToUnicodeMap : PdfDictionary
+    {
+        public PdfToUnicodeMap(PdfDocument document)
+            : base(document)
+        { }
+
+        public PdfToUnicodeMap(PdfDocument document, CMapInfo cmapInfo)
+            : base(document)
+        {
+            _cmapInfo = cmapInfo;
+        }
+
+        public CMapInfo CMapInfo
+        {
+            get { return _cmapInfo; }
+            set { _cmapInfo = value; }
+        }
+        CMapInfo _cmapInfo;
+
+        internal override void PrepareForSave()
+        {
+            base.PrepareForSave();
+
+            string prefix =
+              "/CIDInit /ProcSet findresource begin\n" +
+              "12 dict begin\n" +
+              "begincmap\n" +
+              "/CIDSystemInfo << /Registry (Adobe)/Ordering (UCS)/Supplement 0>> def\n" +
+              "/CMapName /Adobe-Identity-UCS def /CMapType 2 def\n";
+            string suffix = "endcmap CMapName currentdict /CMap defineresource pop end end";
+
+            Dictionary<int, char> glyphIndexToCharacter = new Dictionary<int, char>();
+            int lowIndex = 65536, hiIndex = -1;
+            foreach (KeyValuePair<char, int> entry in _cmapInfo.CharacterToGlyphIndex)
+            {
+                int index = (int)entry.Value;
+                lowIndex = Math.Min(lowIndex, index);
+                hiIndex = Math.Max(hiIndex, index);
+                glyphIndexToCharacter[index] = entry.Key;
+            }
+
+            MemoryStream ms = new MemoryStream();
+#if !SILVERLIGHT && !NETFX_CORE
+            StreamWriter wrt = new StreamWriter(ms, Encoding.ASCII);
+
+#endif
+            wrt.Write(prefix);
+
+            wrt.WriteLine("1 begincodespacerange");
+            wrt.WriteLine(String.Format("<{0:X4}><{1:X4}>", lowIndex, hiIndex));
+            wrt.WriteLine("endcodespacerange");
+
+            wrt.WriteLine(String.Format("{0} beginbfrange", glyphIndexToCharacter.Count));
+            foreach (KeyValuePair<int, char> entry in glyphIndexToCharacter)
+                wrt.WriteLine(String.Format("<{0:X4}><{0:X4}><{1:X4}>", entry.Key, (int)entry.Value));
+            wrt.WriteLine("endbfrange");
+
+            wrt.Write(suffix);
+#if !UWP
+            wrt.Close();
+
+#endif
+
+            byte[] bytes = ms.ToArray();
+#if !UWP
+            ms.Close();
+#endif
+            if (Owner.Options.CompressContentStreams)
+            {
+                Elements.SetName("/Filter", "/FlateDecode");
+                bytes = Filtering.FlateDecode.Encode(bytes, _document.Options.FlateEncodeMode);
+            }
+            else
+            {
+                Elements.Remove("/Filter");
+            }
+
+            if (Stream == null)
+                CreateStream(bytes);
+            else
+            {
+                Stream.Value = bytes;
+                Elements.SetInteger(PdfStream.Keys.Length, Stream.Length);
+            }
+        }
+
+        public sealed class Keys : PdfStream.Keys
+        {
+        }
+    }
+    internal class PdfTrailer : PdfDictionary
+    {
+        public PdfTrailer(PdfDocument document)
+            : base(document)
+        {
+            _document = document;
+        }
+
+        public PdfTrailer(PdfCrossReferenceStream trailer)
+            : base(trailer._document)
+        {
+            _document = trailer._document;
+
+            PdfReference iref = trailer.Elements.GetReference(Keys.Info);
+            if (iref != null)
+                Elements.SetReference(Keys.Info, iref);
+
+            Elements.SetReference(Keys.Root, trailer.Elements.GetReference(Keys.Root));
+
+            Elements.SetInteger(Keys.Size, trailer.Elements.GetInteger(Keys.Size));
+
+            PdfArray id = trailer.Elements.GetArray(Keys.ID);
+            if (id != null)
+                Elements.SetValue(Keys.ID, id);
+        }
+
+        public int Size
+        {
+            get { return Elements.GetInteger(Keys.Size); }
+            set { Elements.SetInteger(Keys.Size, value); }
+        }
+
+        public PdfDocumentInformation Info
+        {
+            get { return (PdfDocumentInformation)Elements.GetValue(Keys.Info, VCF.CreateIndirect); }
+        }
+
+        public PdfCatalog Root
+        {
+            get { return (PdfCatalog)Elements.GetValue(PdfTrailer.Keys.Root, VCF.CreateIndirect); }
+        }
+
+        public string GetDocumentID(int index)
+        {
+            if (index < 0 || index > 1)
+                throw new ArgumentOutOfRangeException("index", index, "Index must be 0 or 1.");
+
+            PdfArray array = Elements[Keys.ID] as PdfArray;
+            if (array == null || array.Elements.Count < 2)
+                return "";
+            PdfItem item = array.Elements[index];
+            if (item is PdfString)
+                return ((PdfString)item).Value;
+            return "";
+        }
+
+        public void SetDocumentID(int index, string value)
+        {
+            if (index < 0 || index > 1)
+                throw new ArgumentOutOfRangeException("index", index, "Index must be 0 or 1.");
+
+            PdfArray array = Elements[Keys.ID] as PdfArray;
+            if (array == null || array.Elements.Count < 2)
+                array = CreateNewDocumentIDs();
+            array.Elements[index] = new PdfString(value, PdfStringFlags.HexLiteral);
+        }
+
+        internal PdfArray CreateNewDocumentIDs()
+        {
+            PdfArray array = new PdfArray(_document);
+            byte[] docID = Guid.NewGuid().ToByteArray();
+            string id = PdfEncoders.RawEncoding.GetString(docID, 0, docID.Length);
+            array.Elements.Add(new PdfString(id, PdfStringFlags.HexLiteral));
+            array.Elements.Add(new PdfString(id, PdfStringFlags.HexLiteral));
+            Elements[Keys.ID] = array;
+            return array;
+        }
+
+        public PdfStandardSecurityHandler SecurityHandler
+        {
+            get
+            {
+                if (_securityHandler == null)
+                    _securityHandler = (PdfStandardSecurityHandler)Elements.GetValue(Keys.Encrypt, VCF.CreateIndirect);
+                return _securityHandler;
+            }
+        }
+        internal PdfStandardSecurityHandler _securityHandler;
+
+        internal override void WriteObject(PdfWriter writer)
+        {
+            _elements.Remove(Keys.XRefStm);
+
+            PdfStandardSecurityHandler securityHandler = writer.SecurityHandler;
+            writer.SecurityHandler = null;
+            base.WriteObject(writer);
+            writer.SecurityHandler = securityHandler;
+        }
+
+        internal void Finish()
+        {
+            PdfReference iref = _document._trailer.Elements[Keys.Root] as PdfReference;
+            if (iref != null && iref.Value == null)
+            {
+                iref = _document._irefTable[iref.ObjectID];
+                Debug.Assert(iref.Value != null);
+                _document._trailer.Elements[Keys.Root] = iref;
+            }
+
+            iref = _document._trailer.Elements[PdfTrailer.Keys.Info] as PdfReference;
+            if (iref != null && iref.Value == null)
+            {
+                iref = _document._irefTable[iref.ObjectID];
+                Debug.Assert(iref.Value != null);
+                _document._trailer.Elements[Keys.Info] = iref;
+            }
+
+            iref = _document._trailer.Elements[Keys.Encrypt] as PdfReference;
+            if (iref != null)
+            {
+                iref = _document._irefTable[iref.ObjectID];
+                Debug.Assert(iref.Value != null);
+                _document._trailer.Elements[Keys.Encrypt] = iref;
+
+                iref.Value = _document._trailer._securityHandler;
+                _document._trailer._securityHandler.Reference = iref;
+                iref.Value.Reference = iref;
+            }
+
+            Elements.Remove(Keys.Prev);
+
+            Debug.Assert(_document._irefTable.IsUnderConstruction == false);
+            _document._irefTable.IsUnderConstruction = false;
+        }
+
+        internal class Keys : KeysBase
+        {
+            [KeyInfo(KeyType.Integer | KeyType.Required)]
+            public const string Size = "/Size";
+
+            [KeyInfo(KeyType.Integer | KeyType.Optional)]
+            public const string Prev = "/Prev";
+
+            [KeyInfo(KeyType.Dictionary | KeyType.Required, typeof(PdfCatalog))]
+            public const string Root = "/Root";
+
+            [KeyInfo(KeyType.Dictionary | KeyType.Optional, typeof(PdfStandardSecurityHandler))]
+            public const string Encrypt = "/Encrypt";
+
+            [KeyInfo(KeyType.Dictionary | KeyType.Optional, typeof(PdfDocumentInformation))]
+            public const string Info = "/Info";
+
+            [KeyInfo(KeyType.Array | KeyType.Optional)]
+            public const string ID = "/ID";
+
+            [KeyInfo(KeyType.Integer | KeyType.Optional)]
+            public const string XRefStm = "/XRefStm";
+
+            public static DictionaryMeta Meta
+            {
+                get { return _meta ?? (_meta = CreateMeta(typeof(Keys))); }
+            }
+            static DictionaryMeta _meta;
+        }
+
+        internal override DictionaryMeta Meta
+        {
+            get { return Keys.Meta; }
+        }
+    }
+    public sealed class PdfTransparencyGroupAttributes : PdfGroupAttributes
+    {
+        internal PdfTransparencyGroupAttributes(PdfDocument thisDocument)
+            : base(thisDocument)
+        {
+            Elements.SetName(Keys.S, "/Transparency");
+        }
+
+        public sealed new class Keys : PdfGroupAttributes.Keys
+        {
+            [KeyInfo(KeyType.NameOrArray | KeyType.Optional)]
+            public const string CS = "/CS";
+
+            [KeyInfo(KeyType.Boolean | KeyType.Optional)]
+            public const string I = "/I";
+
+            [KeyInfo(KeyType.Boolean | KeyType.Optional)]
+            public const string K = "/K";
+
+            internal static new DictionaryMeta Meta
+            {
+                get { return _meta ?? (_meta = CreateMeta(typeof(Keys))); }
+            }
+            static DictionaryMeta _meta;
+        }
+
+        internal override DictionaryMeta Meta
+        {
+            get { return Keys.Meta; }
+        }
+    }
+    internal class PdfTrueTypeFont : PdfFont
+    {
+        public PdfTrueTypeFont(PdfDocument document)
+            : base(document)
+        { }
+
+        public PdfTrueTypeFont(PdfDocument document, XFont font)
+            : base(document)
+        {
+            Elements.SetName(Keys.Type, "/Font");
+            Elements.SetName(Keys.Subtype, "/TrueType");
+
+            OpenTypeDescriptor ttDescriptor = (OpenTypeDescriptor)FontDescriptorCache.GetOrCreateDescriptorFor(font);
+            FontDescriptor = new PdfFontDescriptor(document, ttDescriptor);
+            _fontOptions = font.PdfOptions;
+            Debug.Assert(_fontOptions != null);
+
+            _cmapInfo = new CMapInfo(ttDescriptor);
+
+            BaseFont = font.GlyphTypeface.GetBaseName();
+
+            if (_fontOptions.FontEmbedding == PdfFontEmbedding.Always)
+                BaseFont = PdfFont.CreateEmbeddedFontSubsetName(BaseFont);
+            FontDescriptor.FontName = BaseFont;
+
+            Debug.Assert(_fontOptions.FontEncoding == PdfFontEncoding.WinAnsi);
+            if (!IsSymbolFont)
+                Encoding = "/WinAnsiEncoding";
+
+            Owner._irefTable.Add(FontDescriptor);
+            Elements[Keys.FontDescriptor] = FontDescriptor.Reference;
+
+            FontEncoding = font.PdfOptions.FontEncoding;
+        }
+
+        XPdfFontOptions FontOptions
+        {
+            get { return _fontOptions; }
+        }
+        readonly XPdfFontOptions _fontOptions;
+
+        public string BaseFont
+        {
+            get { return Elements.GetName(Keys.BaseFont); }
+            set { Elements.SetName(Keys.BaseFont, value); }
+        }
+
+        public int FirstChar
+        {
+            get { return Elements.GetInteger(Keys.FirstChar); }
+            set { Elements.SetInteger(Keys.FirstChar, value); }
+        }
+
+        public int LastChar
+        {
+            get { return Elements.GetInteger(Keys.LastChar); }
+            set { Elements.SetInteger(Keys.LastChar, value); }
+        }
+
+        public PdfArray Widths
+        {
+            get { return (PdfArray)Elements.GetValue(Keys.Widths, VCF.Create); }
+        }
+
+        public string Encoding
+        {
+            get { return Elements.GetName(Keys.Encoding); }
+            set { Elements.SetName(Keys.Encoding, value); }
+        }
+
+        internal override void PrepareForSave()
+        {
+            base.PrepareForSave();
+
+            OpenTypeFontface subSet = FontDescriptor._descriptor.FontFace.CreateFontSubSet(_cmapInfo.GlyphIndices, false);
+            byte[] fontData = subSet.FontSource.Bytes;
+
+            PdfDictionary fontStream = new PdfDictionary(Owner);
+            Owner.Internals.AddObject(fontStream);
+            FontDescriptor.Elements[PdfFontDescriptor.Keys.FontFile2] = fontStream.Reference;
+
+            fontStream.Elements["/Length1"] = new PdfInteger(fontData.Length);
+            if (!Owner.Options.NoCompression)
+            {
+                fontData = Filtering.FlateDecode.Encode(fontData, _document.Options.FlateEncodeMode);
+                fontStream.Elements["/Filter"] = new PdfName("/FlateDecode");
+            }
+            fontStream.Elements["/Length"] = new PdfInteger(fontData.Length);
+            fontStream.CreateStream(fontData);
+
+            FirstChar = 0;
+            LastChar = 255;
+            PdfArray width = Widths;
+            for (int idx = 0; idx < 256; idx++)
+                width.Elements.Add(new PdfInteger(FontDescriptor._descriptor.Widths[idx]));
+        }
+
+        public new sealed class Keys : PdfFont.Keys
+        {
+            [KeyInfo(KeyType.Name | KeyType.Required, FixedValue = "Font")]
+            public new const string Type = "/Type";
+
+            [KeyInfo(KeyType.Name | KeyType.Required)]
+            public new const string Subtype = "/Subtype";
+
+            [KeyInfo(KeyType.Name | KeyType.Optional)]
+            public const string Name = "/Name";
+
+            [KeyInfo(KeyType.Name | KeyType.Required)]
+            public new const string BaseFont = "/BaseFont";
+
+            [KeyInfo(KeyType.Integer)]
+            public const string FirstChar = "/FirstChar";
+
+            [KeyInfo(KeyType.Integer)]
+            public const string LastChar = "/LastChar";
+
+            [KeyInfo(KeyType.Array, typeof(PdfArray))]
+            public const string Widths = "/Widths";
+
+            [KeyInfo(KeyType.Dictionary | KeyType.MustBeIndirect, typeof(PdfFontDescriptor))]
+            public new const string FontDescriptor = "/FontDescriptor";
+
+            [KeyInfo(KeyType.Name | KeyType.Dictionary)]
+            public const string Encoding = "/Encoding";
+
+            [KeyInfo(KeyType.Stream | KeyType.Optional)]
+            public const string ToUnicode = "/ToUnicode";
+
+            internal static DictionaryMeta Meta
+            {
+                get { return _meta ?? (_meta = CreateMeta(typeof(Keys))); }
+            }
+            static DictionaryMeta _meta;
+        }
+
+        internal override DictionaryMeta Meta
+        {
+            get { return Keys.Meta; }
+        }
+    }
+    internal sealed class PdfType0Font : PdfFont
+    {
+        public PdfType0Font(PdfDocument document)
+            : base(document)
+        { }
+
+        public PdfType0Font(PdfDocument document, XFont font, bool vertical)
+            : base(document)
+        {
+            Elements.SetName(Keys.Type, "/Font");
+            Elements.SetName(Keys.Subtype, "/Type0");
+            Elements.SetName(Keys.Encoding, vertical ? "/Identity-V" : "/Identity-H");
+
+            OpenTypeDescriptor ttDescriptor = (OpenTypeDescriptor)FontDescriptorCache.GetOrCreateDescriptorFor(font);
+            FontDescriptor = new PdfFontDescriptor(document, ttDescriptor);
+            _fontOptions = font.PdfOptions;
+            Debug.Assert(_fontOptions != null);
+
+            _cmapInfo = new CMapInfo(ttDescriptor);
+            _descendantFont = new PdfCIDFont(document, FontDescriptor, font);
+            _descendantFont.CMapInfo = _cmapInfo;
+
+            _toUnicode = new PdfToUnicodeMap(document, _cmapInfo);
+            document.Internals.AddObject(_toUnicode);
+            Elements.Add(Keys.ToUnicode, _toUnicode);
+
+            BaseFont = font.GlyphTypeface.GetBaseName();
+            BaseFont = PdfFont.CreateEmbeddedFontSubsetName(BaseFont);
+
+            FontDescriptor.FontName = BaseFont;
+            _descendantFont.BaseFont = BaseFont;
+
+            PdfArray descendantFonts = new PdfArray(document);
+            Owner._irefTable.Add(_descendantFont);
+            descendantFonts.Elements.Add(_descendantFont.Reference);
+            Elements[Keys.DescendantFonts] = descendantFonts;
+        }
+
+        public PdfType0Font(PdfDocument document, string idName, byte[] fontData, bool vertical)
+            : base(document)
+        {
+            Elements.SetName(Keys.Type, "/Font");
+            Elements.SetName(Keys.Subtype, "/Type0");
+            Elements.SetName(Keys.Encoding, vertical ? "/Identity-V" : "/Identity-H");
+
+            OpenTypeDescriptor ttDescriptor = (OpenTypeDescriptor)FontDescriptorCache.GetOrCreateDescriptor(idName, fontData);
+            FontDescriptor = new PdfFontDescriptor(document, ttDescriptor);
+            _fontOptions = new XPdfFontOptions(PdfFontEncoding.Unicode);
+            Debug.Assert(_fontOptions != null);
+
+            _cmapInfo = new CMapInfo(ttDescriptor);
+            _descendantFont = new PdfCIDFont(document, FontDescriptor, fontData);
+            _descendantFont.CMapInfo = _cmapInfo;
+
+            _toUnicode = new PdfToUnicodeMap(document, _cmapInfo);
+            document.Internals.AddObject(_toUnicode);
+            Elements.Add(Keys.ToUnicode, _toUnicode);
+
+            BaseFont = ttDescriptor.FontName;
+
+            if (!BaseFont.Contains("+"))
+                BaseFont = CreateEmbeddedFontSubsetName(BaseFont);
+
+            FontDescriptor.FontName = BaseFont;
+            _descendantFont.BaseFont = BaseFont;
+
+            PdfArray descendantFonts = new PdfArray(document);
+            Owner._irefTable.Add(_descendantFont);
+            descendantFonts.Elements.Add(_descendantFont.Reference);
+            Elements[Keys.DescendantFonts] = descendantFonts;
+        }
+
+        XPdfFontOptions FontOptions
+        {
+            get { return _fontOptions; }
+        }
+        XPdfFontOptions _fontOptions;
+
+        public string BaseFont
+        {
+            get { return Elements.GetName(Keys.BaseFont); }
+            set { Elements.SetName(Keys.BaseFont, value); }
+        }
+
+        internal PdfCIDFont DescendantFont
+        {
+            get { return _descendantFont; }
+        }
+        readonly PdfCIDFont _descendantFont;
+
+        internal override void PrepareForSave()
+        {
+            base.PrepareForSave();
+
+            OpenTypeDescriptor descriptor = (OpenTypeDescriptor)FontDescriptor._descriptor;
+            StringBuilder w = new StringBuilder("[");
+            if (_cmapInfo != null)
+            {
+                int[] glyphIndices = _cmapInfo.GetGlyphIndices();
+                int count = glyphIndices.Length;
+                int[] glyphWidths = new int[count];
+
+                for (int idx = 0; idx < count; idx++)
+                    glyphWidths[idx] = descriptor.GlyphIndexToPdfWidth(glyphIndices[idx]);
+
+                for (int idx = 0; idx < count; idx++)
+                    w.AppendFormat("{0}[{1}]", glyphIndices[idx], glyphWidths[idx]);
+                w.Append("]");
+                _descendantFont.Elements.SetValue(PdfCIDFont.Keys.W, new PdfLiteral(w.ToString()));
+
+            }
+            _descendantFont.PrepareForSave();
+            _toUnicode.PrepareForSave();
+        }
+
+        public new sealed class Keys : PdfFont.Keys
+        {
+            [KeyInfo(KeyType.Name | KeyType.Required, FixedValue = "Font")]
+            public new const string Type = "/Type";
+
+            [KeyInfo(KeyType.Name | KeyType.Required)]
+            public new const string Subtype = "/Subtype";
+
+            [KeyInfo(KeyType.Name | KeyType.Required)]
+            public new const string BaseFont = "/BaseFont";
+
+            [KeyInfo(KeyType.StreamOrName | KeyType.Required)]
+            public const string Encoding = "/Encoding";
+
+            [KeyInfo(KeyType.Array | KeyType.Required)]
+            public const string DescendantFonts = "/DescendantFonts";
+
+            [KeyInfo(KeyType.Stream | KeyType.Optional)]
+            public const string ToUnicode = "/ToUnicode";
+
+            internal static DictionaryMeta Meta
+            {
+                get
+                {
+                    if (Keys._meta == null)
+                        Keys._meta = CreateMeta(typeof(Keys));
+                    return Keys._meta;
+                }
+            }
+            static DictionaryMeta _meta;
+        }
+
+        internal override DictionaryMeta Meta
+        {
+            get { return Keys.Meta; }
+        }
+    }
+    public abstract class PdfXObject : PdfDictionary
+    {
+        protected PdfXObject(PdfDocument document)
+            : base(document)
+        { }
+
+        public class Keys : PdfStream.Keys
+        { }
+    }
 
 
 
