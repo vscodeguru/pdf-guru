@@ -355,10 +355,13 @@ using System.Diagnostics;
 using System.Diagnostics;
 using System.Diagnostics;
 using System.Text;
-
-
-
-
+using System;
+using System;
+using System.Diagnostics;
+using System.Collections;
+using System;
+using System;
+using System;
 
 
 
@@ -33239,6 +33242,690 @@ namespace pdf_guru
 
         public class Keys : PdfStream.Keys
         { }
+    }
+    public enum PdfAnnotationFlags
+    {
+        Invisible = 1 << (1 - 1),
+
+        Hidden = 1 << (2 - 1),
+
+        Print = 1 << (3 - 1),
+
+        NoZoom = 1 << (4 - 1),
+
+        NoRotate = 1 << (5 - 1),
+
+        NoView = 1 << (6 - 1),
+
+        ReadOnly = 1 << (7 - 1),
+
+        Locked = 1 << (8 - 1),
+
+        ToggleNoView = 1 << (9 - 1),
+    }
+    public enum PdfRubberStampAnnotationIcon
+    {
+        NoIcon,
+
+        Approved,
+
+        AsIs,
+
+        Confidential,
+
+        Departmental,
+
+        Draft,
+
+        Experimental,
+
+        Expired,
+
+        Final,
+
+        ForComment,
+
+        ForPublicRelease,
+
+        NotApproved,
+
+        NotForPublicRelease,
+
+        Sold,
+
+        TopSecret,
+    }
+    public enum PdfTextAnnotationIcon
+    {
+        NoIcon,
+
+        Comment,
+
+        Help,
+
+        Insert,
+
+        Key,
+
+        NewParagraph,
+
+        Note,
+
+        Paragraph,
+    }
+    public abstract class PdfAnnotation : PdfDictionary
+    {
+        protected PdfAnnotation()
+        {
+            Initialize();
+        }
+
+        protected PdfAnnotation(PdfDocument document)
+            : base(document)
+        {
+            Initialize();
+        }
+
+        internal PdfAnnotation(PdfDictionary dict)
+            : base(dict)
+        { }
+
+        void Initialize()
+        {
+            Elements.SetName(Keys.Type, "/Annot");
+            Elements.SetString(Keys.NM, Guid.NewGuid().ToString("D"));
+            Elements.SetDateTime(Keys.M, DateTime.Now);
+        }
+
+        [Obsolete("Use 'Parent.Remove(this)'")]
+        public void Delete()
+        {
+            Parent.Remove(this);
+        }
+
+        public PdfAnnotationFlags Flags
+        {
+            get { return (PdfAnnotationFlags)Elements.GetInteger(Keys.F); }
+            set
+            {
+                Elements.SetInteger(Keys.F, (int)value);
+                Elements.SetDateTime(Keys.M, DateTime.Now);
+            }
+        }
+
+        public PdfAnnotations Parent
+        {
+            get { return _parent; }
+            set { _parent = value; }
+        }
+        PdfAnnotations _parent;
+
+        public PdfRectangle Rectangle
+        {
+            get { return Elements.GetRectangle(Keys.Rect, true); }
+            set
+            {
+                Elements.SetRectangle(Keys.Rect, value);
+                Elements.SetDateTime(Keys.M, DateTime.Now);
+            }
+        }
+
+        public string Title
+        {
+            get { return Elements.GetString(Keys.T, true); }
+            set
+            {
+                Elements.SetString(Keys.T, value);
+                Elements.SetDateTime(Keys.M, DateTime.Now);
+            }
+        }
+
+        public string Subject
+        {
+            get { return Elements.GetString(Keys.Subj, true); }
+            set
+            {
+                Elements.SetString(Keys.Subj, value);
+                Elements.SetDateTime(Keys.M, DateTime.Now);
+            }
+        }
+
+        public string Contents
+        {
+            get { return Elements.GetString(Keys.Contents, true); }
+            set
+            {
+                Elements.SetString(Keys.Contents, value);
+                Elements.SetDateTime(Keys.M, DateTime.Now);
+            }
+        }
+
+        public XColor Color
+        {
+            get
+            {
+                PdfItem item = Elements[Keys.C];
+                PdfArray array = item as PdfArray;
+                if (array != null)
+                {
+                    if (array.Elements.Count == 3)
+                    {
+                        return XColor.FromArgb(
+                            (int)(array.Elements.GetReal(0) * 255),
+                            (int)(array.Elements.GetReal(1) * 255),
+                            (int)(array.Elements.GetReal(2) * 255));
+                    }
+                }
+                return XColors.Black;
+            }
+            set
+            {
+                PdfArray array = new PdfArray(Owner, new PdfReal[] { new PdfReal(value.R / 255.0), new PdfReal(value.G / 255.0), new PdfReal(value.B / 255.0) });
+                Elements[Keys.C] = array;
+                Elements.SetDateTime(Keys.M, DateTime.Now);
+            }
+        }
+
+        public double Opacity
+        {
+            get
+            {
+                if (!Elements.ContainsKey(Keys.CA))
+                    return 1;
+                return Elements.GetReal(Keys.CA, true);
+            }
+            set
+            {
+                if (value < 0 || value > 1)
+                    throw new ArgumentOutOfRangeException("value", value, "Opacity must be a value in the range from 0 to 1.");
+                Elements.SetReal(Keys.CA, value);
+                Elements.SetDateTime(Keys.M, DateTime.Now);
+            }
+        }
+
+        public class Keys : KeysBase
+        {
+            [KeyInfo(KeyType.Name | KeyType.Optional, FixedValue = "Annot")]
+            public const string Type = "/Type";
+
+            [KeyInfo(KeyType.Name | KeyType.Required)]
+            public const string Subtype = "/Subtype";
+
+            [KeyInfo(KeyType.Rectangle | KeyType.Required)]
+            public const string Rect = "/Rect";
+
+            [KeyInfo(KeyType.TextString | KeyType.Optional)]
+            public const string Contents = "/Contents";
+
+            [KeyInfo(KeyType.TextString | KeyType.Optional)]
+            public const string NM = "/NM";
+
+            [KeyInfo(KeyType.Date | KeyType.Optional)]
+            public const string M = "/M";
+
+            [KeyInfo("1.1", KeyType.Integer | KeyType.Optional)]
+            public const string F = "/F";
+
+            [KeyInfo("1.2", KeyType.Dictionary | KeyType.Optional)]
+            public const string BS = "/BS";
+
+            [KeyInfo("1.2", KeyType.Dictionary | KeyType.Optional)]
+            public const string AP = "/AP";
+
+            [KeyInfo("1.2", KeyType.Dictionary | KeyType.Optional)]
+            public const string AS = "/AS";
+
+            [KeyInfo(KeyType.Array | KeyType.Optional)]
+            public const string Border = "/Border";
+
+            [KeyInfo("1.1", KeyType.Array | KeyType.Optional)]
+            public const string C = "/C";
+
+            [KeyInfo("1.3", KeyType.Integer | KeyType.Optional)]
+            public const string StructParent = "/StructParent";
+
+            [KeyInfo("1.1", KeyType.Dictionary | KeyType.Optional)]
+            public const string A = "/A";
+
+            [KeyInfo(KeyType.TextString | KeyType.Optional)]
+            public const string T = "/T";
+
+            [KeyInfo(KeyType.Dictionary | KeyType.Optional)]
+            public const string Popup = "/Popup";
+
+            [KeyInfo(KeyType.Real | KeyType.Optional)]
+            public const string CA = "/CA";
+
+            [KeyInfo("1.5", KeyType.TextString | KeyType.Optional)]
+            public const string Subj = "/Subj";
+
+        }
+    }
+    public sealed class PdfAnnotations : PdfArray
+    {
+        internal PdfAnnotations(PdfDocument document)
+            : base(document)
+        { }
+
+        internal PdfAnnotations(PdfArray array)
+            : base(array)
+        { }
+
+        public void Add(PdfAnnotation annotation)
+        {
+            annotation.Document = Owner;
+            Owner._irefTable.Add(annotation);
+            Elements.Add(annotation.Reference);
+        }
+
+        public void Remove(PdfAnnotation annotation)
+        {
+            if (annotation.Owner != Owner)
+                throw new InvalidOperationException("The annotation does not belong to this document.");
+
+            Owner.Internals.RemoveObject(annotation);
+            Elements.Remove(annotation.Reference);
+        }
+
+        public void Clear()
+        {
+            for (int idx = Count - 1; idx >= 0; idx--)
+                Page.Annotations.Remove(_page.Annotations[idx]);
+        }
+
+        public int Count
+        {
+            get { return Elements.Count; }
+        }
+
+        public PdfAnnotation this[int index]
+        {
+            get
+            {
+                PdfReference iref;
+                PdfDictionary dict;
+                PdfItem item = Elements[index];
+                if ((iref = item as PdfReference) != null)
+                {
+                    Debug.Assert(iref.Value is PdfDictionary, "Reference to dictionary expected.");
+                    dict = (PdfDictionary)iref.Value;
+                }
+                else
+                {
+                    Debug.Assert(item is PdfDictionary, "Dictionary expected.");
+                    dict = (PdfDictionary)item;
+                }
+                PdfAnnotation annotation = dict as PdfAnnotation;
+                if (annotation == null)
+                {
+                    annotation = new PdfGenericAnnotation(dict);
+                    if (iref == null)
+                        Elements[index] = annotation;
+                }
+                return annotation;
+            }
+        }
+
+        internal PdfPage Page
+        {
+            get { return _page; }
+            set { _page = value; }
+        }
+        PdfPage _page;
+
+        internal static void FixImportedAnnotation(PdfPage page)
+        {
+            PdfArray annots = page.Elements.GetArray(PdfPage.Keys.Annots);
+            if (annots != null)
+            {
+                int count = annots.Elements.Count;
+                for (int idx = 0; idx < count; idx++)
+                {
+                    PdfDictionary annot = annots.Elements.GetDictionary(idx);
+                    if (annot != null && annot.Elements.ContainsKey("/P"))
+                        annot.Elements["/P"] = page.Reference;
+                }
+            }
+        }
+
+        public override IEnumerator<PdfItem> GetEnumerator()
+        {
+            return (IEnumerator<PdfItem>)new AnnotationsIterator(this);
+        }
+        class AnnotationsIterator : IEnumerator<PdfItem>
+        {
+            public AnnotationsIterator(PdfAnnotations annotations)
+            {
+                _annotations = annotations;
+                _index = -1;
+            }
+
+            public PdfItem Current
+            {
+                get { return _annotations[_index]; }
+            }
+
+            object IEnumerator.Current
+            {
+                get { return Current; }
+            }
+
+            public bool MoveNext()
+            {
+                return ++_index < _annotations.Count;
+            }
+
+            public void Reset()
+            {
+                _index = -1;
+            }
+
+            public void Dispose()
+            {
+            }
+
+            readonly PdfAnnotations _annotations;
+            int _index;
+        }
+    }
+    internal sealed class PdfGenericAnnotation : PdfAnnotation
+    {
+        public PdfGenericAnnotation(PdfDictionary dict)
+            : base(dict)
+        { }
+
+        internal new class Keys : PdfAnnotation.Keys
+        {
+            public static DictionaryMeta Meta
+            {
+                get { return _meta ?? (_meta = CreateMeta(typeof(Keys))); }
+            }
+            static DictionaryMeta _meta;
+        }
+
+        internal override DictionaryMeta Meta
+        {
+            get { return Keys.Meta; }
+        }
+    }
+    public sealed class PdfLinkAnnotation : PdfAnnotation
+    {
+        enum LinkType
+        {
+            None, Document, Web, File
+        }
+
+        public PdfLinkAnnotation()
+        {
+            _linkType = LinkType.None;
+            Elements.SetName(PdfAnnotation.Keys.Subtype, "/Link");
+        }
+
+        public PdfLinkAnnotation(PdfDocument document)
+            : base(document)
+        {
+            _linkType = LinkType.None;
+            Elements.SetName(PdfAnnotation.Keys.Subtype, "/Link");
+        }
+
+        public static PdfLinkAnnotation CreateDocumentLink(PdfRectangle rect, int destinationPage)
+        {
+            if (destinationPage < 1)
+                throw new ArgumentException("Invalid destination page in call to CreateDocumentLink: page number is one-based and must be 1 or higher.", "destinationPage");
+
+            PdfLinkAnnotation link = new PdfLinkAnnotation();
+            link._linkType = LinkType.Document;
+            link.Rectangle = rect;
+            link._destPage = destinationPage;
+            return link;
+        }
+        int _destPage;
+        LinkType _linkType;
+        string _url;
+
+        public static PdfLinkAnnotation CreateWebLink(PdfRectangle rect, string url)
+        {
+            PdfLinkAnnotation link = new PdfLinkAnnotation();
+            link._linkType = PdfLinkAnnotation.LinkType.Web;
+            link.Rectangle = rect;
+            link._url = url;
+            return link;
+        }
+
+        public static PdfLinkAnnotation CreateFileLink(PdfRectangle rect, string fileName)
+        {
+            PdfLinkAnnotation link = new PdfLinkAnnotation();
+            link._linkType = LinkType.File;
+            link.Rectangle = rect;
+            link._url = fileName;
+            return link;
+        }
+
+        internal override void WriteObject(PdfWriter writer)
+        {
+            PdfPage dest = null;
+            if (Elements[PdfAnnotation.Keys.BS] == null)
+                Elements[PdfAnnotation.Keys.BS] = new PdfLiteral("<</Type/Border/W 0>>");
+
+            if (Elements[PdfAnnotation.Keys.Border] == null)
+                Elements[PdfAnnotation.Keys.Border] = new PdfLiteral("[0 0 0]");
+
+            switch (_linkType)
+            {
+                case LinkType.None:
+                    break;
+
+                case LinkType.Document:
+                    int destIndex = _destPage;
+                    if (destIndex > Owner.PageCount)
+                        destIndex = Owner.PageCount;
+                    destIndex--;
+                    dest = Owner.Pages[destIndex];
+                    Elements[Keys.Dest] = new PdfLiteral("[{0} 0 R/XYZ null null 0]", dest.ObjectNumber);
+                    break;
+
+                case LinkType.Web:
+                    Elements[PdfAnnotation.Keys.A] = new PdfLiteral("<</S/URI/URI{0}>>",
+                        PdfEncoders.ToStringLiteral(_url, PdfStringEncoding.WinAnsiEncoding, writer.SecurityHandler));
+                    break;
+
+                case LinkType.File:
+                    Elements[PdfAnnotation.Keys.A] = new PdfLiteral("<</Type/Action/S/Launch/F<</Type/Filespec/F{0}>> >>",
+                        PdfEncoders.ToStringLiteral(_url, PdfStringEncoding.WinAnsiEncoding, writer.SecurityHandler));
+                    break;
+            }
+            base.WriteObject(writer);
+        }
+
+        internal new class Keys : PdfAnnotation.Keys
+        {
+            [KeyInfo(KeyType.ArrayOrNameOrString | KeyType.Optional)]
+            public const string Dest = "/Dest";
+
+            [KeyInfo("1.2", KeyType.Name | KeyType.Optional)]
+            public const string H = "/H";
+
+            [KeyInfo("1.3", KeyType.Dictionary | KeyType.Optional)]
+            public const string PA = "/PA";
+
+            public static DictionaryMeta Meta
+            {
+                get { return _meta ?? (_meta = CreateMeta(typeof(Keys))); }
+            }
+            static DictionaryMeta _meta;
+        }
+
+        internal override DictionaryMeta Meta
+        {
+            get { return Keys.Meta; }
+        }
+    }
+    public sealed class PdfRubberStampAnnotation : PdfAnnotation
+    {
+        public PdfRubberStampAnnotation()
+        {
+            Initialize();
+        }
+
+        public PdfRubberStampAnnotation(PdfDocument document)
+            : base(document)
+        {
+            Initialize();
+        }
+
+        void Initialize()
+        {
+            Elements.SetName(Keys.Subtype, "/Stamp");
+            Color = XColors.Yellow;
+        }
+
+        public PdfRubberStampAnnotationIcon Icon
+        {
+            get
+            {
+                string value = Elements.GetName(Keys.Name);
+                if (value == "")
+                    return PdfRubberStampAnnotationIcon.NoIcon;
+                value = value.Substring(1);
+                if (!Enum.IsDefined(typeof(PdfRubberStampAnnotationIcon), value))
+                    return PdfRubberStampAnnotationIcon.NoIcon;
+                return (PdfRubberStampAnnotationIcon)Enum.Parse(typeof(PdfRubberStampAnnotationIcon), value, false);
+            }
+            set
+            {
+                if (Enum.IsDefined(typeof(PdfRubberStampAnnotationIcon), value) &&
+                  PdfRubberStampAnnotationIcon.NoIcon != value)
+                {
+                    Elements.SetName(Keys.Name, "/" + value.ToString());
+                }
+                else
+                    Elements.Remove(Keys.Name);
+            }
+        }
+
+        internal new class Keys : PdfAnnotation.Keys
+        {
+            [KeyInfo(KeyType.Name | KeyType.Optional)]
+            public const string Name = "/Name";
+
+            public static DictionaryMeta Meta
+            {
+                get { return _meta ?? (_meta = CreateMeta(typeof(Keys))); }
+            }
+            static DictionaryMeta _meta;
+        }
+
+        internal override DictionaryMeta Meta
+        {
+            get { return Keys.Meta; }
+        }
+    }
+    public sealed class PdfTextAnnotation : PdfAnnotation
+    {
+        public PdfTextAnnotation()
+        {
+            Initialize();
+        }
+
+        public PdfTextAnnotation(PdfDocument document)
+            : base(document)
+        {
+            Initialize();
+        }
+
+        void Initialize()
+        {
+            Elements.SetName(Keys.Subtype, "/Text");
+            Icon = PdfTextAnnotationIcon.Comment;
+        }
+
+        public bool Open
+        {
+            get { return Elements.GetBoolean(Keys.Open); }
+            set { Elements.SetBoolean(Keys.Open, value); }
+        }
+
+        public PdfTextAnnotationIcon Icon
+        {
+            get
+            {
+                string value = Elements.GetName(Keys.Name);
+                if (value == "")
+                    return PdfTextAnnotationIcon.NoIcon;
+                value = value.Substring(1);
+                if (!Enum.IsDefined(typeof(PdfTextAnnotationIcon), value))
+                    return PdfTextAnnotationIcon.NoIcon;
+                return (PdfTextAnnotationIcon)Enum.Parse(typeof(PdfTextAnnotationIcon), value, false);
+            }
+            set
+            {
+                if (Enum.IsDefined(typeof(PdfTextAnnotationIcon), value) &&
+                  PdfTextAnnotationIcon.NoIcon != value)
+                {
+                    Elements.SetName(Keys.Name, "/" + value.ToString());
+                }
+                else
+                    Elements.Remove(Keys.Name);
+            }
+        }
+
+        internal new class Keys : PdfAnnotation.Keys
+        {
+            [KeyInfo(KeyType.Boolean | KeyType.Optional)]
+            public const string Open = "/Open";
+
+            [KeyInfo(KeyType.Name | KeyType.Optional)]
+            public const string Name = "/Name";
+
+            public static DictionaryMeta Meta
+            {
+                get { return _meta ?? (_meta = CreateMeta(typeof(Keys))); }
+            }
+            static DictionaryMeta _meta;
+        }
+
+        internal override DictionaryMeta Meta
+        {
+            get { return Keys.Meta; }
+        }
+    }
+    internal sealed class PdfWidgetAnnotation : PdfAnnotation
+    {
+        public PdfWidgetAnnotation()
+        {
+            Initialize();
+        }
+
+        public PdfWidgetAnnotation(PdfDocument document)
+            : base(document)
+        {
+            Initialize();
+        }
+
+        void Initialize()
+        {
+            Elements.SetName(Keys.Subtype, "/Widget");
+        }
+
+        internal new class Keys : PdfAnnotation.Keys
+        {
+            [KeyInfo(KeyType.Name | KeyType.Optional)]
+            public const string H = "/H";
+
+            [KeyInfo(KeyType.Dictionary | KeyType.Optional)]
+            public const string MK = "/MK";
+
+            public static DictionaryMeta Meta
+            {
+                get { return _meta ?? (_meta = CreateMeta(typeof(Keys))); }
+            }
+            static DictionaryMeta _meta;
+        }
+
+        internal override DictionaryMeta Meta
+        {
+            get { return Keys.Meta; }
+        }
     }
 
 
