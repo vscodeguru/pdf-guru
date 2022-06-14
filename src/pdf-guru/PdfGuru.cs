@@ -188,6 +188,27 @@ using UFWord = System.UInt16;
 using System.Diagnostics;
 using System.IO;
 using System.Diagnostics;
+using System;
+using System;
+using System;
+using System.Globalization;
+using System;
+using System.Diagnostics;
+using System;
+using System.Runtime.InteropServices;
+using System;
+using System.Threading;
+using System;
+using System.Runtime.InteropServices;
+using System;
+using System.Globalization;
+
+
+
+
+
+
+
 
 
 
@@ -19072,6 +19093,695 @@ namespace pdf_guru
             writer.WriteUInt((uint)Length);
         }
     }
+    internal static class Calc
+    {
+        public const double Deg2Rad = Math.PI / 180;
+
+        public static XSize PageSizeToSize(PageSize value)
+        {
+            switch (value)
+            {
+                case PageSize.A0:
+                    return new XSize(2380, 3368);
+
+                case PageSize.A1:
+                    return new XSize(1684, 2380);
+
+                case PageSize.A2:
+                    return new XSize(1190, 1684);
+
+                case PageSize.A3:
+                    return new XSize(842, 1190);
+
+                case PageSize.A4:
+                    return new XSize(595, 842);
+
+                case PageSize.A5:
+                    return new XSize(420, 595);
+
+                case PageSize.B4:
+                    return new XSize(729, 1032);
+
+                case PageSize.B5:
+                    return new XSize(516, 729);
+
+                case PageSize.Letter:
+                    return new XSize(612, 792);
+
+                case PageSize.Legal:
+                    return new XSize(612, 1008);
+
+                case PageSize.Tabloid:
+                    return new XSize(792, 1224);
+
+                case PageSize.Ledger:
+                    return new XSize(1224, 792);
+
+                case PageSize.Statement:
+                    return new XSize(396, 612);
+
+                case PageSize.Executive:
+                    return new XSize(540, 720);
+
+                case PageSize.Folio:
+                    return new XSize(612, 936);
+
+                case PageSize.Quarto:
+                    return new XSize(610, 780);
+
+                case PageSize.Size10x14:
+                    return new XSize(720, 1008);
+            }
+            throw new ArgumentException("Invalid PageSize.");
+        }
+    }
+    struct SColor
+    {
+        public byte a;
+        public byte r;
+        public byte g;
+        public byte b;
+    }
+
+    struct SCColor
+    {
+        public float a;
+        public float r;
+        public float g;
+        public float b;
+    }
+
+    static class ColorHelper
+    {
+        public static float sRgbToScRgb(byte bval)
+        {
+            float num = ((float)bval) / 255f;
+            if (num <= 0.0)
+                return 0f;
+            if (num <= 0.04045)
+                return (num / 12.92f);
+            if (num < 1f)
+                return (float)Math.Pow((num + 0.055) / 1.055, 2.4);
+            return 1f;
+        }
+
+        public static byte ScRgbTosRgb(float val)
+        {
+            if (val <= 0.0)
+                return 0;
+            if (val <= 0.0031308)
+                return (byte)(((255f * val) * 12.92f) + 0.5f);
+            if (val < 1.0)
+                return (byte)((255f * ((1.055f * ((float)Math.Pow((double)val, 0.41666666666666669))) - 0.055f)) + 0.5f);
+            return 0xff;
+        }
+    }
+    enum NotImplementedBehaviour
+    {
+        DoNothing, Log, Throw
+    }
+
+    internal static class Diagnostics
+    {
+        public static NotImplementedBehaviour NotImplementedBehaviour
+        {
+            get { return _notImplementedBehaviour; }
+            set { _notImplementedBehaviour = value; }
+        }
+        static NotImplementedBehaviour _notImplementedBehaviour;
+    }
+
+    internal static class ParserDiagnostics
+    {
+        public static void ThrowParserException(string message)
+        {
+            throw new PdfReaderException(message);
+        }
+
+        public static void ThrowParserException(string message, Exception innerException)
+        {
+            throw new PdfReaderException(message, innerException);
+        }
+
+        public static void HandleUnexpectedCharacter(char ch)
+        {
+            string message = string.Format(CultureInfo.InvariantCulture,
+                "Unexpected character '0x{0:x4}' in PDF stream. The file may be corrupted. " +
+                "If you think this is a bug in PDFsharp, please send us your PDF file.", (int)ch);
+            ThrowParserException(message);
+        }
+        public static void HandleUnexpectedToken(string token)
+        {
+            string message = string.Format(CultureInfo.InvariantCulture,
+                "Unexpected token '{0}' in PDF stream. The file may be corrupted. " +
+                "If you think this is a bug in PDFsharp, please send us your PDF file.", token);
+            ThrowParserException(message);
+        }
+    }
+
+    internal static class ContentReaderDiagnostics
+    {
+        public static void ThrowContentReaderException(string message)
+        {
+            throw new ContentReaderException(message);
+        }
+
+        public static void ThrowContentReaderException(string message, Exception innerException)
+        {
+            throw new ContentReaderException(message, innerException);
+        }
+
+        public static void ThrowNumberOutOfIntegerRange(long value)
+        {
+            string message = string.Format(CultureInfo.InvariantCulture, "Number '{0}' out of integer range.", value);
+            ThrowContentReaderException(message);
+        }
+
+        public static void HandleUnexpectedCharacter(char ch)
+        {
+            string message = string.Format(CultureInfo.InvariantCulture,
+                "Unexpected character '0x{0:x4}' in content stream. The stream may be corrupted or the feature is not implemented. " +
+                "If you think this is a bug in PDFsharp, please send us your PDF file.", (int)ch);
+            ThrowContentReaderException(message);
+        }
+    }
+    internal static class DiagnosticsHelper
+    {
+        public static void HandleNotImplemented(string message)
+        {
+            string text = "Not implemented: " + message;
+            switch (Diagnostics.NotImplementedBehaviour)
+            {
+                case NotImplementedBehaviour.DoNothing:
+                    break;
+
+                case NotImplementedBehaviour.Log:
+                    Logger.Log(text);
+                    break;
+
+                case NotImplementedBehaviour.Throw:
+                    ThrowNotImplementedException(text);
+                    break;
+
+                default:
+                    throw new ArgumentOutOfRangeException();
+            }
+        }
+
+        public static void ThrowNotImplementedException(string message)
+        {
+            throw new NotImplementedException(message);
+        }
+    }
+
+    internal static class Logger
+    {
+        public static void Log(string format, params object[] args)
+        {
+            Debug.WriteLine("Log...");
+        }
+    }
+
+    class Logging
+    {
+
+    }
+
+    class Tracing
+    {
+        [Conditional("DEBUG")]
+        public void Foo()
+        { }
+    }
+
+    public static class DebugBreak
+    {
+        public static void Break()
+        {
+            Break(false);
+        }
+
+        public static void Break(bool always)
+        {
+        }
+    }
+
+    public static class FontsDevHelper
+    {
+        public static XFont CreateSpecialFont(string familyName, double emSize, XFontStyle style,
+            XPdfFontOptions pdfOptions, XStyleSimulations styleSimulations)
+        {
+            return new XFont(familyName, emSize, style, pdfOptions, styleSimulations);
+        }
+
+        public static string GetFontCachesState()
+        {
+            return FontFactory.GetFontCachesState();
+        }
+    }
+    internal static class DoubleUtil
+    {
+        const double Epsilon = 2.2204460492503131E-16;
+        private const double TenTimesEpsilon = 10.0 * Epsilon;
+        const float FloatMinimum = 1.175494E-38f;
+
+        public static bool AreClose(double value1, double value2)
+        {
+            if (value1.Equals(value2))
+                return true;
+            double eps = (Math.Abs(value1) + Math.Abs(value2) + 10.0) * Epsilon;
+            double delta = value1 - value2;
+            return (-eps < delta) && (eps > delta);
+        }
+
+        public static bool AreRoughlyEqual(double value1, double value2, int decimalPlace)
+        {
+            if (value1 == value2)
+                return true;
+            return Math.Abs(value1 - value2) < decs[decimalPlace];
+        }
+        static readonly double[] decs = { 1, 1E-1, 1E-2, 1E-3, 1E-4, 1E-5, 1E-6, 1E-7, 1E-8, 1E-9, 1E-10, 1E-11, 1E-12, 1E-13, 1E-14, 1E-15, 1E-16 };
+
+        public static bool AreClose(XPoint point1, XPoint point2)
+        {
+            return AreClose(point1.X, point2.X) && AreClose(point1.Y, point2.Y);
+        }
+
+        public static bool AreClose(XRect rect1, XRect rect2)
+        {
+            if (rect1.IsEmpty)
+                return rect2.IsEmpty;
+            return !rect2.IsEmpty && AreClose(rect1.X, rect2.X) && AreClose(rect1.Y, rect2.Y) &&
+              AreClose(rect1.Height, rect2.Height) && AreClose(rect1.Width, rect2.Width);
+        }
+
+        public static bool AreClose(XSize size1, XSize size2)
+        {
+            return AreClose(size1.Width, size2.Width) && AreClose(size1.Height, size2.Height);
+        }
+
+        public static bool AreClose(XVector vector1, XVector vector2)
+        {
+            return AreClose(vector1.X, vector2.X) && AreClose(vector1.Y, vector2.Y);
+        }
+
+        public static bool GreaterThan(double value1, double value2)
+        {
+            return value1 > value2 && !AreClose(value1, value2);
+        }
+
+        public static bool GreaterThanOrClose(double value1, double value2)
+        {
+            return value1 > value2 || AreClose(value1, value2);
+        }
+
+        public static bool LessThan(double value1, double value2)
+        {
+            return value1 < value2 && !AreClose(value1, value2);
+        }
+
+        public static bool LessThanOrClose(double value1, double value2)
+        {
+            return value1 < value2 || AreClose(value1, value2);
+        }
+
+        public static bool IsBetweenZeroAndOne(double value)
+        {
+            return GreaterThanOrClose(value, 0) && LessThanOrClose(value, 1);
+        }
+
+        public static bool IsNaN(double value)
+        {
+            NanUnion t = new NanUnion();
+            t.DoubleValue = value;
+
+            ulong exp = t.UintValue & 0xfff0000000000000;
+            ulong man = t.UintValue & 0x000fffffffffffff;
+
+            return (exp == 0x7ff0000000000000 || exp == 0xfff0000000000000) && (man != 0);
+        }
+
+        public static bool RectHasNaN(XRect r)
+        {
+            return IsNaN(r.X) || IsNaN(r.Y) || IsNaN(r.Height) || IsNaN(r.Width);
+        }
+
+        public static bool IsOne(double value)
+        {
+            return Math.Abs(value - 1.0) < TenTimesEpsilon;
+        }
+
+        public static bool IsZero(double value)
+        {
+            return Math.Abs(value) < TenTimesEpsilon;
+        }
+
+        public static int DoubleToInt(double value)
+        {
+            return 0 < value ? (int)(value + 0.5) : (int)(value - 0.5);
+        }
+
+        [StructLayout(LayoutKind.Explicit)]
+        struct NanUnion
+        {
+            [FieldOffset(0)]
+            internal double DoubleValue;
+            [FieldOffset(0)]
+            internal readonly ulong UintValue;
+        }
+    }
+    internal static class Lock
+    {
+        public static void EnterGdiPlus()
+        {
+            Monitor.Enter(GdiPlus);
+            _gdiPlusLockCount++;
+        }
+
+        public static void ExitGdiPlus()
+        {
+            _gdiPlusLockCount--;
+            Monitor.Exit(GdiPlus);
+        }
+
+        static readonly object GdiPlus = new object();
+        static int _gdiPlusLockCount;
+
+        public static void EnterFontFactory()
+        {
+            Monitor.Enter(FontFactory);
+            _fontFactoryLockCount++;
+        }
+
+        public static void ExitFontFactory()
+        {
+            _fontFactoryLockCount--;
+            Monitor.Exit(FontFactory);
+        }
+        static readonly object FontFactory = new object();
+        [ThreadStatic]
+        static int _fontFactoryLockCount;
+    }
+    static class NativeMethods
+    {
+        public const int GDI_ERROR = -1;
+
+        [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Auto)]
+        public class LOGFONT
+        {
+            LOGFONT(int dummy)
+            {
+                lfHeight = 0;
+                lfWidth = 0;
+                lfEscapement = 0;
+                lfOrientation = 0;
+                lfWeight = 0;
+                lfItalic = 0;
+                lfUnderline = 0;
+                lfStrikeOut = 0;
+                lfCharSet = 0;
+                lfOutPrecision = 0;
+                lfClipPrecision = 0;
+                lfQuality = 0;
+                lfPitchAndFamily = 0;
+                lfFaceName = "";
+            }
+            public int lfHeight;
+            public int lfWidth;
+            public int lfEscapement;
+            public int lfOrientation;
+            public int lfWeight;
+            public byte lfItalic;
+            public byte lfUnderline;
+            public byte lfStrikeOut;
+            public byte lfCharSet;
+            public byte lfOutPrecision;
+            public byte lfClipPrecision;
+            public byte lfQuality;
+            public byte lfPitchAndFamily;
+            [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 32)]
+            public string lfFaceName;
+            public override string ToString()
+            {
+                object[] objArray1 = new object[0x1c]
+                {
+                    "lfHeight=", lfHeight,
+                    ", lfWidth=", lfWidth,
+                    ", lfEscapement=", lfEscapement,
+                    ", lfOrientation=", lfOrientation,
+                    ", lfWeight=", lfWeight,
+                    ", lfItalic=", lfItalic,
+                    ", lfUnderline=", lfUnderline,
+                    ", lfStrikeOut=", lfStrikeOut,
+                    ", lfCharSet=", lfCharSet,
+                    ", lfOutPrecision=", lfOutPrecision,
+                    ", lfClipPrecision=", lfClipPrecision,
+                    ", lfQuality=", lfQuality,
+                    ", lfPitchAndFamily=", lfPitchAndFamily,
+                    ", lfFaceName=", lfFaceName
+                };
+                return string.Concat(objArray1);
+            }
+            public LOGFONT() { }
+        }
+
+        [DllImport("user32.dll")]
+        public static extern IntPtr GetDC(IntPtr hwnd);
+
+        [DllImport("user32.dll")]
+        public static extern IntPtr ReleaseDC(IntPtr hwnd, IntPtr hdc);
+
+        [DllImport("gdi32.dll", SetLastError = true)]
+        public static extern int GetFontData(
+            IntPtr hdc,
+            uint dwTable,
+            uint dwOffset,
+            byte[] lpvBuffer,
+            int cbData
+            );
+
+        [DllImport("gdi32.dll", SetLastError = true)]
+        public static extern IntPtr CreateDC(
+            string driver,
+            string device,
+            string port,
+            IntPtr data
+            );
+
+        [DllImport("gdi32.dll", SetLastError = true)]
+        public static extern IntPtr CreateCompatibleDC(IntPtr hdc);
+
+        [DllImport("gdi32.dll", EntryPoint = "CreateFontIndirectW")]
+        public static extern IntPtr CreateFontIndirect(LOGFONT lpLogFont);
+
+        [DllImport("gdi32.dll")]
+        public static extern IntPtr SelectObject(IntPtr hdc, IntPtr hgdiobj);
+
+        [DllImport("gdi32.dll")]
+        public static extern bool DeleteObject(IntPtr hgdiobj);
+
+        public const int HORZSIZE = 4;
+        public const int VERTSIZE = 6;
+        public const int HORZRES = 8;
+        public const int VERTRES = 10;
+        public const int LOGPIXELSX = 88;
+        public const int LOGPIXELSY = 90;
+        [DllImport("gdi32.dll")]
+        public static extern int GetDeviceCaps(IntPtr hdc, int nIndex);
+    }
+    class TokenizerHelper
+    {
+        public TokenizerHelper(string str, IFormatProvider formatProvider)
+        {
+            char numericListSeparator = GetNumericListSeparator(formatProvider);
+            Initialize(str, '\'', numericListSeparator);
+        }
+
+        public TokenizerHelper(string str, char quoteChar, char separator)
+        {
+            Initialize(str, quoteChar, separator);
+        }
+
+        void Initialize(string str, char quoteChar, char separator)
+        {
+            _str = str;
+            _strLen = str == null ? 0 : str.Length;
+            _currentTokenIndex = -1;
+            _quoteChar = quoteChar;
+            _argSeparator = separator;
+
+            while (_charIndex < _strLen)
+            {
+                if (!char.IsWhiteSpace(_str, _charIndex))
+                    return;
+                _charIndex++;
+            }
+        }
+
+        public string NextTokenRequired()
+        {
+            if (!NextToken(false))
+                throw new InvalidOperationException("PrematureStringTermination");
+            return GetCurrentToken();
+        }
+
+        public string NextTokenRequired(bool allowQuotedToken)
+        {
+            if (!NextToken(allowQuotedToken))
+                throw new InvalidOperationException("PrematureStringTermination");
+            return GetCurrentToken();
+        }
+
+        public string GetCurrentToken()
+        {
+            if (_currentTokenIndex < 0)
+                return null;
+            return _str.Substring(_currentTokenIndex, _currentTokenLength);
+        }
+
+        public void LastTokenRequired()
+        {
+            if (_charIndex != _strLen)
+                throw new InvalidOperationException("Extra data encountered");
+        }
+
+        public bool NextToken()
+        {
+            return NextToken(false);
+        }
+
+        public bool NextToken(bool allowQuotedToken)
+        {
+            return NextToken(allowQuotedToken, _argSeparator);
+        }
+
+        public bool NextToken(bool allowQuotedToken, char separator)
+        {
+            _currentTokenIndex = -1;
+            _foundSeparator = false;
+
+            if (_charIndex >= _strLen)
+                return false;
+
+            char currentChar = _str[_charIndex];
+
+            int quoteCount = 0;
+
+            if (allowQuotedToken &&
+                currentChar == _quoteChar)
+            {
+                quoteCount++;
+                _charIndex++;
+            }
+
+            int newTokenIndex = _charIndex;
+            int newTokenLength = 0;
+
+            while (_charIndex < _strLen)
+            {
+                currentChar = _str[_charIndex];
+
+                if (quoteCount > 0)
+                {
+                    if (currentChar == _quoteChar)
+                    {
+                        quoteCount--;
+
+                        if (quoteCount == 0)
+                        {
+                            ++_charIndex;
+                            break;
+                        }
+                    }
+                }
+                else if ((char.IsWhiteSpace(currentChar)) || (currentChar == separator))
+                {
+                    if (currentChar == separator)
+                        _foundSeparator = true;
+                    break;
+                }
+
+                _charIndex++;
+                newTokenLength++;
+            }
+
+            if (quoteCount > 0)
+                throw new InvalidOperationException("Missing end quote");
+
+            ScanToNextToken(separator);
+
+            _currentTokenIndex = newTokenIndex;
+            _currentTokenLength = newTokenLength;
+
+            if (_currentTokenLength < 1)
+                throw new InvalidOperationException("Empty token");
+
+            return true;
+        }
+
+        private void ScanToNextToken(char separator)
+        {
+            if (_charIndex < _strLen)
+            {
+                char currentChar = _str[_charIndex];
+
+                if (currentChar != separator && !char.IsWhiteSpace(currentChar))
+                    throw new InvalidOperationException("ExtraDataEncountered");
+
+                int argSepCount = 0;
+                while (_charIndex < _strLen)
+                {
+                    currentChar = _str[_charIndex];
+                    if (currentChar == separator)
+                    {
+                        _foundSeparator = true;
+                        argSepCount++;
+                        _charIndex++;
+
+                        if (argSepCount > 1)
+                            throw new InvalidOperationException("EmptyToken");
+                    }
+                    else if (char.IsWhiteSpace(currentChar))
+                    {
+                        ++_charIndex;
+                    }
+                    else
+                        break;
+                }
+
+                if (argSepCount > 0 && _charIndex >= _strLen)
+                    throw new InvalidOperationException("EmptyToken");
+            }
+        }
+
+        public static char GetNumericListSeparator(IFormatProvider provider)
+        {
+            char numericSeparator = ',';
+            NumberFormatInfo numberFormat = NumberFormatInfo.GetInstance(provider);
+            if (numberFormat.NumberDecimalSeparator.Length > 0 && numericSeparator == numberFormat.NumberDecimalSeparator[0])
+                numericSeparator = ';';
+            return numericSeparator;
+        }
+
+        public bool FoundSeparator
+        {
+            get { return _foundSeparator; }
+        }
+        bool _foundSeparator;
+
+        char _argSeparator;
+        int _charIndex;
+        int _currentTokenIndex;
+        int _currentTokenLength;
+        char _quoteChar;
+        string _str;
+        int _strLen;
+    }
+
+
+
+
+
 
 
 
