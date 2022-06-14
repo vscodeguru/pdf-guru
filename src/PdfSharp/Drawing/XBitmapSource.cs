@@ -1,5 +1,4 @@
 
-using System.Diagnostics;
 using PdfSharp.Internal;
 
 namespace PdfSharp.Drawing

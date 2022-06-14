@@ -29,7 +29,7 @@ namespace PdfSharp.Drawing
 
 
 #if GDI
-        [Obsolete("Use Add(Stream stream)")]
+        
 #else
         [Obsolete("Use the GDI build of PDFsharp and use Add(Stream stream)")]
 #endif

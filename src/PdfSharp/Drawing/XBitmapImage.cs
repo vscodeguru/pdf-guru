@@ -1,11 +1,7 @@
 
-#if CORE_WITH_GDI
-using System;
+
 using System.Drawing;
-using System.Drawing.Drawing2D;
-using System.Drawing.Imaging;
 using PdfSharp.Internal;
-#endif
 
 namespace PdfSharp.Drawing
 {
