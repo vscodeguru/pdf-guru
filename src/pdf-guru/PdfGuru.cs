@@ -156,7 +156,38 @@ using GdiFont = System.Drawing.Font;
 using GdiFontStyle = System.Drawing.FontStyle;
 using System.Drawing;
 using GdiFont = System.Drawing.Font;
-
+using System;
+using System.Collections.Generic;
+using System;
+using System.Diagnostics;
+using System.Collections.Generic;
+using System.Text;
+using System;
+using System.Diagnostics;
+using System;
+using System.Diagnostics;
+using System.Text;
+using System;
+using System.Diagnostics;
+using System.Collections.Generic;
+using System.Globalization;
+using System.IO;
+using System;
+using System.Diagnostics;
+using System.Collections.Generic;
+using System.Globalization;
+using System.Text;
+using System;
+using System.Diagnostics;
+using System;
+using System.Diagnostics;
+using System.Text;
+using Fixed = System.Int32;
+using FWord = System.Int16;
+using UFWord = System.UInt16;
+using System.Diagnostics;
+using System.IO;
+using System.Diagnostics;
 
 
 
@@ -16599,6 +16630,2453 @@ namespace pdf_guru
         readonly Font _gdiFont;
 #endif
     }
+    enum FontTechnology
+    {
+        PostscriptOutlines,
+
+        TrueTypeOutlines,
+
+        TrueTypeCollection
+    }
+    static class TableTagNames
+    {
+        public const string CMap = "cmap";
+
+        public const string Head = "head";
+
+        public const string HHea = "hhea";
+
+        public const string HMtx = "hmtx";
+
+        public const string MaxP = "maxp";
+
+        public const string Name = "name";
+
+        public const string OS2 = "OS/2";
+
+        public const string Post = "post";
+
+        public const string Cvt = "cvt ";
+
+        public const string Fpgm = "fpgm";
+
+        public const string Glyf = "glyf";
+
+        public const string Loca = "loca";
+
+        public const string Prep = "prep";
+
+        public const string Cff = "CFF";
+
+        public const string VOrg = "VORG";
+
+        public const string EBDT = "EBDT";
+
+        public const string EBLC = "EBLC";
+
+        public const string EBSC = "EBSC";
+
+        public const string BASE = "BASE";
+
+        public const string GDEF = "GDEF";
+
+        public const string GPOS = "GPOS";
+
+        public const string GSUB = "GSUB";
+
+        public const string JSTF = "JSTF";
+
+        public const string DSIG = "DSIG";
+
+        public const string Gasp = "gasp";
+
+        public const string Hdmx = "hdmx";
+
+        public const string Kern = "kern";
+
+        public const string LTSH = "LTSH";
+
+        public const string PCLT = "PCLT";
+
+        public const string VDMX = "VDMX";
+
+        public const string VHea = "vhea";
+
+        public const string VMtx = "vmtx";
+    }
+    internal class FontDescriptor
+    {
+        protected FontDescriptor(string key)
+        {
+            _key = key;
+        }
+
+        public string Key
+        {
+            get { return _key; }
+        }
+        readonly string _key;
+
+
+
+
+
+
+
+        public string FontName
+        {
+            get { return _fontName; }
+            protected set { _fontName = value; }
+        }
+        string _fontName;
+
+        public string Weight
+        {
+            get { return _weight; }
+            private set { _weight = value; }
+        }
+        string _weight;
+
+        public virtual bool IsBoldFace
+        {
+            get { return false; }
+        }
+
+        public float ItalicAngle
+        {
+            get { return _italicAngle; }
+            protected set { _italicAngle = value; }
+        }
+        float _italicAngle;
+
+        public virtual bool IsItalicFace
+        {
+            get { return false; }
+        }
+
+        public int XMin
+        {
+            get { return _xMin; }
+            protected set { _xMin = value; }
+        }
+        int _xMin;
+
+        public int YMin
+        {
+            get { return _yMin; }
+            protected set { _yMin = value; }
+        }
+        int _yMin;
+
+        public int XMax
+        {
+            get { return _xMax; }
+            protected set { _xMax = value; }
+        }
+        int _xMax;
+
+        public int YMax
+        {
+            get { return _yMax; }
+            protected set { _yMax = value; }
+        }
+        int _yMax;
+
+        public bool IsFixedPitch
+        {
+            get { return _isFixedPitch; }
+            private set { _isFixedPitch = value; }
+        }
+        bool _isFixedPitch;
+
+        public int UnderlinePosition
+        {
+            get { return _underlinePosition; }
+            protected set { _underlinePosition = value; }
+        }
+        int _underlinePosition;
+
+        public int UnderlineThickness
+        {
+            get { return _underlineThickness; }
+            protected set { _underlineThickness = value; }
+        }
+        int _underlineThickness;
+
+        public int StrikeoutPosition
+        {
+            get { return _strikeoutPosition; }
+            protected set { _strikeoutPosition = value; }
+        }
+        int _strikeoutPosition;
+
+        public int StrikeoutSize
+        {
+            get { return _strikeoutSize; }
+            protected set { _strikeoutSize = value; }
+        }
+        int _strikeoutSize;
+
+        public string Version
+        {
+            get { return _version; }
+            private set { _version = value; }
+        }
+        string _version;
+
+        public string EncodingScheme
+        {
+            get { return _encodingScheme; }
+            private set { _encodingScheme = value; }
+        }
+        string _encodingScheme;
+
+        public int UnitsPerEm
+        {
+            get { return _unitsPerEm; }
+            protected set { _unitsPerEm = value; }
+        }
+        int _unitsPerEm;
+
+        public int CapHeight
+        {
+            get { return _capHeight; }
+            protected set { _capHeight = value; }
+        }
+        int _capHeight;
+
+        public int XHeight
+        {
+            get { return _xHeight; }
+            protected set { _xHeight = value; }
+        }
+        int _xHeight;
+
+        public int Ascender
+        {
+            get { return _ascender; }
+            protected set { _ascender = value; }
+        }
+        int _ascender;
+
+        public int Descender
+        {
+            get { return _descender; }
+            protected set { _descender = value; }
+        }
+        int _descender;
+
+        public int Leading
+        {
+            get { return _leading; }
+            protected set { _leading = value; }
+        }
+        int _leading;
+
+        public int Flags
+        {
+            get { return _flags; }
+            private set { _flags = value; }
+        }
+        int _flags;
+
+        public int StemV
+        {
+            get { return _stemV; }
+            protected set { _stemV = value; }
+        }
+        int _stemV;
+
+        public int LineSpacing
+        {
+            get { return _lineSpacing; }
+            protected set { _lineSpacing = value; }
+        }
+        int _lineSpacing;
+
+
+        internal static string ComputeKey(XFont font)
+        {
+            return font.GlyphTypeface.Key;
+        }
+
+        internal static string ComputeKey(string name, XFontStyle style)
+        {
+            return ComputeKey(name,
+                (style & XFontStyle.Bold) == XFontStyle.Bold,
+                (style & XFontStyle.Italic) == XFontStyle.Italic);
+        }
+
+        internal static string ComputeKey(string name, bool isBold, bool isItalic)
+        {
+            string key = name.ToLowerInvariant() + '/'
+                + (isBold ? "b" : "") + (isItalic ? "i" : "");
+            return key;
+        }
+
+        internal static string ComputeKey(string name)
+        {
+            string key = name.ToLowerInvariant();
+            return key;
+        }
+    }
+    internal class GlyphDataTable : OpenTypeFontTable
+    {
+        public const string Tag = TableTagNames.Glyf;
+
+        internal byte[] GlyphTable;
+
+        public GlyphDataTable()
+            : base(null, Tag)
+        {
+            DirectoryEntry.Tag = TableTagNames.Glyf;
+        }
+
+        public GlyphDataTable(OpenTypeFontface fontData)
+            : base(fontData, Tag)
+        {
+            DirectoryEntry.Tag = TableTagNames.Glyf;
+            Read();
+        }
+
+        public void Read()
+        {
+            try
+            {
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
+        }
+
+        public byte[] GetGlyphData(int glyph)
+        {
+            IndexToLocationTable loca = _fontData.loca;
+            int start = GetOffset(glyph);
+            int next = GetOffset(glyph + 1);
+            int count = next - start;
+            byte[] bytes = new byte[count];
+            Buffer.BlockCopy(_fontData.FontSource.Bytes, start, bytes, 0, count);
+            return bytes;
+        }
+
+        public int GetGlyphSize(int glyph)
+        {
+            IndexToLocationTable loca = _fontData.loca;
+            return GetOffset(glyph + 1) - GetOffset(glyph);
+        }
+
+        public int GetOffset(int glyph)
+        {
+            return DirectoryEntry.Offset + _fontData.loca.LocaTable[glyph];
+        }
+
+        public void CompleteGlyphClosure(Dictionary<int, object> glyphs)
+        {
+            int count = glyphs.Count;
+            int[] glyphArray = new int[glyphs.Count];
+            glyphs.Keys.CopyTo(glyphArray, 0);
+            if (!glyphs.ContainsKey(0))
+                glyphs.Add(0, null);
+            for (int idx = 0; idx < count; idx++)
+                AddCompositeGlyphs(glyphs, glyphArray[idx]);
+        }
+
+        void AddCompositeGlyphs(Dictionary<int, object> glyphs, int glyph)
+        {
+            int start = GetOffset(glyph);
+            if (start == GetOffset(glyph + 1))
+                return;
+            _fontData.Position = start;
+            int numContours = _fontData.ReadShort();
+            if (numContours >= 0)
+                return;
+            _fontData.SeekOffset(8);
+            for (; ; )
+            {
+                int flags = _fontData.ReadUFWord();
+                int cGlyph = _fontData.ReadUFWord();
+                if (!glyphs.ContainsKey(cGlyph))
+                    glyphs.Add(cGlyph, null);
+                if ((flags & MORE_COMPONENTS) == 0)
+                    return;
+                int offset = (flags & ARG_1_AND_2_ARE_WORDS) == 0 ? 2 : 4;
+                if ((flags & WE_HAVE_A_SCALE) != 0)
+                    offset += 2;
+                else if ((flags & WE_HAVE_AN_X_AND_Y_SCALE) != 0)
+                    offset += 4;
+                if ((flags & WE_HAVE_A_TWO_BY_TWO) != 0)
+                    offset += 8;
+                _fontData.SeekOffset(offset);
+            }
+        }
+
+        public override void PrepareForCompilation()
+        {
+            base.PrepareForCompilation();
+
+            if (DirectoryEntry.Length == 0)
+                DirectoryEntry.Length = GlyphTable.Length;
+            DirectoryEntry.CheckSum = CalcChecksum(GlyphTable);
+        }
+
+        public override void Write(OpenTypeFontWriter writer)
+        {
+            writer.Write(GlyphTable, 0, DirectoryEntry.PaddedLength);
+        }
+
+        const int ARG_1_AND_2_ARE_WORDS = 1;
+        const int WE_HAVE_A_SCALE = 8;
+        const int MORE_COMPONENTS = 32;
+        const int WE_HAVE_AN_X_AND_Y_SCALE = 64;
+        const int WE_HAVE_A_TWO_BY_TWO = 128;
+    }
+    internal class GlyphTypefaceCache
+    {
+        GlyphTypefaceCache()
+        {
+            _glyphTypefacesByKey = new Dictionary<string, XGlyphTypeface>();
+        }
+
+        public static bool TryGetGlyphTypeface(string key, out XGlyphTypeface glyphTypeface)
+        {
+            try
+            {
+                Lock.EnterFontFactory();
+                bool result = Singleton._glyphTypefacesByKey.TryGetValue(key, out glyphTypeface);
+                return result;
+            }
+            finally { Lock.ExitFontFactory(); }
+        }
+
+        public static void AddGlyphTypeface(XGlyphTypeface glyphTypeface)
+        {
+            try
+            {
+                Lock.EnterFontFactory();
+                GlyphTypefaceCache cache = Singleton;
+                Debug.Assert(!cache._glyphTypefacesByKey.ContainsKey(glyphTypeface.Key));
+                cache._glyphTypefacesByKey.Add(glyphTypeface.Key, glyphTypeface);
+            }
+            finally { Lock.ExitFontFactory(); }
+        }
+
+        static GlyphTypefaceCache Singleton
+        {
+            get
+            {
+                if (_singleton == null)
+                {
+                    try
+                    {
+                        Lock.EnterFontFactory();
+                        if (_singleton == null)
+                            _singleton = new GlyphTypefaceCache();
+                    }
+                    finally { Lock.ExitFontFactory(); }
+                }
+                return _singleton;
+            }
+        }
+        static volatile GlyphTypefaceCache _singleton;
+
+        internal static string GetCacheState()
+        {
+            StringBuilder state = new StringBuilder();
+            state.Append("====================\n");
+            state.Append("Glyph typefaces by name\n");
+            Dictionary<string, XGlyphTypeface>.KeyCollection familyKeys = Singleton._glyphTypefacesByKey.Keys;
+            int count = familyKeys.Count;
+            string[] keys = new string[count];
+            familyKeys.CopyTo(keys, 0);
+            Array.Sort(keys, StringComparer.OrdinalIgnoreCase);
+            foreach (string key in keys)
+                state.AppendFormat("  {0}: {1}\n", key, Singleton._glyphTypefacesByKey[key].DebuggerDisplay);
+            state.Append("\n");
+            return state.ToString();
+        }
+
+        readonly Dictionary<string, XGlyphTypeface> _glyphTypefacesByKey;
+    }
+    internal class IndexToLocationTable : OpenTypeFontTable
+    {
+        public const string Tag = TableTagNames.Loca;
+
+        internal int[] LocaTable;
+
+        public IndexToLocationTable()
+            : base(null, Tag)
+        {
+            DirectoryEntry.Tag = TableTagNames.Loca;
+        }
+
+        public IndexToLocationTable(OpenTypeFontface fontData)
+            : base(fontData, Tag)
+        {
+            DirectoryEntry = _fontData.TableDictionary[TableTagNames.Loca];
+            Read();
+        }
+
+        public bool ShortIndex;
+
+        public void Read()
+        {
+            try
+            {
+                ShortIndex = _fontData.head.indexToLocFormat == 0;
+                _fontData.Position = DirectoryEntry.Offset;
+                if (ShortIndex)
+                {
+                    int entries = DirectoryEntry.Length / 2;
+                    Debug.Assert(_fontData.maxp.numGlyphs + 1 == entries,
+                        "For your information only: Number of glyphs mismatch in font. You can ignore this assertion.");
+                    LocaTable = new int[entries];
+                    for (int idx = 0; idx < entries; idx++)
+                        LocaTable[idx] = 2 * _fontData.ReadUFWord();
+                }
+                else
+                {
+                    int entries = DirectoryEntry.Length / 4;
+                    Debug.Assert(_fontData.maxp.numGlyphs + 1 == entries,
+                        "For your information only: Number of glyphs mismatch in font. You can ignore this assertion.");
+                    LocaTable = new int[entries];
+                    for (int idx = 0; idx < entries; idx++)
+                        LocaTable[idx] = _fontData.ReadLong();
+                }
+            }
+            catch (Exception)
+            {
+                GetType();
+                throw;
+            }
+        }
+
+        public override void PrepareForCompilation()
+        {
+            DirectoryEntry.Offset = 0;
+            if (ShortIndex)
+                DirectoryEntry.Length = LocaTable.Length * 2;
+            else
+                DirectoryEntry.Length = LocaTable.Length * 4;
+
+            _bytes = new byte[DirectoryEntry.PaddedLength];
+            int length = LocaTable.Length;
+            int byteIdx = 0;
+            if (ShortIndex)
+            {
+                for (int idx = 0; idx < length; idx++)
+                {
+                    int value = LocaTable[idx] / 2;
+                    _bytes[byteIdx++] = (byte)(value >> 8);
+                    _bytes[byteIdx++] = (byte)(value);
+                }
+            }
+            else
+            {
+                for (int idx = 0; idx < length; idx++)
+                {
+                    int value = LocaTable[idx];
+                    _bytes[byteIdx++] = (byte)(value >> 24);
+                    _bytes[byteIdx++] = (byte)(value >> 16);
+                    _bytes[byteIdx++] = (byte)(value >> 8);
+                    _bytes[byteIdx++] = (byte)value;
+                }
+            }
+            DirectoryEntry.CheckSum = CalcChecksum(_bytes);
+        }
+        byte[] _bytes;
+
+        public override void Write(OpenTypeFontWriter writer)
+        {
+            writer.Write(_bytes, 0, DirectoryEntry.PaddedLength);
+        }
+    }
+    internal sealed class OpenTypeDescriptor : FontDescriptor
+    {
+        public OpenTypeDescriptor(string fontDescriptorKey, string name, XFontStyle stlye, OpenTypeFontface fontface, XPdfFontOptions options)
+            : base(fontDescriptorKey)
+        {
+            FontFace = fontface;
+            FontName = name;
+            Initialize();
+        }
+
+        public OpenTypeDescriptor(string fontDescriptorKey, XFont font)
+            : base(fontDescriptorKey)
+        {
+            try
+            {
+                FontFace = font.GlyphTypeface.Fontface;
+                FontName = font.Name;
+                Initialize();
+            }
+            catch
+            {
+                GetType();
+                throw;
+            }
+        }
+
+        internal OpenTypeDescriptor(string fontDescriptorKey, string idName, byte[] fontData)
+            : base(fontDescriptorKey)
+        {
+            try
+            {
+                FontFace = new OpenTypeFontface(fontData, idName);
+                if (idName.Contains("XPS-Font-") && FontFace.name != null && FontFace.name.Name.Length != 0)
+                {
+                    string tag = String.Empty;
+                    if (idName.IndexOf('+') == 6)
+                        tag = idName.Substring(0, 6);
+                    idName = tag + "+" + FontFace.name.Name;
+                    if (FontFace.name.Style.Length != 0)
+                        idName += "," + FontFace.name.Style;
+                }
+                FontName = idName;
+                Initialize();
+            }
+            catch (Exception)
+            {
+                GetType();
+                throw;
+            }
+        }
+
+        internal OpenTypeFontface FontFace;
+
+        void Initialize()
+        {
+            ItalicAngle = FontFace.post.italicAngle;
+
+            XMin = FontFace.head.xMin;
+            YMin = FontFace.head.yMin;
+            XMax = FontFace.head.xMax;
+            YMax = FontFace.head.yMax;
+
+            UnderlinePosition = FontFace.post.underlinePosition;
+            UnderlineThickness = FontFace.post.underlineThickness;
+
+            Debug.Assert(FontFace.os2 != null, "TrueType font has no OS/2 table.");
+
+            StrikeoutPosition = FontFace.os2.yStrikeoutPosition;
+            StrikeoutSize = FontFace.os2.yStrikeoutSize;
+
+            StemV = 0;
+
+            UnitsPerEm = FontFace.head.unitsPerEm;
+
+            bool os2SeemsToBeEmpty = FontFace.os2.sTypoAscender == 0 && FontFace.os2.sTypoDescender == 0 && FontFace.os2.sTypoLineGap == 0;
+            bool dontUseWinLineMetrics = (FontFace.os2.fsSelection & 128) != 0;
+            if (!os2SeemsToBeEmpty && dontUseWinLineMetrics)
+            {
+                int typoAscender = FontFace.os2.sTypoAscender;
+                int typoDescender = FontFace.os2.sTypoDescender;
+                int typoLineGap = FontFace.os2.sTypoLineGap;
+
+                Ascender = typoAscender + typoLineGap;
+                Descender = -typoDescender;
+                LineSpacing = typoAscender + typoLineGap - typoDescender;
+            }
+            else
+            {
+                int ascender = FontFace.hhea.ascender;
+                int descender = Math.Abs(FontFace.hhea.descender);
+                int lineGap = Math.Max((short)0, FontFace.hhea.lineGap);
+
+                if (!os2SeemsToBeEmpty)
+                {
+                    int winAscent = FontFace.os2.usWinAscent;
+                    int winDescent = Math.Abs(FontFace.os2.usWinDescent);
+
+                    Ascender = winAscent;
+                    Descender = winDescent;
+                    LineSpacing = Math.Max(lineGap + ascender + descender, winAscent + winDescent);
+                }
+                else
+                {
+                    Ascender = ascender;
+                    Descender = descender;
+                    LineSpacing = ascender + descender + lineGap;
+                }
+            }
+
+            Debug.Assert(Descender >= 0);
+
+            int cellHeight = Ascender + Descender;
+            int internalLeading = cellHeight - UnitsPerEm;
+            int externalLeading = LineSpacing - cellHeight;
+            Leading = externalLeading;
+
+            if (FontFace.os2.version >= 2 && FontFace.os2.sCapHeight != 0)
+                CapHeight = FontFace.os2.sCapHeight;
+            else
+                CapHeight = Ascender;
+
+            if (FontFace.os2.version >= 2 && FontFace.os2.sxHeight != 0)
+                XHeight = FontFace.os2.sxHeight;
+            else
+                XHeight = (int)(0.66 * Ascender);
+
+#if !EDF_CORE
+            Encoding ansi = PdfEncoders.WinAnsiEncoding;
+
+#endif
+
+            Encoding unicode = Encoding.Unicode;
+            byte[] bytes = new byte[256];
+
+            bool symbol = FontFace.cmap.symbol;
+            Widths = new int[256];
+            for (int idx = 0; idx < 256; idx++)
+            {
+                bytes[idx] = (byte)idx;
+                char ch = (char)idx;
+                string s = ansi.GetString(bytes, idx, 1);
+                if (s.Length != 0)
+                {
+                    if (s[0] != ch)
+                        ch = s[0];
+                }
+
+                if (symbol)
+                {
+                    ch = (char)(ch | (FontFace.os2.usFirstCharIndex & 0xFF00));
+                }
+                int glyphIndex = CharCodeToGlyphIndex(ch);
+                Widths[idx] = GlyphIndexToPdfWidth(glyphIndex);
+            }
+        }
+        public int[] Widths;
+
+        public override bool IsBoldFace
+        {
+            get
+            {
+                return FontFace.os2.IsBold;
+            }
+        }
+
+        public override bool IsItalicFace
+        {
+            get { return FontFace.os2.IsItalic; }
+        }
+
+        internal int DesignUnitsToPdf(double value)
+        {
+            return (int)Math.Round(value * 1000.0 / FontFace.head.unitsPerEm);
+        }
+
+        public int CharCodeToGlyphIndex(char value)
+        {
+            try
+            {
+                CMap4 cmap = FontFace.cmap.cmap4;
+                int segCount = cmap.segCountX2 / 2;
+                int seg;
+                for (seg = 0; seg < segCount; seg++)
+                {
+                    if (value <= cmap.endCount[seg])
+                        break;
+                }
+                Debug.Assert(seg < segCount);
+
+                if (value < cmap.startCount[seg])
+                    return 0;
+
+                if (cmap.idRangeOffs[seg] == 0)
+                    return (value + cmap.idDelta[seg]) & 0xFFFF;
+
+                int idx = cmap.idRangeOffs[seg] / 2 + (value - cmap.startCount[seg]) - (segCount - seg);
+                Debug.Assert(idx >= 0 && idx < cmap.glyphCount);
+
+                if (cmap.glyphIdArray[idx] == 0)
+                    return 0;
+
+                return (cmap.glyphIdArray[idx] + cmap.idDelta[seg]) & 0xFFFF;
+            }
+            catch
+            {
+                GetType();
+                throw;
+            }
+        }
+
+        public int GlyphIndexToPdfWidth(int glyphIndex)
+        {
+            try
+            {
+                int numberOfHMetrics = FontFace.hhea.numberOfHMetrics;
+                int unitsPerEm = FontFace.head.unitsPerEm;
+
+                if (glyphIndex >= numberOfHMetrics)
+                    glyphIndex = numberOfHMetrics - 1;
+
+                int width = FontFace.hmtx.Metrics[glyphIndex].advanceWidth;
+
+                if (unitsPerEm == 1000)
+                    return width;
+                return width * 1000 / unitsPerEm;
+            }
+            catch (Exception)
+            {
+                GetType();
+                throw;
+            }
+        }
+
+        public int PdfWidthFromCharCode(char ch)
+        {
+            int idx = CharCodeToGlyphIndex(ch);
+            int width = GlyphIndexToPdfWidth(idx);
+            return width;
+        }
+
+        public double GlyphIndexToEmfWidth(int glyphIndex, double emSize)
+        {
+            try
+            {
+                int numberOfHMetrics = FontFace.hhea.numberOfHMetrics;
+                int unitsPerEm = FontFace.head.unitsPerEm;
+
+                if (glyphIndex >= numberOfHMetrics)
+                    glyphIndex = numberOfHMetrics - 1;
+
+                int width = FontFace.hmtx.Metrics[glyphIndex].advanceWidth;
+
+                return width * emSize / unitsPerEm;
+            }
+            catch (Exception)
+            {
+                GetType();
+                throw;
+            }
+        }
+
+        public int GlyphIndexToWidth(int glyphIndex)
+        {
+            try
+            {
+                int numberOfHMetrics = FontFace.hhea.numberOfHMetrics;
+
+                if (glyphIndex >= numberOfHMetrics)
+                    glyphIndex = numberOfHMetrics - 1;
+
+                int width = FontFace.hmtx.Metrics[glyphIndex].advanceWidth;
+                return width;
+            }
+            catch (Exception)
+            {
+                GetType();
+                throw;
+            }
+        }
+    }
+    internal sealed class OpenTypeFontface
+    {
+        OpenTypeFontface(OpenTypeFontface fontface)
+        {
+            _offsetTable = fontface._offsetTable;
+            _fullFaceName = fontface._fullFaceName;
+        }
+
+        public OpenTypeFontface(byte[] data, string faceName)
+        {
+            _fullFaceName = faceName;
+            int length = data.Length;
+            Array.Copy(data, FontSource.Bytes, length);
+            Read();
+        }
+
+        public OpenTypeFontface(XFontSource fontSource)
+        {
+            FontSource = fontSource;
+            Read();
+            _fullFaceName = name.FullFontName;
+        }
+
+        public static OpenTypeFontface CetOrCreateFrom(XFontSource fontSource)
+        {
+            OpenTypeFontface fontface;
+            if (OpenTypeFontfaceCache.TryGetFontface(fontSource.Key, out fontface))
+            {
+                return fontface;
+            }
+            Debug.Assert(fontSource.Fontface != null);
+            fontface = OpenTypeFontfaceCache.AddFontface(fontSource.Fontface);
+            Debug.Assert(ReferenceEquals(fontSource.Fontface, fontface));
+            return fontface;
+        }
+
+        public string FullFaceName
+        {
+            get { return _fullFaceName; }
+        }
+        readonly string _fullFaceName;
+
+        public ulong CheckSum
+        {
+            get
+            {
+                if (_checkSum == 0)
+                    _checkSum = FontHelper.CalcChecksum(FontSource.Bytes);
+                return _checkSum;
+            }
+        }
+        ulong _checkSum;
+
+        public XFontSource FontSource
+        {
+            get { return _fontSource; }
+            private set
+            {
+                if (value == null)
+                    throw new InvalidOperationException("Font cannot be resolved.");
+                _fontSource = value;
+            }
+        }
+        XFontSource _fontSource;
+
+        internal FontTechnology _fontTechnology;
+
+        internal OffsetTable _offsetTable;
+
+        internal Dictionary<string, TableDirectoryEntry> TableDictionary = new Dictionary<string, TableDirectoryEntry>();
+
+        internal CMapTable cmap;
+        internal ControlValueTable cvt;
+        internal FontProgram fpgm;
+        internal MaximumProfileTable maxp;
+        internal NameTable name;
+        internal ControlValueProgram prep;
+        internal FontHeaderTable head;
+        internal HorizontalHeaderTable hhea;
+        internal HorizontalMetricsTable hmtx;
+        internal OS2Table os2;
+        internal PostScriptTable post;
+        internal GlyphDataTable glyf;
+        internal IndexToLocationTable loca;
+        internal GlyphSubstitutionTable gsub;
+        internal VerticalHeaderTable vhea;
+        internal VerticalMetricsTable vmtx;
+        public bool CanRead
+        {
+            get { return FontSource != null; }
+        }
+
+        public bool CanWrite
+        {
+            get { return FontSource == null; }
+        }
+
+        public void AddTable(OpenTypeFontTable fontTable)
+        {
+            if (!CanWrite)
+                throw new InvalidOperationException("Font image cannot be modified.");
+
+            if (fontTable == null)
+                throw new ArgumentNullException("fontTable");
+
+            if (fontTable._fontData == null)
+            {
+                fontTable._fontData = this;
+            }
+            else
+            {
+                Debug.Assert(fontTable._fontData.CanRead);
+                fontTable = new IRefFontTable(this, fontTable);
+            }
+
+            TableDictionary[fontTable.DirectoryEntry.Tag] = fontTable.DirectoryEntry;
+            switch (fontTable.DirectoryEntry.Tag)
+            {
+                case TableTagNames.CMap:
+                    cmap = fontTable as CMapTable;
+                    break;
+
+                case TableTagNames.Cvt:
+                    cvt = fontTable as ControlValueTable;
+                    break;
+
+                case TableTagNames.Fpgm:
+                    fpgm = fontTable as FontProgram;
+                    break;
+
+                case TableTagNames.MaxP:
+                    maxp = fontTable as MaximumProfileTable;
+                    break;
+
+                case TableTagNames.Name:
+                    name = fontTable as NameTable;
+                    break;
+
+                case TableTagNames.Head:
+                    head = fontTable as FontHeaderTable;
+                    break;
+
+                case TableTagNames.HHea:
+                    hhea = fontTable as HorizontalHeaderTable;
+                    break;
+
+                case TableTagNames.HMtx:
+                    hmtx = fontTable as HorizontalMetricsTable;
+                    break;
+
+                case TableTagNames.OS2:
+                    os2 = fontTable as OS2Table;
+                    break;
+
+                case TableTagNames.Post:
+                    post = fontTable as PostScriptTable;
+                    break;
+
+                case TableTagNames.Glyf:
+                    glyf = fontTable as GlyphDataTable;
+                    break;
+
+                case TableTagNames.Loca:
+                    loca = fontTable as IndexToLocationTable;
+                    break;
+
+                case TableTagNames.GSUB:
+                    gsub = fontTable as GlyphSubstitutionTable;
+                    break;
+
+                case TableTagNames.Prep:
+                    prep = fontTable as ControlValueProgram;
+                    break;
+            }
+        }
+
+        internal void Read()
+        {
+            const uint OTTO = 0x4f54544f;
+            const uint TTCF = 0x74746366;
+            try
+            {
+
+                uint startTag = ReadULong();
+                if (startTag == TTCF)
+                {
+                    _fontTechnology = FontTechnology.TrueTypeCollection;
+                    throw new InvalidOperationException("TrueType collection fonts are not yet supported by PDFsharp.");
+                }
+
+                _offsetTable.Version = startTag;
+                _offsetTable.TableCount = ReadUShort();
+                _offsetTable.SearchRange = ReadUShort();
+                _offsetTable.EntrySelector = ReadUShort();
+                _offsetTable.RangeShift = ReadUShort();
+
+                Debug.Assert(_pos == 12);
+                if (_offsetTable.Version == OTTO)
+                    _fontTechnology = FontTechnology.PostscriptOutlines;
+                else
+                    _fontTechnology = FontTechnology.TrueTypeOutlines;
+
+                for (int idx = 0; idx < _offsetTable.TableCount; idx++)
+                {
+                    TableDirectoryEntry entry = TableDirectoryEntry.ReadFrom(this);
+                    TableDictionary.Add(entry.Tag, entry);
+                }
+
+                if (TableDictionary.ContainsKey("bhed"))
+                    throw new NotSupportedException("Bitmap fonts are not supported by PDFsharp.");
+
+                if (Seek(CMapTable.Tag) != -1)
+                    cmap = new CMapTable(this);
+
+                if (Seek(ControlValueTable.Tag) != -1)
+                    cvt = new ControlValueTable(this);
+
+                if (Seek(FontProgram.Tag) != -1)
+                    fpgm = new FontProgram(this);
+
+                if (Seek(MaximumProfileTable.Tag) != -1)
+                    maxp = new MaximumProfileTable(this);
+
+                if (Seek(NameTable.Tag) != -1)
+                    name = new NameTable(this);
+
+                if (Seek(FontHeaderTable.Tag) != -1)
+                    head = new FontHeaderTable(this);
+
+                if (Seek(HorizontalHeaderTable.Tag) != -1)
+                    hhea = new HorizontalHeaderTable(this);
+
+                if (Seek(HorizontalMetricsTable.Tag) != -1)
+                    hmtx = new HorizontalMetricsTable(this);
+
+                if (Seek(OS2Table.Tag) != -1)
+                    os2 = new OS2Table(this);
+
+                if (Seek(PostScriptTable.Tag) != -1)
+                    post = new PostScriptTable(this);
+
+                if (Seek(GlyphDataTable.Tag) != -1)
+                    glyf = new GlyphDataTable(this);
+
+                if (Seek(IndexToLocationTable.Tag) != -1)
+                    loca = new IndexToLocationTable(this);
+
+                if (Seek(GlyphSubstitutionTable.Tag) != -1)
+                    gsub = new GlyphSubstitutionTable(this);
+
+                if (Seek(ControlValueProgram.Tag) != -1)
+                    prep = new ControlValueProgram(this);
+            }
+            catch (Exception)
+            {
+                GetType();
+                throw;
+            }
+        }
+
+        public OpenTypeFontface CreateFontSubSet(Dictionary<int, object> glyphs, bool cidFont)
+        {
+            OpenTypeFontface fontData = new OpenTypeFontface(this);
+
+            IndexToLocationTable locaNew = new IndexToLocationTable();
+            locaNew.ShortIndex = loca.ShortIndex;
+            GlyphDataTable glyfNew = new GlyphDataTable();
+
+            if (!cidFont)
+                fontData.AddTable(cmap);
+            if (cvt != null)
+                fontData.AddTable(cvt);
+            if (fpgm != null)
+                fontData.AddTable(fpgm);
+            fontData.AddTable(glyfNew);
+            fontData.AddTable(head);
+            fontData.AddTable(hhea);
+            fontData.AddTable(hmtx);
+            fontData.AddTable(locaNew);
+            if (maxp != null)
+                fontData.AddTable(maxp);
+            if (prep != null)
+                fontData.AddTable(prep);
+
+            glyf.CompleteGlyphClosure(glyphs);
+
+            int glyphCount = glyphs.Count;
+            int[] glyphArray = new int[glyphCount];
+            glyphs.Keys.CopyTo(glyphArray, 0);
+            Array.Sort(glyphArray);
+
+            int size = 0;
+            for (int idx = 0; idx < glyphCount; idx++)
+                size += glyf.GetGlyphSize(glyphArray[idx]);
+            glyfNew.DirectoryEntry.Length = size;
+
+            int numGlyphs = maxp.numGlyphs;
+            locaNew.LocaTable = new int[numGlyphs + 1];
+
+            glyfNew.GlyphTable = new byte[glyfNew.DirectoryEntry.PaddedLength];
+
+            int glyphOffset = 0;
+            int glyphIndex = 0;
+            for (int idx = 0; idx < numGlyphs; idx++)
+            {
+                locaNew.LocaTable[idx] = glyphOffset;
+                if (glyphIndex < glyphCount && glyphArray[glyphIndex] == idx)
+                {
+                    glyphIndex++;
+                    byte[] bytes = glyf.GetGlyphData(idx);
+                    int length = bytes.Length;
+                    if (length > 0)
+                    {
+                        Buffer.BlockCopy(bytes, 0, glyfNew.GlyphTable, glyphOffset, length);
+                        glyphOffset += length;
+                    }
+                }
+            }
+            locaNew.LocaTable[numGlyphs] = glyphOffset;
+
+            fontData.Compile();
+
+            return fontData;
+        }
+
+        void Compile()
+        {
+            MemoryStream stream = new MemoryStream();
+            OpenTypeFontWriter writer = new OpenTypeFontWriter(stream);
+
+            int tableCount = TableDictionary.Count;
+            int selector = _entrySelectors[tableCount];
+
+            _offsetTable.Version = 0x00010000;
+            _offsetTable.TableCount = tableCount;
+            _offsetTable.SearchRange = (ushort)((1 << selector) * 16);
+            _offsetTable.EntrySelector = (ushort)selector;
+            _offsetTable.RangeShift = (ushort)((tableCount - (1 << selector)) * 16);
+            _offsetTable.Write(writer);
+
+            string[] tags = new string[tableCount];
+            TableDictionary.Keys.CopyTo(tags, 0);
+            Array.Sort(tags, StringComparer.Ordinal);
+
+            int tablePosition = 12 + 16 * tableCount;
+            for (int idx = 0; idx < tableCount; idx++)
+            {
+                TableDirectoryEntry entry = TableDictionary[tags[idx]];
+                entry.FontTable.PrepareForCompilation();
+                entry.Offset = tablePosition;
+                writer.Position = tablePosition;
+                entry.FontTable.Write(writer);
+                int endPosition = writer.Position;
+                tablePosition = endPosition;
+                writer.Position = 12 + 16 * idx;
+                entry.Write(writer);
+            }
+            writer.Stream.Flush();
+            int l = (int)writer.Stream.Length;
+            FontSource = XFontSource.CreateCompiledFont(stream.ToArray());
+        }
+        static readonly int[] _entrySelectors = { 0, 0, 1, 1, 2, 2, 2, 2, 3, 3, 3, 3, 3, 3, 3, 3, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4 };
+
+        public int Position
+        {
+            get { return _pos; }
+            set { _pos = value; }
+        }
+        int _pos;
+
+        public int Seek(string tag)
+        {
+            if (TableDictionary.ContainsKey(tag))
+            {
+                _pos = TableDictionary[tag].Offset;
+                return _pos;
+            }
+            return -1;
+        }
+
+        public int SeekOffset(int offset)
+        {
+            _pos += offset;
+            return _pos;
+        }
+
+        public byte ReadByte()
+        {
+            return _fontSource.Bytes[_pos++];
+        }
+
+        public short ReadShort()
+        {
+            int pos = _pos;
+            _pos += 2;
+            return (short)((_fontSource.Bytes[pos] << 8) | (_fontSource.Bytes[pos + 1]));
+        }
+
+        public ushort ReadUShort()
+        {
+            int pos = _pos;
+            _pos += 2;
+            return (ushort)((_fontSource.Bytes[pos] << 8) | (_fontSource.Bytes[pos + 1]));
+        }
+
+        public int ReadLong()
+        {
+            int pos = _pos;
+            _pos += 4;
+            return (_fontSource.Bytes[pos] << 24) | (_fontSource.Bytes[pos + 1] << 16) | (_fontSource.Bytes[pos + 2] << 8) | (_fontSource.Bytes[pos + 3]);
+        }
+
+        public uint ReadULong()
+        {
+            int pos = _pos;
+            _pos += 4;
+            return (uint)((_fontSource.Bytes[pos] << 24) | (_fontSource.Bytes[pos + 1] << 16) | (_fontSource.Bytes[pos + 2] << 8) | (_fontSource.Bytes[pos + 3]));
+        }
+
+        public Fixed ReadFixed()
+        {
+            int pos = _pos;
+            _pos += 4;
+            return (_fontSource.Bytes[pos] << 24) | (_fontSource.Bytes[pos + 1] << 16) | (_fontSource.Bytes[pos + 2] << 8) | (_fontSource.Bytes[pos + 3]);
+        }
+
+        public short ReadFWord()
+        {
+            int pos = _pos;
+            _pos += 2;
+            return (short)((_fontSource.Bytes[pos] << 8) | (_fontSource.Bytes[pos + 1]));
+        }
+
+        public ushort ReadUFWord()
+        {
+            int pos = _pos;
+            _pos += 2;
+            return (ushort)((_fontSource.Bytes[pos] << 8) | (_fontSource.Bytes[pos + 1]));
+        }
+
+        public long ReadLongDate()
+        {
+            int pos = _pos;
+            _pos += 8;
+            byte[] bytes = _fontSource.Bytes;
+            return (((long)bytes[pos]) << 56) | (((long)bytes[pos + 1]) << 48) | (((long)bytes[pos + 2]) << 40) | (((long)bytes[pos + 3]) << 32) |
+                   (((long)bytes[pos + 4]) << 24) | (((long)bytes[pos + 5]) << 16) | (((long)bytes[pos + 6]) << 8) | bytes[pos + 7];
+        }
+
+        public string ReadString(int size)
+        {
+            char[] chars = new char[size];
+            for (int idx = 0; idx < size; idx++)
+                chars[idx] = (char)_fontSource.Bytes[_pos++];
+            return new string(chars);
+        }
+
+        public byte[] ReadBytes(int size)
+        {
+            byte[] bytes = new byte[size];
+            for (int idx = 0; idx < size; idx++)
+                bytes[idx] = _fontSource.Bytes[_pos++];
+            return bytes;
+        }
+
+        public void Read(byte[] buffer)
+        {
+            Read(buffer, 0, buffer.Length);
+        }
+
+        public void Read(byte[] buffer, int offset, int length)
+        {
+            Buffer.BlockCopy(_fontSource.Bytes, _pos, buffer, offset, length);
+            _pos += length;
+        }
+
+        public string ReadTag()
+        {
+            return ReadString(4);
+        }
+
+        internal string DebuggerDisplay
+        {
+            get { return string.Format(CultureInfo.InvariantCulture, "OpenType fontfaces: {0}", _fullFaceName); }
+        }
+
+        internal struct OffsetTable
+        {
+            public uint Version;
+
+            public int TableCount;
+
+            public ushort SearchRange;
+
+            public ushort EntrySelector;
+
+            public ushort RangeShift;
+
+            public void Write(OpenTypeFontWriter writer)
+            {
+                writer.WriteUInt(Version);
+                writer.WriteShort(TableCount);
+                writer.WriteUShort(SearchRange);
+                writer.WriteUShort(EntrySelector);
+                writer.WriteUShort(RangeShift);
+            }
+        }
+    }
+    internal class OpenTypeFontfaceCache
+    {
+        OpenTypeFontfaceCache()
+        {
+            _fontfaceCache = new Dictionary<string, OpenTypeFontface>(StringComparer.OrdinalIgnoreCase);
+            _fontfacesByCheckSum = new Dictionary<ulong, OpenTypeFontface>();
+        }
+
+        public static bool TryGetFontface(string key, out OpenTypeFontface fontface)
+        {
+            try
+            {
+                Lock.EnterFontFactory();
+                bool result = Singleton._fontfaceCache.TryGetValue(key, out fontface);
+                return result;
+            }
+            finally { Lock.ExitFontFactory(); }
+        }
+
+        public static bool TryGetFontface(ulong checkSum, out OpenTypeFontface fontface)
+        {
+            try
+            {
+                Lock.EnterFontFactory();
+                bool result = Singleton._fontfacesByCheckSum.TryGetValue(checkSum, out fontface);
+                return result;
+            }
+            finally { Lock.ExitFontFactory(); }
+        }
+
+        public static OpenTypeFontface AddFontface(OpenTypeFontface fontface)
+        {
+            try
+            {
+                Lock.EnterFontFactory();
+                OpenTypeFontface fontfaceCheck;
+                if (TryGetFontface(fontface.FullFaceName, out fontfaceCheck))
+                {
+                    if (fontfaceCheck.CheckSum != fontface.CheckSum)
+                        throw new InvalidOperationException("OpenTypeFontface with same signature but different bytes.");
+                    return fontfaceCheck;
+                }
+                Singleton._fontfaceCache.Add(fontface.FullFaceName, fontface);
+                Singleton._fontfacesByCheckSum.Add(fontface.CheckSum, fontface);
+                return fontface;
+            }
+            finally { Lock.ExitFontFactory(); }
+        }
+
+        static OpenTypeFontfaceCache Singleton
+        {
+            get
+            {
+                if (_singleton == null)
+                {
+                    try
+                    {
+                        Lock.EnterFontFactory();
+                        if (_singleton == null)
+                            _singleton = new OpenTypeFontfaceCache();
+                    }
+                    finally { Lock.ExitFontFactory(); }
+                }
+                return _singleton;
+            }
+        }
+        static volatile OpenTypeFontfaceCache _singleton;
+
+        internal static string GetCacheState()
+        {
+            StringBuilder state = new StringBuilder();
+            state.Append("====================\n");
+            state.Append("OpenType fontfaces by name\n");
+            Dictionary<string, OpenTypeFontface>.KeyCollection familyKeys = Singleton._fontfaceCache.Keys;
+            int count = familyKeys.Count;
+            string[] keys = new string[count];
+            familyKeys.CopyTo(keys, 0);
+            Array.Sort(keys, StringComparer.OrdinalIgnoreCase);
+            foreach (string key in keys)
+                state.AppendFormat("  {0}: {1}\n", key, Singleton._fontfaceCache[key].DebuggerDisplay);
+            state.Append("\n");
+            return state.ToString();
+        }
+
+        readonly Dictionary<string, OpenTypeFontface> _fontfaceCache;
+
+        readonly Dictionary<ulong, OpenTypeFontface> _fontfacesByCheckSum;
+
+        string DebuggerDisplay
+        {
+            get { return string.Format(CultureInfo.InvariantCulture, "Fontfaces: {0}", _fontfaceCache.Count); }
+        }
+    }
+    internal class OpenTypeFontTable : ICloneable
+    {
+        public OpenTypeFontTable(OpenTypeFontface fontData, string tag)
+        {
+            _fontData = fontData;
+            if (fontData != null && fontData.TableDictionary.ContainsKey(tag))
+                DirectoryEntry = fontData.TableDictionary[tag];
+            else
+                DirectoryEntry = new TableDirectoryEntry(tag);
+            DirectoryEntry.FontTable = this;
+        }
+
+        public object Clone()
+        {
+            return DeepCopy();
+        }
+
+        protected virtual OpenTypeFontTable DeepCopy()
+        {
+            OpenTypeFontTable fontTable = (OpenTypeFontTable)MemberwiseClone();
+            fontTable.DirectoryEntry.Offset = 0;
+            fontTable.DirectoryEntry.FontTable = fontTable;
+            return fontTable;
+        }
+
+        public OpenTypeFontface FontData
+        {
+            get { return _fontData; }
+        }
+        internal OpenTypeFontface _fontData;
+
+        public TableDirectoryEntry DirectoryEntry;
+
+        public virtual void PrepareForCompilation()
+        { }
+
+        public virtual void Write(OpenTypeFontWriter writer)
+        { }
+
+        public static uint CalcChecksum(byte[] bytes)
+        {
+            Debug.Assert((bytes.Length & 3) == 0);
+            uint byte3, byte2, byte1, byte0;
+            byte3 = byte2 = byte1 = byte0 = 0;
+            int length = bytes.Length;
+            for (int idx = 0; idx < length;)
+            {
+                byte3 += bytes[idx++];
+                byte2 += bytes[idx++];
+                byte1 += bytes[idx++];
+                byte0 += bytes[idx++];
+            }
+            return (byte3 << 24) + (byte2 << 16) + (byte1 << 8) + byte0;
+        }
+    }
+    internal enum PlatformId
+    {
+        Apple, Mac, Iso, Win
+    }
+
+    internal enum WinEncodingId
+    {
+        Symbol, Unicode
+    }
+
+    internal class CMap4 : OpenTypeFontTable
+    {
+        public WinEncodingId encodingId;
+        public ushort format;
+        public ushort length;
+        public ushort language;
+        public ushort segCountX2;
+        public ushort searchRange;
+        public ushort entrySelector;
+        public ushort rangeShift;
+        public ushort[] endCount;
+        public ushort[] startCount;
+        public short[] idDelta;
+        public ushort[] idRangeOffs;
+        public int glyphCount;
+        public ushort[] glyphIdArray;
+
+        public CMap4(OpenTypeFontface fontData, WinEncodingId encodingId)
+            : base(fontData, "----")
+        {
+            this.encodingId = encodingId;
+            Read();
+        }
+
+        internal void Read()
+        {
+            try
+            {
+                format = _fontData.ReadUShort();
+                Debug.Assert(format == 4, "Only format 4 expected.");
+                length = _fontData.ReadUShort();
+                language = _fontData.ReadUShort();
+                segCountX2 = _fontData.ReadUShort();
+                searchRange = _fontData.ReadUShort();
+                entrySelector = _fontData.ReadUShort();
+                rangeShift = _fontData.ReadUShort();
+
+                int segCount = segCountX2 / 2;
+                glyphCount = (length - (16 + 8 * segCount)) / 2;
+
+                endCount = new ushort[segCount];
+                startCount = new ushort[segCount];
+                idDelta = new short[segCount];
+                idRangeOffs = new ushort[segCount];
+
+                glyphIdArray = new ushort[glyphCount];
+
+                for (int idx = 0; idx < segCount; idx++)
+                    endCount[idx] = _fontData.ReadUShort();
+
+                _fontData.ReadUShort();
+
+                for (int idx = 0; idx < segCount; idx++)
+                    startCount[idx] = _fontData.ReadUShort();
+
+                for (int idx = 0; idx < segCount; idx++)
+                    idDelta[idx] = _fontData.ReadShort();
+
+                for (int idx = 0; idx < segCount; idx++)
+                    idRangeOffs[idx] = _fontData.ReadUShort();
+
+                for (int idx = 0; idx < glyphCount; idx++)
+                    glyphIdArray[idx] = _fontData.ReadUShort();
+            }
+            catch (Exception ex)
+            {
+                throw new InvalidOperationException(PSSR.ErrorReadingFontData, ex);
+            }
+        }
+    }
+
+    internal class CMapTable : OpenTypeFontTable
+    {
+        public const string Tag = TableTagNames.CMap;
+
+        public ushort version;
+        public ushort numTables;
+
+        public bool symbol;
+
+        public CMap4 cmap4;
+
+        public CMapTable(OpenTypeFontface fontData)
+            : base(fontData, Tag)
+        {
+            Read();
+        }
+
+        internal void Read()
+        {
+            try
+            {
+                int tableOffset = _fontData.Position;
+
+                version = _fontData.ReadUShort();
+                numTables = _fontData.ReadUShort();
+
+                bool success = false;
+                for (int idx = 0; idx < numTables; idx++)
+                {
+                    PlatformId platformId = (PlatformId)_fontData.ReadUShort();
+                    WinEncodingId encodingId = (WinEncodingId)_fontData.ReadUShort();
+                    int offset = _fontData.ReadLong();
+
+                    int currentPosition = _fontData.Position;
+
+                    if (platformId == PlatformId.Win && (encodingId == WinEncodingId.Symbol || encodingId == WinEncodingId.Unicode))
+                    {
+                        symbol = encodingId == WinEncodingId.Symbol;
+
+                        _fontData.Position = tableOffset + offset;
+                        cmap4 = new CMap4(_fontData, encodingId);
+                        _fontData.Position = currentPosition;
+                        success = true;
+                        break;
+                    }
+                }
+                if (!success)
+                    throw new InvalidOperationException("Font has no usable platform or encoding ID. It cannot be used with PDFsharp.");
+            }
+            catch (Exception ex)
+            {
+                throw new InvalidOperationException(PSSR.ErrorReadingFontData, ex);
+            }
+        }
+    }
+
+    internal class FontHeaderTable : OpenTypeFontTable
+    {
+        public const string Tag = TableTagNames.Head;
+
+        public Fixed version;
+        public Fixed fontRevision;
+        public uint checkSumAdjustment;
+        public uint magicNumber;
+        public ushort flags;
+        public ushort unitsPerEm;
+        public long created;
+        public long modified;
+        public short xMin, yMin;
+        public short xMax, yMax;
+        public ushort macStyle;
+        public ushort lowestRecPPEM;
+        public short fontDirectionHint;
+        public short indexToLocFormat;
+        public short glyphDataFormat;
+
+        public FontHeaderTable(OpenTypeFontface fontData)
+            : base(fontData, Tag)
+        {
+            Read();
+        }
+
+        public void Read()
+        {
+            try
+            {
+                version = _fontData.ReadFixed();
+                fontRevision = _fontData.ReadFixed();
+                checkSumAdjustment = _fontData.ReadULong();
+                magicNumber = _fontData.ReadULong();
+                flags = _fontData.ReadUShort();
+                unitsPerEm = _fontData.ReadUShort();
+                created = _fontData.ReadLongDate();
+                modified = _fontData.ReadLongDate();
+                xMin = _fontData.ReadShort();
+                yMin = _fontData.ReadShort();
+                xMax = _fontData.ReadShort();
+                yMax = _fontData.ReadShort();
+                macStyle = _fontData.ReadUShort();
+                lowestRecPPEM = _fontData.ReadUShort();
+                fontDirectionHint = _fontData.ReadShort();
+                indexToLocFormat = _fontData.ReadShort();
+                glyphDataFormat = _fontData.ReadShort();
+            }
+            catch (Exception ex)
+            {
+                throw new InvalidOperationException(PSSR.ErrorReadingFontData, ex);
+            }
+        }
+    }
+
+    internal class HorizontalHeaderTable : OpenTypeFontTable
+    {
+        public const string Tag = TableTagNames.HHea;
+
+        public Fixed version;
+        public FWord ascender;
+        public FWord descender;
+        public FWord lineGap;
+        public UFWord advanceWidthMax;
+        public FWord minLeftSideBearing;
+        public FWord minRightSideBearing;
+        public FWord xMaxExtent;
+        public short caretSlopeRise;
+        public short caretSlopeRun;
+        public short reserved1;
+        public short reserved2;
+        public short reserved3;
+        public short reserved4;
+        public short reserved5;
+        public short metricDataFormat;
+        public ushort numberOfHMetrics;
+
+        public HorizontalHeaderTable(OpenTypeFontface fontData)
+            : base(fontData, Tag)
+        {
+            Read();
+        }
+
+        public void Read()
+        {
+            try
+            {
+                version = _fontData.ReadFixed();
+                ascender = _fontData.ReadFWord();
+                descender = _fontData.ReadFWord();
+                lineGap = _fontData.ReadFWord();
+                advanceWidthMax = _fontData.ReadUFWord();
+                minLeftSideBearing = _fontData.ReadFWord();
+                minRightSideBearing = _fontData.ReadFWord();
+                xMaxExtent = _fontData.ReadFWord();
+                caretSlopeRise = _fontData.ReadShort();
+                caretSlopeRun = _fontData.ReadShort();
+                reserved1 = _fontData.ReadShort();
+                reserved2 = _fontData.ReadShort();
+                reserved3 = _fontData.ReadShort();
+                reserved4 = _fontData.ReadShort();
+                reserved5 = _fontData.ReadShort();
+                metricDataFormat = _fontData.ReadShort();
+                numberOfHMetrics = _fontData.ReadUShort();
+            }
+            catch (Exception ex)
+            {
+                throw new InvalidOperationException(PSSR.ErrorReadingFontData, ex);
+            }
+        }
+    }
+
+    internal class HorizontalMetrics : OpenTypeFontTable
+    {
+        public const string Tag = "----";
+
+        public ushort advanceWidth;
+        public short lsb;
+
+        public HorizontalMetrics(OpenTypeFontface fontData)
+            : base(fontData, Tag)
+        {
+            Read();
+        }
+
+        public void Read()
+        {
+            try
+            {
+                advanceWidth = _fontData.ReadUFWord();
+                lsb = _fontData.ReadFWord();
+            }
+            catch (Exception ex)
+            {
+                throw new InvalidOperationException(PSSR.ErrorReadingFontData, ex);
+            }
+        }
+    }
+
+    internal class HorizontalMetricsTable : OpenTypeFontTable
+    {
+        public const string Tag = TableTagNames.HMtx;
+
+        public HorizontalMetrics[] Metrics;
+        public FWord[] LeftSideBearing;
+
+        public HorizontalMetricsTable(OpenTypeFontface fontData)
+            : base(fontData, Tag)
+        {
+            Read();
+        }
+
+        public void Read()
+        {
+            try
+            {
+                HorizontalHeaderTable hhea = _fontData.hhea;
+                MaximumProfileTable maxp = _fontData.maxp;
+                if (hhea != null && maxp != null)
+                {
+                    int numMetrics = hhea.numberOfHMetrics;
+                    int numLsbs = maxp.numGlyphs - numMetrics;
+
+                    Debug.Assert(numMetrics != 0);
+                    Debug.Assert(numLsbs >= 0);
+
+                    Metrics = new HorizontalMetrics[numMetrics];
+                    for (int idx = 0; idx < numMetrics; idx++)
+                        Metrics[idx] = new HorizontalMetrics(_fontData);
+
+                    if (numLsbs > 0)
+                    {
+                        LeftSideBearing = new FWord[numLsbs];
+                        for (int idx = 0; idx < numLsbs; idx++)
+                            LeftSideBearing[idx] = _fontData.ReadFWord();
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                throw new InvalidOperationException(PSSR.ErrorReadingFontData, ex);
+            }
+        }
+    }
+
+    internal class VerticalHeaderTable : OpenTypeFontTable
+    {
+        public const string Tag = TableTagNames.VHea;
+
+        public Fixed Version;
+        public FWord Ascender;
+        public FWord Descender;
+        public FWord LineGap;
+        public UFWord AdvanceWidthMax;
+        public FWord MinLeftSideBearing;
+        public FWord MinRightSideBearing;
+        public FWord xMaxExtent;
+        public short caretSlopeRise;
+        public short caretSlopeRun;
+        public short reserved1;
+        public short reserved2;
+        public short reserved3;
+        public short reserved4;
+        public short reserved5;
+        public short metricDataFormat;
+        public ushort numberOfHMetrics;
+
+        public VerticalHeaderTable(OpenTypeFontface fontData)
+            : base(fontData, Tag)
+        {
+            Read();
+        }
+
+        public void Read()
+        {
+            try
+            {
+                Version = _fontData.ReadFixed();
+                Ascender = _fontData.ReadFWord();
+                Descender = _fontData.ReadFWord();
+                LineGap = _fontData.ReadFWord();
+                AdvanceWidthMax = _fontData.ReadUFWord();
+                MinLeftSideBearing = _fontData.ReadFWord();
+                MinRightSideBearing = _fontData.ReadFWord();
+                xMaxExtent = _fontData.ReadFWord();
+                caretSlopeRise = _fontData.ReadShort();
+                caretSlopeRun = _fontData.ReadShort();
+                reserved1 = _fontData.ReadShort();
+                reserved2 = _fontData.ReadShort();
+                reserved3 = _fontData.ReadShort();
+                reserved4 = _fontData.ReadShort();
+                reserved5 = _fontData.ReadShort();
+                metricDataFormat = _fontData.ReadShort();
+                numberOfHMetrics = _fontData.ReadUShort();
+            }
+            catch (Exception ex)
+            {
+                throw new InvalidOperationException(PSSR.ErrorReadingFontData, ex);
+            }
+        }
+    }
+
+    internal class VerticalMetrics : OpenTypeFontTable
+    {
+        public const string Tag = "----";
+
+        public ushort advanceWidth;
+        public short lsb;
+
+        public VerticalMetrics(OpenTypeFontface fontData)
+            : base(fontData, Tag)
+        {
+            Read();
+        }
+
+        public void Read()
+        {
+            try
+            {
+                advanceWidth = _fontData.ReadUFWord();
+                lsb = _fontData.ReadFWord();
+            }
+            catch (Exception ex)
+            {
+                throw new InvalidOperationException(PSSR.ErrorReadingFontData, ex);
+            }
+        }
+    }
+
+    internal class VerticalMetricsTable : OpenTypeFontTable
+    {
+        public const string Tag = TableTagNames.VMtx;
+
+        public HorizontalMetrics[] metrics;
+        public FWord[] leftSideBearing;
+
+        public VerticalMetricsTable(OpenTypeFontface fontData)
+            : base(fontData, Tag)
+        {
+            Read();
+            throw new NotImplementedException("VerticalMetricsTable");
+        }
+
+        public void Read()
+        {
+            try
+            {
+                HorizontalHeaderTable hhea = _fontData.hhea;
+                MaximumProfileTable maxp = _fontData.maxp;
+                if (hhea != null && maxp != null)
+                {
+                    int numMetrics = hhea.numberOfHMetrics;
+                    int numLsbs = maxp.numGlyphs - numMetrics;
+
+                    Debug.Assert(numMetrics != 0);
+                    Debug.Assert(numLsbs >= 0);
+
+                    metrics = new HorizontalMetrics[numMetrics];
+                    for (int idx = 0; idx < numMetrics; idx++)
+                        metrics[idx] = new HorizontalMetrics(_fontData);
+
+                    if (numLsbs > 0)
+                    {
+                        leftSideBearing = new FWord[numLsbs];
+                        for (int idx = 0; idx < numLsbs; idx++)
+                            leftSideBearing[idx] = _fontData.ReadFWord();
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                throw new InvalidOperationException(PSSR.ErrorReadingFontData, ex);
+            }
+        }
+    }
+
+    internal class MaximumProfileTable : OpenTypeFontTable
+    {
+        public const string Tag = TableTagNames.MaxP;
+
+        public Fixed version;
+        public ushort numGlyphs;
+        public ushort maxPoints;
+        public ushort maxContours;
+        public ushort maxCompositePoints;
+        public ushort maxCompositeContours;
+        public ushort maxZones;
+        public ushort maxTwilightPoints;
+        public ushort maxStorage;
+        public ushort maxFunctionDefs;
+        public ushort maxInstructionDefs;
+        public ushort maxStackElements;
+        public ushort maxSizeOfInstructions;
+        public ushort maxComponentElements;
+        public ushort maxComponentDepth;
+
+        public MaximumProfileTable(OpenTypeFontface fontData)
+            : base(fontData, Tag)
+        {
+            Read();
+        }
+
+        public void Read()
+        {
+            try
+            {
+                version = _fontData.ReadFixed();
+                numGlyphs = _fontData.ReadUShort();
+                maxPoints = _fontData.ReadUShort();
+                maxContours = _fontData.ReadUShort();
+                maxCompositePoints = _fontData.ReadUShort();
+                maxCompositeContours = _fontData.ReadUShort();
+                maxZones = _fontData.ReadUShort();
+                maxTwilightPoints = _fontData.ReadUShort();
+                maxStorage = _fontData.ReadUShort();
+                maxFunctionDefs = _fontData.ReadUShort();
+                maxInstructionDefs = _fontData.ReadUShort();
+                maxStackElements = _fontData.ReadUShort();
+                maxSizeOfInstructions = _fontData.ReadUShort();
+                maxComponentElements = _fontData.ReadUShort();
+                maxComponentDepth = _fontData.ReadUShort();
+            }
+            catch (Exception ex)
+            {
+                throw new InvalidOperationException(PSSR.ErrorReadingFontData, ex);
+            }
+        }
+    }
+
+    internal class NameTable : OpenTypeFontTable
+    {
+        public const string Tag = TableTagNames.Name;
+
+        public string Name = String.Empty;
+
+        public string Style = String.Empty;
+
+        public string FullFontName = String.Empty;
+
+        public ushort format;
+        public ushort count;
+        public ushort stringOffset;
+
+        byte[] bytes;
+
+        public NameTable(OpenTypeFontface fontData)
+            : base(fontData, Tag)
+        {
+            Read();
+        }
+
+        public void Read()
+        {
+            try
+            {
+                bytes = new byte[DirectoryEntry.PaddedLength];
+                Buffer.BlockCopy(_fontData.FontSource.Bytes, DirectoryEntry.Offset, bytes, 0, DirectoryEntry.Length);
+
+                format = _fontData.ReadUShort();
+                count = _fontData.ReadUShort();
+                stringOffset = _fontData.ReadUShort();
+
+                for (int idx = 0; idx < count; idx++)
+                {
+                    NameRecord nrec = ReadNameRecord();
+                    byte[] value = new byte[nrec.length];
+                    Buffer.BlockCopy(_fontData.FontSource.Bytes, DirectoryEntry.Offset + stringOffset + nrec.offset, value, 0, nrec.length);
+
+                    if (nrec.platformID == 0 || nrec.platformID == 3)
+                    {
+                        if (nrec.nameID == 1 && nrec.languageID == 0x0409)
+                        {
+                            if (String.IsNullOrEmpty(Name))
+                                Name = Encoding.BigEndianUnicode.GetString(value, 0, value.Length);
+                        }
+
+                        if (nrec.nameID == 2 && nrec.languageID == 0x0409)
+                        {
+                            if (String.IsNullOrEmpty(Style))
+                                Style = Encoding.BigEndianUnicode.GetString(value, 0, value.Length);
+                        }
+
+                        if (nrec.nameID == 4 && nrec.languageID == 0x0409)
+                        {
+                            if (String.IsNullOrEmpty(FullFontName))
+                                FullFontName = Encoding.BigEndianUnicode.GetString(value, 0, value.Length);
+                        }
+                    }
+                }
+                Debug.Assert(!String.IsNullOrEmpty(Name));
+            }
+            catch (Exception ex)
+            {
+                throw new InvalidOperationException(PSSR.ErrorReadingFontData, ex);
+            }
+        }
+
+        NameRecord ReadNameRecord()
+        {
+            NameRecord nrec = new NameRecord();
+            nrec.platformID = _fontData.ReadUShort();
+            nrec.encodingID = _fontData.ReadUShort();
+            nrec.languageID = _fontData.ReadUShort();
+            nrec.nameID = _fontData.ReadUShort();
+            nrec.length = _fontData.ReadUShort();
+            nrec.offset = _fontData.ReadUShort();
+            return nrec;
+        }
+
+        class NameRecord
+        {
+            public ushort platformID;
+            public ushort encodingID;
+            public ushort languageID;
+            public ushort nameID;
+            public ushort length;
+            public ushort offset;
+        }
+    }
+
+    internal class OS2Table : OpenTypeFontTable
+    {
+        public const string Tag = TableTagNames.OS2;
+
+        [Flags]
+        public enum FontSelectionFlags : ushort
+        {
+            Italic = 1 << 0,
+            Bold = 1 << 5,
+            Regular = 1 << 6,
+        }
+
+        public ushort version;
+        public short xAvgCharWidth;
+        public ushort usWeightClass;
+        public ushort usWidthClass;
+        public ushort fsType;
+        public short ySubscriptXSize;
+        public short ySubscriptYSize;
+        public short ySubscriptXOffset;
+        public short ySubscriptYOffset;
+        public short ySuperscriptXSize;
+        public short ySuperscriptYSize;
+        public short ySuperscriptXOffset;
+        public short ySuperscriptYOffset;
+        public short yStrikeoutSize;
+        public short yStrikeoutPosition;
+        public short sFamilyClass;
+        public byte[] panose;
+        public uint ulUnicodeRange1;
+        public uint ulUnicodeRange2;
+        public uint ulUnicodeRange3;
+        public uint ulUnicodeRange4;
+        public string achVendID;
+        public ushort fsSelection;
+        public ushort usFirstCharIndex;
+        public ushort usLastCharIndex;
+        public short sTypoAscender;
+        public short sTypoDescender;
+        public short sTypoLineGap;
+        public ushort usWinAscent;
+        public ushort usWinDescent;
+        public uint ulCodePageRange1;
+        public uint ulCodePageRange2;
+        public short sxHeight;
+        public short sCapHeight;
+        public ushort usDefaultChar;
+        public ushort usBreakChar;
+        public ushort usMaxContext;
+
+        public OS2Table(OpenTypeFontface fontData)
+            : base(fontData, Tag)
+        {
+            Read();
+        }
+
+        public void Read()
+        {
+            try
+            {
+                version = _fontData.ReadUShort();
+                xAvgCharWidth = _fontData.ReadShort();
+                usWeightClass = _fontData.ReadUShort();
+                usWidthClass = _fontData.ReadUShort();
+                fsType = _fontData.ReadUShort();
+                ySubscriptXSize = _fontData.ReadShort();
+                ySubscriptYSize = _fontData.ReadShort();
+                ySubscriptXOffset = _fontData.ReadShort();
+                ySubscriptYOffset = _fontData.ReadShort();
+                ySuperscriptXSize = _fontData.ReadShort();
+                ySuperscriptYSize = _fontData.ReadShort();
+                ySuperscriptXOffset = _fontData.ReadShort();
+                ySuperscriptYOffset = _fontData.ReadShort();
+                yStrikeoutSize = _fontData.ReadShort();
+                yStrikeoutPosition = _fontData.ReadShort();
+                sFamilyClass = _fontData.ReadShort();
+                panose = _fontData.ReadBytes(10);
+                ulUnicodeRange1 = _fontData.ReadULong();
+                ulUnicodeRange2 = _fontData.ReadULong();
+                ulUnicodeRange3 = _fontData.ReadULong();
+                ulUnicodeRange4 = _fontData.ReadULong();
+                achVendID = _fontData.ReadString(4);
+                fsSelection = _fontData.ReadUShort();
+                usFirstCharIndex = _fontData.ReadUShort();
+                usLastCharIndex = _fontData.ReadUShort();
+                sTypoAscender = _fontData.ReadShort();
+                sTypoDescender = _fontData.ReadShort();
+                sTypoLineGap = _fontData.ReadShort();
+                usWinAscent = _fontData.ReadUShort();
+                usWinDescent = _fontData.ReadUShort();
+
+                if (version >= 1)
+                {
+                    ulCodePageRange1 = _fontData.ReadULong();
+                    ulCodePageRange2 = _fontData.ReadULong();
+
+                    if (version >= 2)
+                    {
+                        sxHeight = _fontData.ReadShort();
+                        sCapHeight = _fontData.ReadShort();
+                        usDefaultChar = _fontData.ReadUShort();
+                        usBreakChar = _fontData.ReadUShort();
+                        usMaxContext = _fontData.ReadUShort();
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                throw new InvalidOperationException(PSSR.ErrorReadingFontData, ex);
+            }
+        }
+
+        public bool IsBold
+        {
+            get { return (fsSelection & (ushort)FontSelectionFlags.Bold) != 0; }
+        }
+
+        public bool IsItalic
+        {
+            get { return (fsSelection & (ushort)FontSelectionFlags.Italic) != 0; }
+        }
+    }
+
+    internal class PostScriptTable : OpenTypeFontTable
+    {
+        public const string Tag = TableTagNames.Post;
+
+        public Fixed formatType;
+        public float italicAngle;
+        public FWord underlinePosition;
+        public FWord underlineThickness;
+        public ulong isFixedPitch;
+        public ulong minMemType42;
+        public ulong maxMemType42;
+        public ulong minMemType1;
+        public ulong maxMemType1;
+
+        public PostScriptTable(OpenTypeFontface fontData)
+            : base(fontData, Tag)
+        {
+            Read();
+        }
+
+        public void Read()
+        {
+            try
+            {
+                formatType = _fontData.ReadFixed();
+                italicAngle = _fontData.ReadFixed() / 65536f;
+                underlinePosition = _fontData.ReadFWord();
+                underlineThickness = _fontData.ReadFWord();
+                isFixedPitch = _fontData.ReadULong();
+                minMemType42 = _fontData.ReadULong();
+                maxMemType42 = _fontData.ReadULong();
+                minMemType1 = _fontData.ReadULong();
+                maxMemType1 = _fontData.ReadULong();
+            }
+            catch (Exception ex)
+            {
+                throw new InvalidOperationException(PSSR.ErrorReadingFontData, ex);
+            }
+        }
+    }
+
+    internal class ControlValueTable : OpenTypeFontTable
+    {
+        public const string Tag = TableTagNames.Cvt;
+
+        FWord[] array;
+
+        public ControlValueTable(OpenTypeFontface fontData)
+            : base(fontData, Tag)
+        {
+            DirectoryEntry.Tag = TableTagNames.Cvt;
+            DirectoryEntry = fontData.TableDictionary[TableTagNames.Cvt];
+            Read();
+        }
+
+        public void Read()
+        {
+            try
+            {
+                int length = DirectoryEntry.Length / 2;
+                array = new FWord[length];
+                for (int idx = 0; idx < length; idx++)
+                    array[idx] = _fontData.ReadFWord();
+            }
+            catch (Exception ex)
+            {
+                throw new InvalidOperationException(PSSR.ErrorReadingFontData, ex);
+            }
+        }
+    }
+
+    internal class FontProgram : OpenTypeFontTable
+    {
+        public const string Tag = TableTagNames.Fpgm;
+
+        byte[] bytes;
+
+        public FontProgram(OpenTypeFontface fontData)
+            : base(fontData, Tag)
+        {
+            DirectoryEntry.Tag = TableTagNames.Fpgm;
+            DirectoryEntry = fontData.TableDictionary[TableTagNames.Fpgm];
+            Read();
+        }
+
+        public void Read()
+        {
+            try
+            {
+                int length = DirectoryEntry.Length;
+                bytes = new byte[length];
+                for (int idx = 0; idx < length; idx++)
+                    bytes[idx] = _fontData.ReadByte();
+            }
+            catch (Exception ex)
+            {
+                throw new InvalidOperationException(PSSR.ErrorReadingFontData, ex);
+            }
+        }
+    }
+
+    internal class ControlValueProgram : OpenTypeFontTable
+    {
+        public const string Tag = TableTagNames.Prep;
+
+        byte[] bytes;
+
+        public ControlValueProgram(OpenTypeFontface fontData)
+            : base(fontData, Tag)
+        {
+            DirectoryEntry.Tag = TableTagNames.Prep;
+            DirectoryEntry = fontData.TableDictionary[TableTagNames.Prep];
+            Read();
+        }
+
+        public void Read()
+        {
+            try
+            {
+                int length = DirectoryEntry.Length;
+                bytes = new byte[length];
+                for (int idx = 0; idx < length; idx++)
+                    bytes[idx] = _fontData.ReadByte();
+            }
+            catch (Exception ex)
+            {
+                throw new InvalidOperationException(PSSR.ErrorReadingFontData, ex);
+            }
+        }
+    }
+
+    internal class GlyphSubstitutionTable : OpenTypeFontTable
+    {
+        public const string Tag = TableTagNames.GSUB;
+
+        public GlyphSubstitutionTable(OpenTypeFontface fontData)
+            : base(fontData, Tag)
+        {
+            DirectoryEntry.Tag = TableTagNames.GSUB;
+            DirectoryEntry = fontData.TableDictionary[TableTagNames.GSUB];
+            Read();
+        }
+
+        public void Read()
+        {
+            try
+            {
+            }
+            catch (Exception ex)
+            {
+                throw new InvalidOperationException(PSSR.ErrorReadingFontData, ex);
+            }
+        }
+    }
+    internal class OpenTypeFontWriter : FontWriter
+    {
+        public OpenTypeFontWriter(Stream stream)
+            : base(stream)
+        { }
+
+        public void WriteTag(string tag)
+        {
+            Debug.Assert(tag.Length == 4);
+            WriteByte((byte)(tag[0]));
+            WriteByte((byte)(tag[1]));
+            WriteByte((byte)(tag[2]));
+            WriteByte((byte)(tag[3]));
+        }
+    }
+    internal class TableDirectoryEntry
+    {
+        public TableDirectoryEntry()
+        { }
+
+        public TableDirectoryEntry(string tag)
+        {
+            Debug.Assert(tag.Length == 4);
+            Tag = tag;
+        }
+
+        public string Tag;
+
+        public uint CheckSum;
+
+        public int Offset;
+
+        public int Length;
+
+        public int PaddedLength
+        {
+            get { return (Length + 3) & ~3; }
+        }
+
+        public OpenTypeFontTable FontTable;
+
+        public static TableDirectoryEntry ReadFrom(OpenTypeFontface fontData)
+        {
+            TableDirectoryEntry entry = new TableDirectoryEntry();
+            entry.Tag = fontData.ReadTag();
+            entry.CheckSum = fontData.ReadULong();
+            entry.Offset = fontData.ReadLong();
+            entry.Length = (int)fontData.ReadULong();
+            return entry;
+        }
+
+        public void Read(OpenTypeFontface fontData)
+        {
+            Tag = fontData.ReadTag();
+            CheckSum = fontData.ReadULong();
+            Offset = fontData.ReadLong();
+            Length = (int)fontData.ReadULong();
+        }
+
+        public void Write(OpenTypeFontWriter writer)
+        {
+            Debug.Assert(Tag.Length == 4);
+            Debug.Assert(Offset != 0);
+            Debug.Assert(Length != 0);
+            writer.WriteTag(Tag);
+            writer.WriteUInt(CheckSum);
+            writer.WriteInt(Offset);
+            writer.WriteUInt((uint)Length);
+        }
+    }
+
+
+
+
+
 
 
 
