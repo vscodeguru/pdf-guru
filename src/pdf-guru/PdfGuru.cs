@@ -285,7 +285,16 @@ using System.Globalization;
 using System.Diagnostics;
 using System.Globalization;
 using System.Diagnostics;
-
+using System;
+using System;
+using System.Collections.Generic;
+using System.Diagnostics;
+using System;
+using System.Collections.Generic;
+using System.Diagnostics;
+using System;
+using System;
+using System;
 
 
 
@@ -26697,6 +26706,1053 @@ namespace pdf_guru
             get { return _left.Value != 0 || _right.Value != 0 || _top.Value != 0 || _bottom.Value != 0; }
         }
     }
+    public enum PdfAcroFieldFlags
+    {
+        ReadOnly = 1 << (1 - 1),
+
+        Required = 1 << (2 - 1),
+
+        NoExport = 1 << (3 - 1),
+
+        Pushbutton = 1 << (17 - 1),
+
+        Radio = 1 << (16 - 1),
+
+        NoToggleToOff = 1 << (15 - 1),
+
+        Multiline = 1 << (13 - 1),
+
+        Password = 1 << (14 - 1),
+
+        FileSelect = 1 << (21 - 1),
+
+        DoNotSpellCheckTextField = 1 << (23 - 1),
+
+        DoNotScroll = 1 << (24 - 1),
+
+        Combo = 1 << (18 - 1),
+
+        Edit = 1 << (19 - 1),
+
+        Sort = 1 << (20 - 1),
+
+        MultiSelect = 1 << (22 - 1),
+
+        DoNotSpellCheckChoiseField = 1 << (23 - 1),
+    }
+    public abstract class PdfAcroField : PdfDictionary
+    {
+        internal PdfAcroField(PdfDocument document)
+            : base(document)
+        { }
+
+        protected PdfAcroField(PdfDictionary dict)
+            : base(dict)
+        { }
+
+        public string Name
+        {
+            get
+            {
+                string name = Elements.GetString(Keys.T);
+                return name;
+            }
+        }
+
+        public PdfAcroFieldFlags Flags
+        {
+            get { return (PdfAcroFieldFlags)Elements.GetInteger(Keys.Ff); }
+        }
+
+        internal PdfAcroFieldFlags SetFlags
+        {
+            get { return (PdfAcroFieldFlags)Elements.GetInteger(Keys.Ff); }
+            set { Elements.SetInteger(Keys.Ff, (int)value); }
+        }
+
+        public virtual PdfItem Value
+        {
+            get { return Elements[Keys.V]; }
+            set
+            {
+                if (ReadOnly)
+                    throw new InvalidOperationException("The field is read only.");
+                if (value is PdfString || value is PdfName)
+                    Elements[Keys.V] = value;
+                else
+                    throw new NotImplementedException("Values other than string cannot be set.");
+            }
+        }
+
+        public bool ReadOnly
+        {
+            get { return (Flags & PdfAcroFieldFlags.ReadOnly) != 0; }
+            set
+            {
+                if (value)
+                    SetFlags |= PdfAcroFieldFlags.ReadOnly;
+                else
+                    SetFlags &= ~PdfAcroFieldFlags.ReadOnly;
+            }
+        }
+
+        public PdfAcroField this[string name]
+        {
+            get { return GetValue(name); }
+        }
+
+        protected virtual PdfAcroField GetValue(string name)
+        {
+            if (String.IsNullOrEmpty(name))
+                return this;
+            if (HasKids)
+                return Fields.GetValue(name);
+            return null;
+        }
+
+        public bool HasKids
+        {
+            get
+            {
+                PdfItem item = Elements[Keys.Kids];
+                if (item == null)
+                    return false;
+                if (item is PdfArray)
+                    return ((PdfArray)item).Elements.Count > 0;
+                return false;
+            }
+        }
+
+        [Obsolete("Use GetDescendantNames")]
+        public string[] DescendantNames
+        {
+            get { return GetDescendantNames(); }
+        }
+
+        public string[] GetDescendantNames()
+        {
+            List<string> names = new List<string>();
+            if (HasKids)
+            {
+                PdfAcroFieldCollection fields = Fields;
+                fields.GetDescendantNames(ref names, null);
+            }
+            List<string> temp = new List<string>();
+            foreach (string name in names)
+                temp.Add(name);
+            return temp.ToArray();
+        }
+
+        public string[] GetAppearanceNames()
+        {
+            Dictionary<string, object> names = new Dictionary<string, object>();
+            PdfDictionary dict = Elements["/AP"] as PdfDictionary;
+            if (dict != null)
+            {
+                AppDict(dict, names);
+
+                if (HasKids)
+                {
+                    PdfItem[] kids = Fields.Elements.Items;
+                    foreach (PdfItem pdfItem in kids)
+                    {
+                        if (pdfItem is PdfReference)
+                        {
+                            PdfDictionary xxx = ((PdfReference)pdfItem).Value as PdfDictionary;
+                            if (xxx != null)
+                                AppDict(xxx, names);
+                        }
+                    }
+                }
+            }
+            string[] array = new string[names.Count];
+            names.Keys.CopyTo(array, 0);
+            return array;
+        }
+
+        static void AppDict(PdfDictionary dict, Dictionary<string, object> names)
+        {
+            PdfDictionary sub;
+            if ((sub = dict.Elements["/D"] as PdfDictionary) != null)
+                AppDict2(sub, names);
+            if ((sub = dict.Elements["/N"] as PdfDictionary) != null)
+                AppDict2(sub, names);
+        }
+
+        static void AppDict2(PdfDictionary dict, Dictionary<string, object> names)
+        {
+            foreach (string key in dict.Elements.Keys)
+            {
+                if (!names.ContainsKey(key))
+                    names.Add(key, null);
+            }
+        }
+
+        internal virtual void GetDescendantNames(ref List<string> names, string partialName)
+        {
+            if (HasKids)
+            {
+                PdfAcroFieldCollection fields = Fields;
+                string t = Elements.GetString(Keys.T);
+                Debug.Assert(t != "");
+                if (t.Length > 0)
+                {
+                    if (!String.IsNullOrEmpty(partialName))
+                        partialName += "." + t;
+                    else
+                        partialName = t;
+                    fields.GetDescendantNames(ref names, partialName);
+                }
+            }
+            else
+            {
+                string t = Elements.GetString(Keys.T);
+                Debug.Assert(t != "");
+                if (t.Length > 0)
+                {
+                    if (!String.IsNullOrEmpty(partialName))
+                        names.Add(partialName + "." + t);
+                    else
+                        names.Add(t);
+                }
+            }
+        }
+
+        public PdfAcroFieldCollection Fields
+        {
+            get
+            {
+                if (_fields == null)
+                {
+                    object o = Elements.GetValue(Keys.Kids, VCF.CreateIndirect);
+                    _fields = (PdfAcroFieldCollection)o;
+                }
+                return _fields;
+            }
+        }
+        PdfAcroFieldCollection _fields;
+
+        public sealed class PdfAcroFieldCollection : PdfArray
+        {
+            PdfAcroFieldCollection(PdfArray array)
+                : base(array)
+            { }
+
+            public int Count
+            {
+                get
+                {
+                    return Elements.Count;
+                }
+            }
+
+            public string[] Names
+            {
+                get
+                {
+                    int count = Elements.Count;
+                    string[] names = new string[count];
+                    for (int idx = 0; idx < count; idx++)
+                        names[idx] = ((PdfDictionary)((PdfReference)Elements[idx]).Value).Elements.GetString(Keys.T);
+                    return names;
+                }
+            }
+
+            public string[] DescendantNames
+            {
+                get
+                {
+                    List<string> names = new List<string>();
+                    GetDescendantNames(ref names, null);
+                    return names.ToArray();
+                }
+            }
+
+            internal void GetDescendantNames(ref List<string> names, string partialName)
+            {
+                int count = Elements.Count;
+                for (int idx = 0; idx < count; idx++)
+                {
+                    PdfAcroField field = this[idx];
+                    if (field != null)
+                        field.GetDescendantNames(ref names, partialName);
+                }
+            }
+
+            public PdfAcroField this[int index]
+            {
+                get
+                {
+                    PdfItem item = Elements[index];
+                    Debug.Assert(item is PdfReference);
+                    PdfDictionary dict = ((PdfReference)item).Value as PdfDictionary;
+                    Debug.Assert(dict != null);
+                    PdfAcroField field = dict as PdfAcroField;
+                    if (field == null && dict != null)
+                    {
+                        field = CreateAcroField(dict);
+                    }
+                    return field;
+                }
+            }
+
+            public PdfAcroField this[string name]
+            {
+                get { return GetValue(name); }
+            }
+
+            internal PdfAcroField GetValue(string name)
+            {
+                if (String.IsNullOrEmpty(name))
+                    return null;
+
+                int dot = name.IndexOf('.');
+                string prefix = dot == -1 ? name : name.Substring(0, dot);
+                string suffix = dot == -1 ? "" : name.Substring(dot + 1);
+
+                int count = Elements.Count;
+                for (int idx = 0; idx < count; idx++)
+                {
+                    PdfAcroField field = this[idx];
+                    if (field.Name == prefix)
+                        return field.GetValue(suffix);
+                }
+                return null;
+            }
+
+            PdfAcroField CreateAcroField(PdfDictionary dict)
+            {
+                string ft = dict.Elements.GetName(Keys.FT);
+                PdfAcroFieldFlags flags = (PdfAcroFieldFlags)dict.Elements.GetInteger(Keys.Ff);
+                switch (ft)
+                {
+                    case "/Btn":
+                        if ((flags & PdfAcroFieldFlags.Pushbutton) != 0)
+                            return new PdfPushButtonField(dict);
+
+                        if ((flags & PdfAcroFieldFlags.Radio) != 0)
+                            return new PdfRadioButtonField(dict);
+
+                        return new PdfCheckBoxField(dict);
+
+                    case "/Tx":
+                        return new PdfTextField(dict);
+
+                    case "/Ch":
+                        if ((flags & PdfAcroFieldFlags.Combo) != 0)
+                            return new PdfComboBoxField(dict);
+                        else
+                            return new PdfListBoxField(dict);
+
+                    case "/Sig":
+                        return new PdfSignatureField(dict);
+
+                    default:
+                        return new PdfGenericField(dict);
+                }
+            }
+        }
+
+        public class Keys : KeysBase
+        {
+            [KeyInfo(KeyType.Name | KeyType.Required)]
+            public const string FT = "/FT";
+
+            [KeyInfo(KeyType.Dictionary)]
+            public const string Parent = "/Parent";
+
+            [KeyInfo(KeyType.Array | KeyType.Optional, typeof(PdfAcroFieldCollection))]
+            public const string Kids = "/Kids";
+
+            [KeyInfo(KeyType.TextString | KeyType.Optional)]
+            public const string T = "/T";
+
+            [KeyInfo(KeyType.TextString | KeyType.Optional)]
+            public const string TU = "/TU";
+
+            [KeyInfo(KeyType.TextString | KeyType.Optional)]
+            public const string TM = "/TM";
+
+            [KeyInfo(KeyType.Integer | KeyType.Optional)]
+            public const string Ff = "/Ff";
+
+            [KeyInfo(KeyType.Various | KeyType.Optional)]
+            public const string V = "/V";
+
+            [KeyInfo(KeyType.Various | KeyType.Optional)]
+            public const string DV = "/DV";
+
+            [KeyInfo(KeyType.Dictionary | KeyType.Optional)]
+            public const string AA = "/AA";
+
+            [KeyInfo(KeyType.Dictionary | KeyType.Required)]
+            public const string DR = "/DR";
+
+            [KeyInfo(KeyType.String | KeyType.Required)]
+            public const string DA = "/DA";
+
+            [KeyInfo(KeyType.Integer | KeyType.Optional)]
+            public const string Q = "/Q";
+
+        }
+    }
+    public sealed class PdfAcroForm : PdfDictionary
+    {
+        internal PdfAcroForm(PdfDocument document)
+            : base(document)
+        {
+            _document = document;
+        }
+
+        internal PdfAcroForm(PdfDictionary dictionary)
+            : base(dictionary)
+        { }
+
+        public PdfAcroField.PdfAcroFieldCollection Fields
+        {
+            get
+            {
+                if (_fields == null)
+                {
+                    object o = Elements.GetValue(Keys.Fields, VCF.CreateIndirect);
+                    _fields = (PdfAcroField.PdfAcroFieldCollection)o;
+                }
+                return _fields;
+            }
+        }
+        PdfAcroField.PdfAcroFieldCollection _fields;
+
+        public sealed class Keys : KeysBase
+        {
+            [KeyInfo(KeyType.Array | KeyType.Required, typeof(PdfAcroField.PdfAcroFieldCollection))]
+            public const string Fields = "/Fields";
+
+            [KeyInfo(KeyType.Boolean | KeyType.Optional)]
+            public const string NeedAppearances = "/NeedAppearances";
+
+            [KeyInfo("1.3", KeyType.Integer | KeyType.Optional)]
+            public const string SigFlags = "/SigFlags";
+
+            [KeyInfo(KeyType.Array)]
+            public const string CO = "/CO";
+
+            [KeyInfo(KeyType.Dictionary | KeyType.Optional)]
+            public const string DR = "/DR";
+
+            [KeyInfo(KeyType.String | KeyType.Optional)]
+            public const string DA = "/DA";
+
+            [KeyInfo(KeyType.Integer | KeyType.Optional)]
+            public const string Q = "/Q";
+
+            internal static DictionaryMeta Meta
+            {
+                get
+                {
+                    if (s_meta == null)
+                        s_meta = CreateMeta(typeof(Keys));
+                    return s_meta;
+                }
+            }
+            static DictionaryMeta s_meta;
+
+        }
+
+        internal override DictionaryMeta Meta
+        {
+            get { return Keys.Meta; }
+        }
+    }
+    public abstract class PdfButtonField : PdfAcroField
+    {
+        protected PdfButtonField(PdfDocument document)
+            : base(document)
+        { }
+
+        protected PdfButtonField(PdfDictionary dict)
+            : base(dict)
+        { }
+
+        protected string GetNonOffValue()
+        {
+            PdfDictionary ap = Elements[PdfAnnotation.Keys.AP] as PdfDictionary;
+            if (ap != null)
+            {
+                PdfDictionary n = ap.Elements["/N"] as PdfDictionary;
+                if (n != null)
+                {
+                    foreach (string name in n.Elements.Keys)
+                        if (name != "/Off")
+                            return name;
+                }
+            }
+            return null;
+        }
+
+        internal override void GetDescendantNames(ref List<string> names, string partialName)
+        {
+            string t = Elements.GetString(PdfAcroField.Keys.T);
+            if (t == "")
+                t = "???";
+            Debug.Assert(t != "");
+            if (t.Length > 0)
+            {
+                if (!String.IsNullOrEmpty(partialName))
+                    names.Add(partialName + "." + t);
+                else
+                    names.Add(t);
+            }
+        }
+
+        public new class Keys : PdfAcroField.Keys
+        {
+        }
+    }
+    public sealed class PdfCheckBoxField : PdfButtonField
+    {
+        internal PdfCheckBoxField(PdfDocument document)
+            : base(document)
+        {
+            _document = document;
+        }
+
+        internal PdfCheckBoxField(PdfDictionary dict)
+            : base(dict)
+        { }
+
+        public string CheckedName
+        {
+            get { return _checkedName; }
+            set { _checkedName = value; }
+        }
+        string _checkedName = "/Yes";
+
+        public string UncheckedName
+        {
+            get { return _uncheckedName; }
+            set { _uncheckedName = value; }
+        }
+        string _uncheckedName = "/Off";
+
+        public new class Keys : PdfButtonField.Keys
+        {
+            [KeyInfo(KeyType.TextString | KeyType.Optional)]
+            public const string Opt = "/Opt";
+
+            internal static DictionaryMeta Meta
+            {
+                get { return _meta ?? (_meta = CreateMeta(typeof(Keys))); }
+            }
+            static DictionaryMeta _meta;
+        }
+
+        internal override DictionaryMeta Meta
+        {
+            get { return Keys.Meta; }
+        }
+    }
+    public abstract class PdfChoiceField : PdfAcroField
+    {
+        protected PdfChoiceField(PdfDocument document)
+            : base(document)
+        { }
+
+        protected PdfChoiceField(PdfDictionary dict)
+            : base(dict)
+        { }
+
+        protected int IndexInOptArray(string value)
+        {
+            PdfArray opt = Elements.GetArray(Keys.Opt);
+
+            if (opt != null)
+            {
+                int count = opt.Elements.Count;
+                for (int idx = 0; idx < count; idx++)
+                {
+                    PdfItem item = opt.Elements[idx];
+                    if (item is PdfString)
+                    {
+                        if (item.ToString() == value)
+                            return idx;
+                    }
+                    else if (item is PdfArray)
+                    {
+                        PdfArray array = (PdfArray)item;
+                        if (array.Elements.Count != 0)
+                        {
+                            if (array.Elements[0].ToString() == value)
+                                return idx;
+                        }
+                    }
+                }
+            }
+            return -1;
+        }
+
+        protected string ValueInOptArray(int index)
+        {
+            PdfArray opt = Elements.GetArray(Keys.Opt);
+            if (opt != null)
+            {
+                int count = opt.Elements.Count;
+                if (index < 0 || index >= count)
+                    throw new ArgumentOutOfRangeException("index");
+
+                PdfItem item = opt.Elements[index];
+                if (item is PdfString)
+                    return item.ToString();
+
+                if (item is PdfArray)
+                {
+                    PdfArray array = (PdfArray)item;
+                    if (array.Elements.Count != 0)
+                        return array.Elements[0].ToString();
+                }
+            }
+            return "";
+        }
+
+        public new class Keys : PdfAcroField.Keys
+        {
+            [KeyInfo(KeyType.Array | KeyType.Optional)]
+            public const string Opt = "/Opt";
+
+            [KeyInfo(KeyType.Integer | KeyType.Optional)]
+            public const string TI = "/TI";
+
+            [KeyInfo(KeyType.Array | KeyType.Optional)]
+            public const string I = "/I";
+
+            internal static DictionaryMeta Meta
+            {
+                get { return _meta ?? (_meta = CreateMeta(typeof(Keys))); }
+            }
+            static DictionaryMeta _meta;
+
+        }
+
+        internal override DictionaryMeta Meta
+        {
+            get { return Keys.Meta; }
+        }
+    }
+    public sealed class PdfComboBoxField : PdfChoiceField
+    {
+        internal PdfComboBoxField(PdfDocument document)
+            : base(document)
+        { }
+
+        internal PdfComboBoxField(PdfDictionary dict)
+            : base(dict)
+        { }
+
+        public int SelectedIndex
+        {
+            get
+            {
+                string value = Elements.GetString(Keys.V);
+                return IndexInOptArray(value);
+            }
+            set
+            {
+                if (value != -1)
+                {
+                    string key = ValueInOptArray(value);
+                    Elements.SetString(Keys.V, key);
+                    Elements.SetInteger("/I", value);
+                }
+            }
+        }
+
+        public override PdfItem Value
+        {
+            get { return Elements[Keys.V]; }
+            set
+            {
+                if (ReadOnly)
+                    throw new InvalidOperationException("The field is read only.");
+                if (value is PdfString || value is PdfName)
+                {
+                    Elements[Keys.V] = value;
+                    SelectedIndex = SelectedIndex;
+                    if (SelectedIndex == -1)
+                    {
+                        try
+                        {
+                            ((PdfArray)(((PdfItem[])(Elements.Values))[2])).Elements.Add(Value);
+                            SelectedIndex = SelectedIndex;
+                        }
+                        catch { }
+                    }
+                }
+                else
+                    throw new NotImplementedException("Values other than string cannot be set.");
+            }
+        }
+
+        public new class Keys : PdfAcroField.Keys
+        {
+            internal static DictionaryMeta Meta
+            {
+                get
+                {
+                    if (Keys._meta == null)
+                        Keys._meta = CreateMeta(typeof(Keys));
+                    return Keys._meta;
+                }
+            }
+            static DictionaryMeta _meta;
+        }
+
+        internal override DictionaryMeta Meta
+        {
+            get { return Keys.Meta; }
+        }
+    }
+    public sealed class PdfGenericField : PdfAcroField
+    {
+        internal PdfGenericField(PdfDocument document)
+            : base(document)
+        { }
+
+        internal PdfGenericField(PdfDictionary dict)
+            : base(dict)
+        { }
+
+        public new class Keys : PdfAcroField.Keys
+        {
+            internal static DictionaryMeta Meta
+            {
+                get { return _meta ?? (_meta = CreateMeta(typeof(Keys))); }
+            }
+            static DictionaryMeta _meta;
+        }
+
+        internal override DictionaryMeta Meta
+        {
+            get { return Keys.Meta; }
+        }
+    }
+    public sealed class PdfListBoxField : PdfChoiceField
+    {
+        internal PdfListBoxField(PdfDocument document)
+            : base(document)
+        { }
+
+        internal PdfListBoxField(PdfDictionary dict)
+            : base(dict)
+        { }
+
+        public int SelectedIndex
+        {
+            get
+            {
+                string value = Elements.GetString(Keys.V);
+                return IndexInOptArray(value);
+            }
+            set
+            {
+                string key = ValueInOptArray(value);
+                Elements.SetString(Keys.V, key);
+            }
+        }
+
+        public new class Keys : PdfAcroField.Keys
+        {
+            internal static DictionaryMeta Meta
+            {
+                get { return _meta ?? (_meta = CreateMeta(typeof(Keys))); }
+            }
+            static DictionaryMeta _meta;
+        }
+
+        internal override DictionaryMeta Meta
+        {
+            get { return Keys.Meta; }
+        }
+    }
+    public sealed class PdfPushButtonField : PdfButtonField
+    {
+        internal PdfPushButtonField(PdfDocument document)
+            : base(document)
+        {
+            _document = document;
+        }
+
+        internal PdfPushButtonField(PdfDictionary dict)
+            : base(dict)
+        { }
+
+        public new class Keys : PdfAcroField.Keys
+        {
+            internal static DictionaryMeta Meta
+            {
+                get { return _meta ?? (_meta = CreateMeta(typeof(Keys))); }
+            }
+            static DictionaryMeta _meta;
+        }
+
+        internal override DictionaryMeta Meta
+        {
+            get { return Keys.Meta; }
+        }
+    }
+    public sealed class PdfRadioButtonField : PdfButtonField
+    {
+        internal PdfRadioButtonField(PdfDocument document)
+            : base(document)
+        {
+            _document = document;
+        }
+
+        internal PdfRadioButtonField(PdfDictionary dict)
+            : base(dict)
+        { }
+
+        public int SelectedIndex
+        {
+            get
+            {
+                string value = Elements.GetString(Keys.V);
+                return IndexInOptStrings(value);
+            }
+            set
+            {
+                PdfArray opt = Elements[Keys.Opt] as PdfArray;
+
+                if (opt == null)
+                    opt = Elements[Keys.Kids] as PdfArray;
+
+                if (opt != null)
+                {
+                    int count = opt.Elements.Count;
+                    if (value < 0 || value >= count)
+                        throw new ArgumentOutOfRangeException("value");
+                    Elements.SetName(Keys.V, opt.Elements[value].ToString());
+                }
+            }
+        }
+
+        int IndexInOptStrings(string value)
+        {
+            PdfArray opt = Elements[Keys.Opt] as PdfArray;
+            if (opt != null)
+            {
+                int count = opt.Elements.Count;
+                for (int idx = 0; idx < count; idx++)
+                {
+                    PdfItem item = opt.Elements[idx];
+                    if (item is PdfString)
+                    {
+                        if (item.ToString() == value)
+                            return idx;
+                    }
+                }
+            }
+            return -1;
+        }
+
+        public new class Keys : PdfButtonField.Keys
+        {
+            [KeyInfo(KeyType.Array | KeyType.Optional)]
+            public const string Opt = "/Opt";
+
+            internal static DictionaryMeta Meta
+            {
+                get { return _meta ?? (_meta = CreateMeta(typeof(Keys))); }
+            }
+            static DictionaryMeta _meta;
+        }
+
+        internal override DictionaryMeta Meta
+        {
+            get { return Keys.Meta; }
+        }
+    }
+    public sealed class PdfSignatureField : PdfAcroField
+    {
+        internal PdfSignatureField(PdfDocument document)
+            : base(document)
+        { }
+
+        internal PdfSignatureField(PdfDictionary dict)
+            : base(dict)
+        { }
+
+        public new class Keys : PdfAcroField.Keys
+        {
+            [KeyInfo(KeyType.Name | KeyType.Optional)]
+            public const string Type = "/Type";
+
+            [KeyInfo(KeyType.Name | KeyType.Required)]
+            public const string Filter = "/Filter";
+
+            [KeyInfo(KeyType.Name | KeyType.Optional)]
+            public const string SubFilter = "/SubFilter";
+
+            [KeyInfo(KeyType.Array | KeyType.Required)]
+            public const string ByteRange = "/ByteRange";
+
+            [KeyInfo(KeyType.String | KeyType.Required)]
+            public const string Contents = "/Contents";
+
+            [KeyInfo(KeyType.TextString | KeyType.Optional)]
+            public const string Name = "/Name";
+
+            [KeyInfo(KeyType.Date | KeyType.Optional)]
+            public const string M = "/M";
+
+            [KeyInfo(KeyType.TextString | KeyType.Optional)]
+            public const string Location = "/Location";
+
+            [KeyInfo(KeyType.TextString | KeyType.Optional)]
+            public const string Reason = "/Reason";
+
+            internal static DictionaryMeta Meta
+            {
+                get { return _meta ?? (_meta = CreateMeta(typeof(Keys))); }
+            }
+            static DictionaryMeta _meta;
+        }
+
+        internal override DictionaryMeta Meta
+        {
+            get { return Keys.Meta; }
+        }
+    }
+    public sealed class PdfTextField : PdfAcroField
+    {
+        internal PdfTextField(PdfDocument document)
+            : base(document)
+        { }
+
+        internal PdfTextField(PdfDictionary dict)
+            : base(dict)
+        { }
+
+        public string Text
+        {
+            get { return Elements.GetString(Keys.V); }
+            set { Elements.SetString(Keys.V, value); RenderAppearance(); }
+        }
+
+        public XFont Font
+        {
+            get { return _font; }
+            set { _font = value; }
+        }
+        XFont _font = new XFont("Courier New", 10);
+
+        public XColor ForeColor
+        {
+            get { return _foreColor; }
+            set { _foreColor = value; }
+        }
+        XColor _foreColor = XColors.Black;
+
+        public XColor BackColor
+        {
+            get { return _backColor; }
+            set { _backColor = value; }
+        }
+        XColor _backColor = XColor.Empty;
+
+        public int MaxLength
+        {
+            get { return Elements.GetInteger(Keys.MaxLen); }
+            set { Elements.SetInteger(Keys.MaxLen, value); }
+        }
+
+        public bool MultiLine
+        {
+            get { return (Flags & PdfAcroFieldFlags.Multiline) != 0; }
+            set
+            {
+                if (value)
+                    SetFlags |= PdfAcroFieldFlags.Multiline;
+                else
+                    SetFlags &= ~PdfAcroFieldFlags.Multiline;
+            }
+        }
+
+        public bool Password
+        {
+            get { return (Flags & PdfAcroFieldFlags.Password) != 0; }
+            set
+            {
+                if (value)
+                    SetFlags |= PdfAcroFieldFlags.Password;
+                else
+                    SetFlags &= ~PdfAcroFieldFlags.Password;
+            }
+        }
+
+        void RenderAppearance()
+        {
+#if true_       
+#else
+            PdfRectangle rect = Elements.GetRectangle(PdfAnnotation.Keys.Rect);
+            XForm form = new XForm(_document, rect.Size);
+            XGraphics gfx = XGraphics.FromForm(form);
+
+            if (_backColor != XColor.Empty)
+                gfx.DrawRectangle(new XSolidBrush(BackColor), rect.ToXRect() - rect.Location);
+
+            string text = Text;
+            if (text.Length > 0)
+                gfx.DrawString(Text, Font, new XSolidBrush(ForeColor),
+                  rect.ToXRect() - rect.Location + new XPoint(2, 0), XStringFormats.TopLeft);
+
+            form.DrawingFinished();
+            form.PdfForm.Elements.Add("/FormType", new PdfLiteral("1"));
+
+            PdfDictionary ap = Elements[PdfAnnotation.Keys.AP] as PdfDictionary;
+            if (ap == null)
+            {
+                ap = new PdfDictionary(_document);
+                Elements[PdfAnnotation.Keys.AP] = ap;
+            }
+
+            ap.Elements["/N"] = form.PdfForm.Reference;
+
+            PdfFormXObject xobj = form.PdfForm;
+            string s = xobj.Stream.ToString();
+            s = "/Tx BMC\n" + s + "\nEMC";
+            xobj.Stream.Value = new RawEncoding().GetBytes(s);
+#endif
+        }
+
+        internal override void PrepareForSave()
+        {
+            base.PrepareForSave();
+            RenderAppearance();
+        }
+
+        public new class Keys : PdfAcroField.Keys
+        {
+            [KeyInfo(KeyType.Integer | KeyType.Optional)]
+            public const string MaxLen = "/MaxLen";
+
+            internal static DictionaryMeta Meta
+            {
+                get { return _meta ?? (_meta = CreateMeta(typeof(Keys))); }
+            }
+            static DictionaryMeta _meta;
+        }
+
+        internal override DictionaryMeta Meta
+        {
+            get { return Keys.Meta; }
+        }
+    }
+
+
+
+
+
+
+
 
 
 
