@@ -968,15 +968,15 @@ namespace PdfSharp.Drawing
                 throw new ArgumentNullException("font");
             if (stringFormat == null)
                 throw new ArgumentNullException("stringFormat");
-#if true
-            return FontHelper.MeasureString(text, font, stringFormat);
-#else
 
-#endif
-#if CORE || NETFX_CORE || UWP
+            return FontHelper.MeasureString(text, font, stringFormat);
+
+
+
+
             XSize size = FontHelper.MeasureString(text, font, XStringFormats.Default);
             return size;
-#endif
+
 
         }
 

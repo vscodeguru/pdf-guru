@@ -55,38 +55,30 @@ namespace PdfSharp.SharpZipLib.Checksums
 
             if (offset < 0)
             {
-#if NETCF_1_0
 
-#else
+
+
                 throw new ArgumentOutOfRangeException("offset", "cannot be negative");
-#endif
+
             }
 
             if (count < 0)
             {
-#if NETCF_1_0
-
-#else
                 throw new ArgumentOutOfRangeException("count", "cannot be negative");
-#endif
+
             }
 
             if (offset >= buffer.Length)
             {
-#if NETCF_1_0
 
-#else
                 throw new ArgumentOutOfRangeException("offset", "not a valid index into buffer");
-#endif
+
             }
 
             if (offset + count > buffer.Length)
             {
-#if NETCF_1_0
 
-#else
                 throw new ArgumentOutOfRangeException("count", "exceeds buffer size");
-#endif
             }
 
             uint s1 = checksum & 0xFFFF;

@@ -1280,13 +1280,13 @@ namespace pdf_guru
 
         }
 
-#if CORE || GDI
+
         FontFamilyInternal(GdiFontFamily gdiFontFamily)
         {
             _sourceName = _name = gdiFontFamily.Name;
             _gdiFontFamily = gdiFontFamily;
         }
-#endif
+
 
 
         internal static FontFamilyInternal GetOrCreateFromName(string familyName, bool createPlatformObject)
@@ -1305,7 +1305,7 @@ namespace pdf_guru
             finally { Lock.ExitFontFactory(); }
         }
 
-#if CORE || GDI
+
         internal static FontFamilyInternal GetOrCreateFromGdi(GdiFontFamily gdiFontFamily)
         {
             try
@@ -1317,7 +1317,7 @@ namespace pdf_guru
             }
             finally { Lock.ExitFontFactory(); }
         }
-#endif
+
 
         public string SourceName
         {
@@ -1331,13 +1331,13 @@ namespace pdf_guru
         }
         readonly string _name;
 
-#if CORE || GDI
+
         public GdiFontFamily GdiFamily
         {
             get { return _gdiFontFamily; }
         }
         readonly GdiFontFamily _gdiFontFamily;
-#endif
+
 
 
         internal string DebuggerDisplay
@@ -1384,7 +1384,7 @@ namespace pdf_guru
             return size;
         }
 
-#if CORE || GDI
+
         public static GdiFont CreateFont(string familyName, double emSize, GdiFontStyle style, out XFontSource fontSource)
         {
             fontSource = null;
@@ -1393,7 +1393,7 @@ namespace pdf_guru
             font = new GdiFont(familyName, (float)emSize, style, GraphicsUnit.World);
             return font;
         }
-#endif
+
 
 
         public static ulong CalcChecksum(byte[] buffer)
@@ -1903,7 +1903,7 @@ namespace pdf_guru
         {
             if (Source == null)
                 throw new InvalidOperationException("No image source.");
-#if CORE_WITH_GDI || GDI
+
             if (Source.AssociatedGraphics != null)
             {
                 Source.DisassociateWithGraphics();
@@ -1915,25 +1915,25 @@ namespace pdf_guru
                 Source._gdiImage.Save(stream, ImageFormat.Png);
             }
             finally { Lock.ExitGdiPlus(); }
-#endif
+
         }
     }
     public sealed class XBitmapImage : XBitmapSource
     {
         internal XBitmapImage(int width, int height)
         {
-#if GDI || CORE_WITH_GDI
+ 
             try
             {
                 Lock.EnterGdiPlus();
                 _gdiImage = new Bitmap(width, height);
             }
             finally { Lock.ExitGdiPlus(); }
-#endif
 
-#if CORE || GDI && !WPF     
+
+ 
             Initialize();
-#endif
+
         }
 
         public static XBitmapSource CreateBitmap(int width, int height)
@@ -1947,14 +1947,14 @@ namespace pdf_guru
         {
             get
             {
-#if (CORE_WITH_GDI || GDI) && !WPF
+
                 try
                 {
                     Lock.EnterGdiPlus();
                     return _gdiImage.Width;
                 }
                 finally { Lock.ExitGdiPlus(); }
-#endif
+
             }
         }
 
@@ -1962,14 +1962,14 @@ namespace pdf_guru
         {
             get
             {
-#if (CORE_WITH_GDI || GDI) && !WPF
+
                 try
                 {
                     Lock.EnterGdiPlus();
                     return _gdiImage.Height;
                 }
                 finally { Lock.ExitGdiPlus(); }
-#endif
+
             }
         }
     }
@@ -3167,9 +3167,9 @@ namespace pdf_guru
     public class XColorResourceManager
     {
         public XColorResourceManager()
-#if !NETFX_CORE && !UWP
+
             : this(Thread.CurrentThread.CurrentUICulture)
-#endif
+
         { }
 
         public XColorResourceManager(CultureInfo cultureInfo)
@@ -3702,7 +3702,7 @@ namespace pdf_guru
             Initialize();
         }
 
-#if CORE || GDI
+
         public XFont(GdiFontFamily fontFamily, double emSize, XFontStyle style)
             : this(fontFamily, emSize, style, new XPdfFontOptions(GlobalFontSettings.DefaultFontEncoding))
         { }
@@ -3733,7 +3733,7 @@ namespace pdf_guru
             _pdfOptions = pdfOptions;
             InitializeFromGdi();
         }
-#endif
+
 
         void Initialize()
         {
@@ -3743,9 +3743,9 @@ namespace pdf_guru
 
             if (StringComparer.OrdinalIgnoreCase.Compare(_familyName, GlobalFontSettings.DefaultFontName) == 0)
             {
-#if CORE || GDI || WPF
+
                 _familyName = "Calibri";
-#endif
+
             }
 
             _glyphTypeface = XGlyphTypeface.GetOrCreateFrom(_familyName, fontResolvingOptions);
@@ -3753,7 +3753,7 @@ namespace pdf_guru
             CreateDescriptorAndInitializeFontMetrics();
         }
 
-#if CORE || GDI
+
         void InitializeFromGdi()
         {
             try
@@ -3781,7 +3781,7 @@ namespace pdf_guru
             }
             finally { Lock.ExitFontFactory(); }
         }
-#endif
+
 
         void CreateDescriptorAndInitializeFontMetrics()
         {
@@ -3906,19 +3906,19 @@ namespace pdf_guru
         public double GetHeight()
         {
             double value = CellSpace * _emSize / UnitsPerEm;
-#if CORE || NETFX_CORE || UWP
+
             return value;
-#endif
+
         }
 
         [Obsolete("Use GetHeight() without parameter.")]
         public double GetHeight(XGraphics graphics)
         {
-#if true
-            throw new InvalidOperationException("Honestly: Use GetHeight() without parameter!");
-#else
 
-#endif
+            throw new InvalidOperationException("Honestly: Use GetHeight() without parameter!");
+
+
+
         }
 
         [Browsable(false)]
@@ -3961,7 +3961,7 @@ namespace pdf_guru
         internal XStyleSimulations StyleSimulations;
 
 
-#if CORE || GDI
+
         public GdiFontFamily GdiFontFamily
         {
             get { return _gdiFontFamily; }
@@ -3983,13 +3983,13 @@ namespace pdf_guru
               (font.Underline ? XFontStyle.Underline : 0);
         }
 
-#if true || UseGdiObjects
+
         public static implicit operator XFont(GdiFont font)
         {
             return new XFont(font);
         }
-#endif
-#endif
+
+
         internal string Selector
         {
             get { return _selector; }
@@ -4042,13 +4042,13 @@ namespace pdf_guru
             return new XFontFamily(fontFamilyInternal);
         }
 
-#if CORE || GDI
+
         internal static XFontFamily GetOrCreateFromGdi(GdiFont font)
         {
             FontFamilyInternal fontFamilyInternal = FontFamilyInternal.GetOrCreateFromGdi(font.FontFamily);
             return new XFontFamily(fontFamilyInternal);
         }
-#endif
+
 
 
         public string Name
@@ -4087,9 +4087,9 @@ namespace pdf_guru
         public bool IsStyleAvailable(XFontStyle style)
         {
             XGdiFontStyle xStyle = ((XGdiFontStyle)style) & XGdiFontStyle.BoldItalic;
-#if CORE
+
             throw new InvalidOperationException("In CORE build it is the responsibility of the developer to provide all required font faces.");
-#endif
+
         }
 
         [Obsolete("Use platform API directly.")]
@@ -4251,7 +4251,7 @@ namespace pdf_guru
             return fontSource;
         }
 
-#if CORE || GDI
+
         internal static XFontSource GetOrCreateFromGdi(string typefaceKey, GdiFont gdiFont)
         {
             byte[] bytes = ReadFontBytesFromGdi(gdiFont);
@@ -4264,9 +4264,9 @@ namespace pdf_guru
             int error = Marshal.GetLastWin32Error();
             error = Marshal.GetLastWin32Error();
             IntPtr hfont = gdiFont.ToHfont();
-#if true
+
             IntPtr hdc = NativeMethods.GetDC(IntPtr.Zero);
-#endif
+
             error = Marshal.GetLastWin32Error();
             IntPtr oldFont = NativeMethods.SelectObject(hdc, hfont);
             error = Marshal.GetLastWin32Error();
@@ -4293,7 +4293,7 @@ namespace pdf_guru
 
             return bytes;
         }
-#endif
+
         static XFontSource GetOrCreateFrom(string typefaceKey, byte[] fontBytes)
         {
             XFontSource fontSource;
@@ -4656,7 +4656,7 @@ namespace pdf_guru
     {
         const string KeyPrefix = "tk:";
 
-#if CORE || GDI
+
         XGlyphTypeface(string key, XFontFamily fontFamily, XFontSource fontSource, XStyleSimulations styleSimulations, GdiFont gdiFont)
         {
             _key = key;
@@ -4671,7 +4671,7 @@ namespace pdf_guru
             _styleSimulations = styleSimulations;
             Initialize();
         }
-#endif
+
         public static XGlyphTypeface GetOrCreateFrom(string familyName, FontResolvingOptions fontResolvingOptions)
         {
             string typefaceKey = ComputeKey(familyName, fontResolvingOptions);
@@ -4690,17 +4690,17 @@ namespace pdf_guru
                     throw new InvalidOperationException("No appropriate font found.");
                 }
 
-#if CORE || GDI
+
                 GdiFont gdiFont = null;
-#endif
+
                 XFontFamily fontFamily;
                 PlatformFontResolverInfo platformFontResolverInfo = fontResolverInfo as PlatformFontResolverInfo;
                 if (platformFontResolverInfo != null)
                 {
-#if CORE || GDI
+
                     gdiFont = platformFontResolverInfo.GdiFont;
                     fontFamily = XFontFamily.GetOrCreateFromGdi(gdiFont);
-#endif
+
                 }
                 else
                 {
@@ -4710,16 +4710,16 @@ namespace pdf_guru
                 XFontSource fontSource = FontFactory.GetFontSourceByFontName(fontResolverInfo.FaceName);
                 Debug.Assert(fontSource != null);
 
-#if CORE || GDI
+
                 glyphTypeface = new XGlyphTypeface(typefaceKey, fontFamily, fontSource, fontResolverInfo.StyleSimulations, gdiFont);
-#endif
+
                 GlyphTypefaceCache.AddGlyphTypeface(glyphTypeface);
             }
             finally { Lock.ExitFontFactory(); }
             return glyphTypeface;
         }
 
-#if CORE || GDI
+
         public static XGlyphTypeface GetOrCreateFromGdi(GdiFont gdiFont)
         {
             string typefaceKey = ComputeKey(gdiFont);
@@ -4743,7 +4743,7 @@ namespace pdf_guru
 
             return glyphTypeface;
         }
-#endif
+
 
         public XFontFamily FontFamily
         {
@@ -4870,7 +4870,7 @@ namespace pdf_guru
             return ComputeKey(familyName, new FontResolvingOptions(FontHelper.CreateStyle(isBold, isItalic)));
         }
 
-#if CORE || GDI
+
         internal static string ComputeKey(GdiFont gdiFont)
         {
             string name1 = gdiFont.Name;
@@ -4883,7 +4883,7 @@ namespace pdf_guru
             string key = KeyPrefix + name.ToLowerInvariant() + ((style & GdiFontStyle.Italic) == GdiFontStyle.Italic ? "/i" : "/n") + ((style & GdiFontStyle.Bold) == GdiFontStyle.Bold ? "/700" : "/400") + "/5";  
             return key;
         }
-#endif
+
 
 
         public string Key
@@ -4892,14 +4892,14 @@ namespace pdf_guru
         }
         readonly string _key;
 
-#if CORE || GDI
+
         internal GdiFont GdiFont
         {
             get { return _gdiFont; }
         }
 
         private readonly GdiFont _gdiFont;
-#endif
+
         internal string DebuggerDisplay
         {
             get { return string.Format(CultureInfo.InvariantCulture, "{0} - {1} ({2})", FamilyName, StyleName, FaceName); }
@@ -4945,9 +4945,9 @@ namespace pdf_guru
             }
             page.RenderContent = content;
 
-#if CORE
+
             TargetContext = XGraphicTargetContext.CORE;
-#endif
+
             _renderer = new PdfSharp.Drawing.Pdf.XGraphicsPdfRenderer(page, this, options);
             _pageSizePoints = new XSize(page.Width, page.Height);
             switch (pageUnit)
@@ -4990,25 +4990,25 @@ namespace pdf_guru
             form.AssociateGraphics(this);
 
             _gsStack = new GraphicsStateStack(this);
-#if CORE
+
             TargetContext = XGraphicTargetContext.CORE;
             _drawGraphics = false;
             if (form.Owner != null)
                 _renderer = new XGraphicsPdfRenderer(form, this);
             _pageSize = form.Size;
             Initialize();
-#endif
+
 
         }
 
         public static XGraphics CreateMeasureContext(XSize size, XGraphicsUnit pageUnit, XPageDirection pageDirection)
         {
-#if CORE
+
             PdfDocument dummy = new PdfDocument();
             PdfPage page = dummy.AddPage();
             XGraphics gfx = XGraphics.FromPdfPage(page, XGraphicsPdfPageOptions.Append, pageUnit, pageDirection);
             return gfx;
-#endif
+
 
         }
 
@@ -5078,9 +5078,9 @@ namespace pdf_guru
             XBitmapImage bmImage = image as XBitmapImage;
             if (bmImage != null)
             {
-#if CORE
+
                 return null;
-#endif
+
             }
             return null;
         }
@@ -5099,9 +5099,9 @@ namespace pdf_guru
             }
 
             XMatrix matrix = new XMatrix();
-#if CORE
+
             Debug.Assert(TargetContext == XGraphicTargetContext.CORE);
-#endif
+
             if (_pageDirection != XPageDirection.Downwards)
                 matrix.Prepend(new XMatrix(1, 0, 0, -1, 0, pageHeight));
 
@@ -5866,15 +5866,15 @@ namespace pdf_guru
                 throw new ArgumentNullException("font");
             if (stringFormat == null)
                 throw new ArgumentNullException("stringFormat");
-#if true
-            return FontHelper.MeasureString(text, font, stringFormat);
-#else
 
-#endif
-#if CORE || NETFX_CORE || UWP
+            return FontHelper.MeasureString(text, font, stringFormat);
+
+
+
+
             XSize size = FontHelper.MeasureString(text, font, XStringFormats.Default);
             return size;
-#endif
+
 
         }
 
@@ -6001,7 +6001,7 @@ namespace pdf_guru
         public XGraphicsState Save()
         {
             XGraphicsState xState = null;
-#if CORE || NETFX_CORE
+
             if (TargetContext == XGraphicTargetContext.CORE || TargetContext == XGraphicTargetContext.NONE)
             {
                 xState = new XGraphicsState();
@@ -6013,7 +6013,7 @@ namespace pdf_guru
             {
                 Debug.Assert(false, "XGraphicTargetContext must be XGraphicTargetContext.CORE.");
             }
-#endif
+
 
             if (_renderer != null)
                 _renderer.Save(xState);
@@ -6026,13 +6026,13 @@ namespace pdf_guru
             if (state == null)
                 throw new ArgumentNullException("state");
 
-#if CORE
+
             if (TargetContext == XGraphicTargetContext.CORE)
             {
                 _gsStack.Restore(state.InternalState);
                 _transform = state.InternalState.Transform;
             }
-#endif
+
 
 
             if (_renderer != null)
@@ -6058,10 +6058,10 @@ namespace pdf_guru
                 throw new ArgumentException("The current implementation supports XGraphicsUnit.Point only.", "unit");
 
             XGraphicsContainer xContainer = null;
-#if CORE
+
             if (TargetContext == XGraphicTargetContext.CORE)
                 xContainer = new XGraphicsContainer();
-#endif
+
 
             InternalGraphicsState iState = new InternalGraphicsState(this, xContainer);
             iState.Transform = _transform;
@@ -6222,12 +6222,12 @@ namespace pdf_guru
             _transform = matrix;
             matrix = DefaultViewMatrix;
             matrix.Multiply(_transform, XMatrixOrder.Prepend);
-#if CORE
+
             if (TargetContext == XGraphicTargetContext.CORE)
             {
                 GetType();
             }
-#endif
+
 
             if (_renderer != null)
                 _renderer.AddTransform(transform, XMatrixOrder.Prepend);
@@ -6395,10 +6395,10 @@ namespace pdf_guru
 
         public void AddLine(double x1, double y1, double x2, double y2)
         {
-#if CORE
+
             _corePath.MoveOrLineTo(x1, y1);
             _corePath.LineTo(x2, y2, false);
-#endif
+
         }
 
         public void AddLines(XPoint[] points)
@@ -6409,11 +6409,11 @@ namespace pdf_guru
             int count = points.Length;
             if (count == 0)
                 return;
-#if CORE
+
             _corePath.MoveOrLineTo(points[0].X, points[0].Y);
             for (int idx = 1; idx < count; idx++)
                 _corePath.LineTo(points[idx].X, points[idx].Y, false);
-#endif
+
         }
 
 
@@ -6424,10 +6424,10 @@ namespace pdf_guru
 
         public void AddBezier(double x1, double y1, double x2, double y2, double x3, double y3, double x4, double y4)
         {
-#if CORE
+
             _corePath.MoveOrLineTo(x1, y1);
             _corePath.BezierTo(x2, y2, x3, y3, x4, y4, false);
-#endif
+
         }
 
         public void AddBeziers(XPoint[] points)
@@ -6443,14 +6443,14 @@ namespace pdf_guru
                 throw new ArgumentException("Invalid number of points for bezier curve. Number must fulfil 4+3n.",
                     "points");
 
-#if CORE
+
             _corePath.MoveOrLineTo(points[0].X, points[0].Y);
             for (int idx = 1; idx < count; idx += 3)
             {
                 _corePath.BezierTo(points[idx].X, points[idx].Y, points[idx + 1].X, points[idx + 1].Y,
                     points[idx + 2].X, points[idx + 2].Y, false);
             }
-#endif
+
         }
 
 
@@ -6464,18 +6464,18 @@ namespace pdf_guru
             int count = points.Length;
             if (count < 2)
                 throw new ArgumentException("AddCurve requires two or more points.", "points");
-#if CORE
+
             _corePath.AddCurve(points, tension);
-#endif
+
 
         }
 
 
         public void AddCurve(XPoint[] points, int offset, int numberOfSegments, double tension)
         {
-#if CORE
+
             throw new NotImplementedException("AddCurve not yet implemented.");
-#endif
+
         }
 
         public void AddArc(XRect rect, double startAngle, double sweepAngle)
@@ -6485,9 +6485,9 @@ namespace pdf_guru
 
         public void AddArc(double x, double y, double width, double height, double startAngle, double sweepAngle)
         {
-#if CORE
+
             _corePath.AddArc(x, y, width, height, startAngle, sweepAngle);
-#endif
+
         }
 
         public void AddArc(XPoint point1, XPoint point2, XSize size, double rotationAngle, bool isLargeArg, XSweepDirection sweepDirection)
@@ -6495,13 +6495,13 @@ namespace pdf_guru
         }
         public void AddRectangle(XRect rect)
         {
-#if CORE
+
             _corePath.MoveTo(rect.X, rect.Y);
             _corePath.LineTo(rect.X + rect.Width, rect.Y, false);
             _corePath.LineTo(rect.X + rect.Width, rect.Y + rect.Height, false);
             _corePath.LineTo(rect.X, rect.Y + rect.Height, true);
             _corePath.CloseSubpath();
-#endif
+
         }
 
         public void AddRectangle(double x, double y, double width, double height)
@@ -6514,20 +6514,20 @@ namespace pdf_guru
             int count = rects.Length;
             for (int idx = 0; idx < count; idx++)
             {
-#if CORE
+
                 AddRectangle(rects[idx]);
-#endif
+
             }
         }
 
 
         public void AddRoundedRectangle(double x, double y, double width, double height, double ellipseWidth, double ellipseHeight)
         {
-#if CORE
-#if true
+
+
             double arcWidth = ellipseWidth / 2;
             double arcHeight = ellipseHeight / 2;
-#if true   
+   
             _corePath.MoveTo(x + width - arcWidth, y);
             _corePath.QuadrantArcTo(x + width - arcWidth, y + arcHeight, arcWidth, arcHeight, 1, true);
 
@@ -6542,9 +6542,9 @@ namespace pdf_guru
 
             _corePath.CloseSubpath();
  
-#endif
-#endif
-#endif
+
+
+
 
         }
 
@@ -6555,7 +6555,7 @@ namespace pdf_guru
 
         public void AddEllipse(double x, double y, double width, double height)
         {
-#if CORE
+
             double w = width / 2;
             double h = height / 2;
             double xc = x + w;
@@ -6566,12 +6566,12 @@ namespace pdf_guru
             _corePath.QuadrantArcTo(xc, yc, w, h, 3, true);
             _corePath.QuadrantArcTo(xc, yc, w, h, 2, true);
             _corePath.CloseSubpath();
-#endif
+
         }
 
         public void AddPolygon(XPoint[] points)
         {
-#if CORE
+
             int count = points.Length;
             if (count == 0)
                 return;
@@ -6581,7 +6581,7 @@ namespace pdf_guru
                 _corePath.LineTo(points[idx].X, points[idx].Y, false);
             _corePath.LineTo(points[count - 1].X, points[count - 1].Y, true);
             _corePath.CloseSubpath();
-#endif
+
 
         }
 
@@ -6592,9 +6592,9 @@ namespace pdf_guru
 
         public void AddPie(double x, double y, double width, double height, double startAngle, double sweepAngle)
         {
-#if CORE
+
             DiagnosticsHelper.HandleNotImplemented("XGraphicsPath.AddPie");
-#endif
+
 
         }
 
@@ -6613,17 +6613,17 @@ namespace pdf_guru
             if (count < 2)
                 throw new ArgumentException("Not enough points.", "points");
 
-#if CORE
+
             DiagnosticsHelper.HandleNotImplemented("XGraphicsPath.AddClosedCurve");
-#endif
+
 
         }
 
         public void AddPath(XGraphicsPath path, bool connect)
         {
-#if CORE
+
             DiagnosticsHelper.HandleNotImplemented("XGraphicsPath.AddPath");
-#endif
+
 
         }
 
@@ -6633,9 +6633,9 @@ namespace pdf_guru
         {
             try
             {
-#if CORE
+
                 DiagnosticsHelper.HandleNotImplemented("XGraphicsPath.AddString");
-#endif
+
 
             }
             catch
@@ -6665,17 +6665,17 @@ namespace pdf_guru
                 return;
 
             XFont font = new XFont(family.Name, emSize, style);
-#if CORE
+
             DiagnosticsHelper.HandleNotImplemented("XGraphicsPath.AddString");
-#endif
+
 
         }
 
         public void CloseFigure()
         {
-#if CORE
+
             _corePath.CloseSubpath();
-#endif
+
 
         }
 
@@ -6732,9 +6732,9 @@ namespace pdf_guru
             get { return new XGraphicsPathInternals(this); }
         }
 
-#if CORE
+
         internal CoreGraphicsPath _corePath;
-#endif
+
     }
     public sealed class XGraphicsPathInternals
     {
@@ -6746,10 +6746,10 @@ namespace pdf_guru
     }
     public sealed class XGraphicsState
     {
-#if CORE
+
         internal XGraphicsState()
         { }
-#endif
+
         internal InternalGraphicsState InternalState;
     }
     internal enum XImageState
@@ -6764,7 +6764,7 @@ namespace pdf_guru
         protected XImage()
         { }
 
-#if GDI || CORE || WPF
+
         XImage(ImportedImage image)
         {
             if (image == null)
@@ -6773,25 +6773,25 @@ namespace pdf_guru
             _importedImage = image;
             Initialize();
         }
-#endif
+
 
         XImage(string path)
         {
-#if !NETFX_CORE && !UWP
+
             path = Path.GetFullPath(path);
             if (!File.Exists(path))
                 throw new FileNotFoundException(PSSR.FileNotFound(path));
-#endif
+
             _path = path;
 
-#if CORE_WITH_GDI || GDI
+
             try
             {
                 Lock.EnterGdiPlus();
                 _gdiImage = Image.FromFile(path);
             }
             finally { Lock.ExitGdiPlus(); }
-#endif
+
 
             Initialize();
         }
@@ -6800,14 +6800,14 @@ namespace pdf_guru
         {
             _path = "*" + Guid.NewGuid().ToString("B");
 
-#if CORE_WITH_GDI
+
             try
             {
                 Lock.EnterGdiPlus();
                 _gdiImage = Image.FromStream(stream);
             }
             finally { Lock.ExitGdiPlus(); }
-#endif
+
 
             _stream = stream;
             Initialize();
@@ -6835,9 +6835,9 @@ namespace pdf_guru
         {
             if (PdfReader.TestPdfFile(path) > 0)
                 return true;
-#if !NETFX_CORE && !UWP
+
             return File.Exists(path);
-#endif
+
         }
 
         internal XImageState XImageState
@@ -6849,7 +6849,7 @@ namespace pdf_guru
 
         internal void Initialize()
         {
-#if CORE || GDI || WPF
+
             if (_importedImage != null)
             {
                 ImportedImageJpeg iiJpeg = _importedImage as ImportedImageJpeg;
@@ -6859,9 +6859,9 @@ namespace pdf_guru
                     _format = XImageFormat.Png;
                 return;
             }
-#endif
 
-#if CORE_WITH_GDI
+
+
             if (_gdiImage != null)
             {
                 string guid;
@@ -6910,7 +6910,7 @@ namespace pdf_guru
                 }
                 return;
             }
-#endif
+
 
         }
         public void Dispose()
@@ -6923,13 +6923,13 @@ namespace pdf_guru
             if (!_disposed)
                 _disposed = true;
 
-#if CORE || GDI || WPF
+
             {
                 _importedImage = null;
             }
-#endif
 
-#if CORE_WITH_GDI || GDI
+
+
             if (_gdiImage != null)
             {
                 try
@@ -6940,10 +6940,10 @@ namespace pdf_guru
                 }
                 finally { Lock.ExitGdiPlus(); }
             }
-#endif
-#if WPF
+
+
             _wpfImage = null;
-#endif
+
         }
         bool _disposed;
 
@@ -6952,21 +6952,21 @@ namespace pdf_guru
         {
             get
             {
-#if CORE || GDI || WPF
+
                 if (_importedImage != null)
                 {
                     return _importedImage.Information.Width;
                 }
-#endif
 
-#if (CORE_WITH_GDI || GDI)  && !WPF
+
+
                 try
                 {
                     Lock.EnterGdiPlus();
                     return _gdiImage.Width;
                 }
                 finally { Lock.ExitGdiPlus(); }
-#endif
+
             }
         }
 
@@ -6975,35 +6975,35 @@ namespace pdf_guru
         {
             get
             {
-#if CORE_WITH_GDI || GDI || WPF
+
                 if (_importedImage != null)
                 {
                     return _importedImage.Information.Height;
                 }
-#endif
 
-#if (CORE_WITH_GDI || GDI) && !WPF && !WPF
+
+
                 try
                 {
                     Lock.EnterGdiPlus();
                     return _gdiImage.Height;
                 }
                 finally { Lock.ExitGdiPlus(); }
-#endif
+
             }
         }
 
-#if CORE || GDI || WPF
+
         private const decimal FactorDPM72 = 72000 / 25.4m;
 
         private const decimal FactorDPM = 1000 / 25.4m;
-#endif
+
 
         public virtual double PointWidth
         {
             get
             {
-#if CORE || GDI || WPF
+
                 if (_importedImage != null)
                 {
                     if (_importedImage.Information.HorizontalDPM > 0)
@@ -7012,16 +7012,16 @@ namespace pdf_guru
                         return (double)(_importedImage.Information.Width * 72 / _importedImage.Information.HorizontalDPI);
                     return _importedImage.Information.Width;
                 }
-#endif
 
-#if (CORE_WITH_GDI || GDI) && !WPF
+
+
                 try
                 {
                     Lock.EnterGdiPlus();
                     return _gdiImage.Width * 72 / _gdiImage.HorizontalResolution;
                 }
                 finally { Lock.ExitGdiPlus(); }
-#endif
+
 
             }
         }
@@ -7030,7 +7030,7 @@ namespace pdf_guru
         {
             get
             {
-#if CORE || GDI || WPF
+
                 if (_importedImage != null)
                 {
                     if (_importedImage.Information.VerticalDPM > 0)
@@ -7039,16 +7039,16 @@ namespace pdf_guru
                         return (double)(_importedImage.Information.Height * 72 / _importedImage.Information.VerticalDPI);
                     return _importedImage.Information.Width;
                 }
-#endif
 
-#if (CORE_WITH_GDI || GDI) && !WPF
+
+
                 try
                 {
                     Lock.EnterGdiPlus();
                     return _gdiImage.Height * 72 / _gdiImage.HorizontalResolution;
                 }
                 finally { Lock.ExitGdiPlus(); }
-#endif
+
 
             }
         }
@@ -7057,19 +7057,19 @@ namespace pdf_guru
         {
             get
             {
-#if CORE || GDI || WPF
+
                 if (_importedImage != null)
                     return (int)_importedImage.Information.Width;
-#endif
 
-#if CORE_WITH_GDI
+
+
                 try
                 {
                     Lock.EnterGdiPlus();
                     return _gdiImage.Width;
                 }
                 finally { Lock.ExitGdiPlus(); }
-#endif
+
             }
         }
 
@@ -7077,19 +7077,19 @@ namespace pdf_guru
         {
             get
             {
-#if CORE || GDI || WPF
+
                 if (_importedImage != null)
                     return (int)_importedImage.Information.Height;
-#endif
 
-#if CORE_WITH_GDI
+
+
                 try
                 {
                     Lock.EnterGdiPlus();
                     return _gdiImage.Height;
                 }
                 finally { Lock.ExitGdiPlus(); }
-#endif
+
             }
         }
 
@@ -7102,7 +7102,7 @@ namespace pdf_guru
         {
             get
             {
-#if CORE || GDI || WPF
+
                 if (_importedImage != null)
                 {
                     if (_importedImage.Information.HorizontalDPI > 0)
@@ -7111,16 +7111,16 @@ namespace pdf_guru
                         return (double)(_importedImage.Information.HorizontalDPM / FactorDPM);
                     return 72;
                 }
-#endif
 
-#if (CORE_WITH_GDI || GDI) && !WPF
+
+
                 try
                 {
                     Lock.EnterGdiPlus();
                     return _gdiImage.HorizontalResolution;
                 }
                 finally { Lock.ExitGdiPlus(); }
-#endif
+
             }
         }
 
@@ -7128,7 +7128,7 @@ namespace pdf_guru
         {
             get
             {
-#if CORE || GDI || WPF
+
                 if (_importedImage != null)
                 {
                     if (_importedImage.Information.VerticalDPI > 0)
@@ -7137,16 +7137,16 @@ namespace pdf_guru
                         return (double)(_importedImage.Information.VerticalDPM / FactorDPM);
                     return 72;
                 }
-#endif
 
-#if (CORE_WITH_GDI || GDI) && !WPF
+
+
                 try
                 {
                     Lock.EnterGdiPlus();
                     return _gdiImage.VerticalResolution;
                 }
                 finally { Lock.ExitGdiPlus(); }
-#endif
+
             }
         }
 
@@ -7194,22 +7194,20 @@ namespace pdf_guru
         }
         XGraphics _associatedGraphics;
 
-#if CORE || GDI || WPF
-        internal ImportedImage _importedImage;
-#endif
 
-#if CORE_WITH_GDI || GDI
+        internal ImportedImage _importedImage;
+
+
+
         internal Image _gdiImage;
-#endif
-#if WPF
+
+
         internal BitmapSource _wpfImage;
-#if SILVERLIGHT
-        //internal byte[] _bytes;
-#endif
-#endif
-#if NETFX_CORE  || UWP
+
+
+
         internal BitmapSource _wrtImage;
-#endif
+
 
         internal string _path;
 
@@ -8628,11 +8626,11 @@ namespace pdf_guru
             int pageNumber;
             path = ExtractPageNumber(path, out pageNumber);
 
-#if !NETFX_CORE
+
             path = Path.GetFullPath(path);
             if (!File.Exists(path))
                 throw new FileNotFoundException(PSSR.FileNotFound(path));
-#endif
+
 
             if (PdfReader.TestPdfFile(path) == 0)
                 throw new ArgumentException("The specified file has no valid PDF file header.", "path");
@@ -9941,22 +9939,22 @@ namespace pdf_guru
         }
         internal static XPrivateFontCollection _singleton = new XPrivateFontCollection();
 
-#if GDI
+
  
-#else
+
         [Obsolete("Use the GDI build of PDFsharp and use Add(Stream stream)")]
-#endif
+
         public static void AddFont(string filename)
         {
             throw new NotImplementedException();
         }
 
 
-#if GDI
+
         
-#else
+
         [Obsolete("Use the GDI build of PDFsharp and use Add(Stream stream)")]
-#endif
+
         public static void AddFont(Stream stream, string facename)
         {
             throw new NotImplementedException();
@@ -10921,9 +10919,9 @@ namespace pdf_guru
         public XUnit(double value, XGraphicsUnit type)
         {
             if (!Enum.IsDefined(typeof(XGraphicsUnit), type))
-#if !SILVERLIGHT && !NETFX_CORE && !UWP
+
                 throw new System.ComponentModel.InvalidEnumArgumentException(nameof(type), (int)type, typeof(XGraphicsUnit));
-#endif
+
             _value = value;
             _type = type;
         }
@@ -12288,10 +12286,10 @@ namespace pdf_guru
             XPoint pt = position - CodeBase.CalcDistance(AnchorType.TopLeft, Anchor, Size);
             uint value;
             uint.TryParse(Text, out value);
-#if true
+
             value |= 1;
             _synchronizeCode = true;
-#endif
+
             if (_synchronizeCode)
             {
                 XRect rect = new XRect(pt.X, pt.Y, _makerThickness, Size.Height);
@@ -12488,9 +12486,9 @@ namespace pdf_guru
                 char newenc = enc;
                 if (targetLength - targetposition <= 1 && (enc == 'c' || enc == 't') || targetLength - targetposition <= 2 && enc == 'x')
                     enc = 'a';
-#if !SILVERLIGHT
+
                 newenc = char.ToLower(encoding[sourceposition]);
-#endif
+
                 switch (newenc)
                 {
                     case 'c':
@@ -12959,9 +12957,9 @@ namespace pdf_guru
         public XImage CreateImage(char[] code, int rows, int columns, int pixelsize)
         {
 
-#if CORE || NETFX_CORE || UWP
+
             return null;
-#endif
+
         }
 
         struct Ecc200Block
@@ -13384,7 +13382,7 @@ namespace pdf_guru
             return null;
         }
 
-#if GDI || WPF || CORE
+ 
         public ImportedImage ImportImage(string filename, PdfDocument document)
         {
             ImportedImage ii;
@@ -13394,7 +13392,7 @@ namespace pdf_guru
             }
             return ii;
         }
-#endif
+
 
         private readonly List<IImageImporter> _importers = new List<IImageImporter>();
     }
@@ -14790,14 +14788,14 @@ namespace pdf_guru
 
         void RealizeClipPath(XGraphicsPath clipPath)
         {
-#if CORE
+
             DiagnosticsHelper.HandleNotImplemented("RealizeClipPath");
-#endif
+
             _renderer.BeginGraphicMode();
             RealizeCtm();
-#if CORE
+
             _renderer.AppendPath(clipPath._corePath);
-#endif
+
             _renderer.Append(clipPath.FillMode == XFillMode.Winding ? "W n\n" : "W* n\n");
         }
 
@@ -15079,11 +15077,11 @@ namespace pdf_guru
             if (pen == null && brush == null)
                 throw new ArgumentNullException("pen");
 
-#if CORE
+
             Realize(pen, brush);
             AppendPath(path._corePath);
             AppendStrokeFill(pen, brush, path.FillMode, false);
-#endif
+
         }
 
         public void DrawString(string s, XFont font, XBrush brush, XRect rect, XStringFormat format)
@@ -15199,7 +15197,7 @@ namespace pdf_guru
             {
             }
 
-#if ITALIC_SIMULATION
+
             if (italicSimulation)
             {
                 if (_gfxState.ItalicSimulationOn)
@@ -15232,7 +15230,7 @@ namespace pdf_guru
                     AppendFormatArgs("{0:" + format2 + "} {1:" + format2 + "} Td {2} Tj\n", pos.X, pos.Y, text);
                 }
             }
-#endif
+
             if (underline)
             {
                 double underlinePosition = lineSpace * realizedFont.FontDescriptor._descriptor.UnderlinePosition / font.CellSpace;
@@ -15660,14 +15658,14 @@ namespace pdf_guru
 
 
 
-#if CORE
+
         internal void AppendPath(CoreGraphicsPath path)
         {
             AppendPath(path.PathPoints, path.PathTypes);
         }
-#endif
 
-#if CORE || GDI
+
+
         void AppendPath(XPoint[] points, Byte[] types)
         {
             const string format = Config.SignificantFigures4;
@@ -15705,7 +15703,7 @@ namespace pdf_guru
                 }
             }
         }
-#endif
+
         internal void Append(string value)
         {
             _content.Append(value);
@@ -15999,13 +15997,13 @@ namespace pdf_guru
         internal XPoint WorldToView(XPoint point)
         {
             Debug.Assert(_gfxState.UnrealizedCtm.IsIdentity, "Somewhere a RealizeTransform is missing.");
-#if true
+
             XPoint pt = _gfxState.WorldTransform.Transform(point);
             return _gfxState.InverseEffectiveCtm.Transform(new XPoint(pt.X, PageHeightPt / DefaultViewMatrix.M22 - pt.Y));
-#endif
+
         }
 
-#if CORE || GDI
+
         [Conditional("DEBUG")]
         void DumpPathData(XPoint[] points, byte[] types)
         {
@@ -16016,7 +16014,7 @@ namespace pdf_guru
                 Debug.WriteLine(info, "PathData");
             }
         }
-#endif
+
 
         internal PdfDocument Owner
         {
@@ -16181,11 +16179,11 @@ namespace pdf_guru
             byte[] ansi = new byte[256 - 32];
             for (int idx = 0; idx < 256 - 32; idx++)
                 ansi[idx] = (byte)(idx + 32);
-#if EDF_CORE
+
             string text = null; // PdfEncoders.WinAnsiEncoding.GetString(ansi, 0, ansi.Length);
-#else
+
             string text = PdfEncoders.WinAnsiEncoding.GetString(ansi, 0, ansi.Length);
-#endif
+
             AddChars(text);
         }
 
@@ -16671,9 +16669,9 @@ namespace pdf_guru
         {
             if (_stream != null && closeUnderlyingStream)
             {
-#if !UWP
+
                 _stream.Close();
-#endif
+
                 _stream.Dispose();
             }
             _stream = null;
@@ -16834,27 +16832,27 @@ namespace pdf_guru
             if (FontFactory.TryGetFontResolverInfoByTypefaceKey(typefaceKey, out fontResolverInfo))
                 return fontResolverInfo;
 
-#if (CORE || GDI) && !WPF
+
             GdiFont gdiFont;
             XFontSource fontSource = CreateFontSource(familyName, fontResolvingOptions, out gdiFont, typefaceKey);
-#endif
+
 
             if (fontSource == null)
                 return null;
 
             if (fontResolvingOptions.OverrideStyleSimulations)
             {
-#if (CORE || GDI) && !WPF
+
                 fontResolverInfo = new PlatformFontResolverInfo(typefaceKey, fontResolvingOptions.MustSimulateBold, fontResolvingOptions.MustSimulateItalic, gdiFont);
-#endif
+
             }
             else
             {
-#if (CORE || GDI) && !WPF
+
                 bool mustSimulateBold = gdiFont.Bold && !fontSource.Fontface.os2.IsBold;
                 bool mustSimulateItalic = gdiFont.Italic && !fontSource.Fontface.os2.IsItalic;
                 fontResolverInfo = new PlatformFontResolverInfo(typefaceKey, mustSimulateBold, mustSimulateItalic, gdiFont);
-#endif
+
             }
 
             FontFactory.CacheFontResolverInfo(typefaceKey, fontResolverInfo);
@@ -16862,7 +16860,7 @@ namespace pdf_guru
             return fontResolverInfo;
         }
 
-#if (CORE_WITH_GDI || GDI) && !WPF
+
         internal static XFontSource CreateFontSource(string familyName, FontResolvingOptions fontResolvingOptions, out GdiFont font, string typefaceKey)
         {
             if (string.IsNullOrEmpty(typefaceKey))
@@ -16882,26 +16880,26 @@ namespace pdf_guru
             }
             return fontSource;
         }
-#endif
+
 
     }
     internal class PlatformFontResolverInfo : FontResolverInfo
     {
-#if CORE || GDI
+
         public PlatformFontResolverInfo(string faceName, bool mustSimulateBold, bool mustSimulateItalic, GdiFont gdiFont)
             : base(faceName, mustSimulateBold, mustSimulateItalic)
         {
             _gdiFont = gdiFont;
         }
-#endif
 
-#if CORE || GDI
+
+
         public Font GdiFont
         {
             get { return _gdiFont; }
         }
         readonly Font _gdiFont;
-#endif
+
     }
     enum FontTechnology
     {
@@ -17591,10 +17589,10 @@ namespace pdf_guru
             else
                 XHeight = (int)(0.66 * Ascender);
 
-#if !EDF_CORE
+
             Encoding ansi = PdfEncoders.WinAnsiEncoding;
 
-#endif
+
 
             Encoding unicode = Encoding.Unicode;
             byte[] bytes = new byte[256];
@@ -20382,7 +20380,7 @@ namespace pdf_guru
     {
         public DictionaryMeta(Type type)
         {
-#if !NETFX_CORE && !UWP
+
             FieldInfo[] fields = type.GetFields(BindingFlags.Public | BindingFlags.Static | BindingFlags.FlattenHierarchy);
             foreach (FieldInfo field in fields)
             {
@@ -20395,7 +20393,7 @@ namespace pdf_guru
                     _keyDescriptors[descriptor.KeyValue] = descriptor;
                 }
             }
-#endif
+
         }
 
         public KeyDescriptor this[string key]
@@ -20817,9 +20815,9 @@ namespace pdf_guru
         {
             get
             {
-#if true
+
                 return String.Format(CultureInfo.InvariantCulture, "array({0},[{1}])", ObjectID.DebuggerDisplay, _elements == null ? 0 : _elements.Count);
-#endif
+
             }
         }
     }
@@ -21604,7 +21602,7 @@ namespace pdf_guru
                         Type type = GetValueType(key);
                         if (type != null)
                         {
-#if !NETFX_CORE
+
                             Debug.Assert(typeof(PdfItem).IsAssignableFrom(type), "Type not allowed.");
                             if (typeof(PdfDictionary).IsAssignableFrom(type))
                             {
@@ -21616,7 +21614,7 @@ namespace pdf_guru
                             }
                             else
                                 throw new NotImplementedException("Type other than array or dictionary.");
-#endif
+
                             if (options == VCF.CreateIndirect)
                             {
                                 _ownerDictionary.Owner._irefTable.Add(obj);
@@ -21644,7 +21642,7 @@ namespace pdf_guru
                             Type type = GetValueType(key);
                             Debug.Assert(type != null, "No value type specified in meta information. Please send this file to PDFsharp support.");
 
-#if !NETFX_CORE
+
                             if (type != null && type != value.GetType())
                             {
                                 if (typeof(PdfDictionary).IsAssignableFrom(type))
@@ -21660,7 +21658,7 @@ namespace pdf_guru
                                 else
                                     throw new NotImplementedException("Type other than array or dictionary.");
                             }
-#endif
+
                         }
                         return value;
                     }
@@ -21712,7 +21710,7 @@ namespace pdf_guru
 
             PdfArray CreateArray(Type type, PdfArray oldArray)
             {
-#if !NETFX_CORE && !UWP
+
                 ConstructorInfo ctorInfo;
                 PdfArray array;
                 if (oldArray == null)
@@ -21730,12 +21728,12 @@ namespace pdf_guru
                     array = ctorInfo.Invoke(new object[] { oldArray }) as PdfArray;
                 }
                 return array;
-#endif
+
             }
 
             PdfDictionary CreateDictionary(Type type, PdfDictionary oldDictionary)
             {
-#if !NETFX_CORE && !UWP
+
                 ConstructorInfo ctorInfo;
                 PdfDictionary dict;
                 if (oldDictionary == null)
@@ -21753,12 +21751,12 @@ namespace pdf_guru
                     dict = ctorInfo.Invoke(new object[] { oldDictionary }) as PdfDictionary;
                 }
                 return dict;
-#endif
+
             }
 
             PdfItem CreateValue(Type type, PdfDictionary oldValue)
             {
-#if !NETFX_CORE && !UWP
+
                 ConstructorInfo ctorInfo = type.GetConstructor(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic,
                     null, new Type[] { typeof(PdfDocument) }, null);
                 PdfObject obj = ctorInfo.Invoke(new object[] { _ownerDictionary.Owner }) as PdfObject;
@@ -21773,7 +21771,7 @@ namespace pdf_guru
                     }
                 }
                 return obj;
-#endif
+
             }
 
             public void SetValue(string key, PdfItem value)
@@ -22183,11 +22181,11 @@ namespace pdf_guru
                 PdfItem filter = _ownerDictionary.Elements["/Filter"];
                 if (filter != null)
                 {
-#if true
+
                     byte[] bytes = Filtering.Decode(_value, filter);
                     if (bytes != null)
                         stream = PdfEncoders.RawEncoding.GetString(bytes, 0, bytes.Length);
-#endif
+
                     else
                         throw new NotImplementedException("Unknown filter");
                 }
@@ -22227,12 +22225,12 @@ namespace pdf_guru
         {
             get
             {
-#if true
+
                 return String.Format(CultureInfo.InvariantCulture, "dictionary({0},[{1}])={2}",
                     ObjectID.DebuggerDisplay,
                     Elements.Count,
                     _elements.DebuggerDisplay);
-#endif
+
             }
         }
     }
@@ -22258,9 +22256,9 @@ namespace pdf_guru
             Initialize();
             Info.CreationDate = _creation;
 
-#if !NETFX_CORE
+
             _outStream = new FileStream(filename, FileMode.Create);
-#endif
+
         }
 
         public PdfDocument(Stream outputStream)
@@ -22355,20 +22353,20 @@ namespace pdf_guru
             }
         }
 
-#if true 
+ 
         public void Save(string path)
         {
             if (!CanModify)
                 throw new InvalidOperationException(PSSR.CannotModify);
 
-#if !NETFX_CORE
+
             using (Stream stream = new FileStream(path, FileMode.Create, FileAccess.Write, FileShare.None))
             {
                 Save(stream);
             }
-#endif
+
         }
-#endif
+
         public void Save(Stream stream, bool closeStream)
         {
             if (!CanModify)
@@ -22393,11 +22391,11 @@ namespace pdf_guru
                 if (stream != null)
                 {
                     if (closeStream)
-#if UWP
+
  
-#else
+
                         stream.Close();
-#endif
+
                     else
                     {
                         if (stream.CanRead && stream.CanSeek)
@@ -22504,12 +22502,12 @@ namespace pdf_guru
 
             Catalog.PrepareForSave();
 
-#if true
+
             int removed = _irefTable.Compact();
             if (removed != 0)
                 Debug.WriteLine("PrepareForSave: Number of deleted unreachable objects: " + removed);
             _irefTable.Renumber();
-#endif
+
         }
 
         public bool CanSave(ref string message)
@@ -22982,11 +22980,11 @@ namespace pdf_guru
             get { return _compressContentStreams; }
             set { _compressContentStreams = value; }
         }
-#if DEBUG
 
-#else
+
+
         bool _compressContentStreams = true;
-#endif
+
 
         public bool NoCompression
         {
@@ -23317,8 +23315,8 @@ namespace pdf_guru
         {
             public int Compare(PdfName l, PdfName r)
             {
-#if true_
-#else
+
+
                 if (l != null)
                 {
                     if (r != null)
@@ -23328,7 +23326,7 @@ namespace pdf_guru
                 if (r != null)
                     return 1;
                 return 0;
-#endif
+
             }
         }
     }
@@ -23979,9 +23977,9 @@ namespace pdf_guru
         public bool Opened
         {
             get { return _opened; }
-#if true
+
             set { _opened = value; }
-#endif
+
         }
         bool _opened;
 
@@ -24565,10 +24563,10 @@ namespace pdf_guru
             int rotate = Elements.GetInteger(InheritablePageKeys.Rotate);
             if (Math.Abs((rotate / 90)) % 2 == 1)
             {
-#if true
+
                 _orientation = PageOrientation.Landscape;
                 _orientationSetByCodeForRotatedDocument = true;
-#endif
+
             }
         }
 
@@ -24935,7 +24933,7 @@ namespace pdf_guru
             if (_orientation == PageOrientation.Landscape && !_orientationSetByCodeForRotatedDocument)
                 MediaBox = new PdfRectangle(mediaBox.X1, mediaBox.Y1, mediaBox.Y2, mediaBox.X2);
 
-#if true
+
             TransparencyUsed = true;
             if (TransparencyUsed && !Elements.ContainsKey(Keys.Group) &&
                 _document.Options.ColorMode != PdfColorMode.Undefined)
@@ -24948,7 +24946,7 @@ namespace pdf_guru
                     group.Elements.SetName("/CS", "/DeviceCMYK");
                 group.Elements.SetName("/S", "/Transparency");
             }
-#endif
+
 
             base.WriteObject(writer);
 
@@ -25480,9 +25478,9 @@ namespace pdf_guru
             CloneElement(page, importPage, PdfPage.Keys.BleedBox, true);
             CloneElement(page, importPage, PdfPage.Keys.TrimBox, true);
             CloneElement(page, importPage, PdfPage.Keys.ArtBox, true);
-#if true
+
             CloneElement(page, importPage, PdfPage.Keys.Annots, false);
-#endif
+
             return page;
         }
 
@@ -25564,9 +25562,9 @@ namespace pdf_guru
             }
 
             Elements.SetName(Keys.Type, "/Pages");
-#if true
+
             Elements.SetValue(Keys.Kids, array);
-#endif
+
             Elements.SetInteger(Keys.Count, array.Elements.Count);
         }
 
@@ -25574,7 +25572,7 @@ namespace pdf_guru
         {
             PdfDictionary kid = (PdfDictionary)iref.Value;
 
-#if true
+
             string type = kid.Elements.GetName(Keys.Type);
             if (type == "/Page")
             {
@@ -25588,7 +25586,7 @@ namespace pdf_guru
                 return new PdfDictionary[] { kid };
             }
 
-#endif
+
 
             Debug.Assert(kid.Elements.GetName(Keys.Type) == "/Pages");
             PdfPage.InheritValues(kid, ref values);
@@ -26133,7 +26131,7 @@ namespace pdf_guru
             int count = collection.Count;
             PdfReference[] irefs = new PdfReference[count];
             collection.CopyTo(irefs, 0);
-#if true
+
             for (int i = 0; i < count; i++)
                 for (int j = 0; j < count; j++)
                     if (i != j)
@@ -26147,7 +26145,7 @@ namespace pdf_guru
                         Debug.Assert(ReferenceEquals(irefs[i].Document, irefs[j].Document));
                         GetType();
                     }
-#endif
+
         }
 
         public PdfReference[] TransitiveClosure(PdfObject pdfObject)
@@ -26313,11 +26311,11 @@ namespace pdf_guru
 
         public PdfString(string value)
         {
-#if true
+
             if (!IsRawEncoding(value))
                 _flags = PdfStringFlags.Unicode;
             _value = value;
-#endif
+
         }
 
         public PdfString(string value, PdfStringEncoding encoding)
@@ -26392,13 +26390,13 @@ namespace pdf_guru
 
         public override string ToString()
         {
-#if true
+
             PdfStringEncoding encoding = (PdfStringEncoding)(_flags & PdfStringFlags.EncodingMask);
             string pdf = (_flags & PdfStringFlags.HexLiteral) == 0 ?
                 PdfEncoders.ToStringLiteral(_value, encoding, null) :
                 PdfEncoders.ToHexStringLiteral(_value, encoding, null);
             return pdf;
-#endif
+
         }
 
         public string ToStringFromPdfDocEncoded()
@@ -27851,8 +27849,8 @@ namespace pdf_guru
 
         void RenderAppearance()
         {
-#if true_       
-#else
+
+
             PdfRectangle rect = Elements.GetRectangle(PdfAnnotation.Keys.Rect);
             XForm form = new XForm(_document, rect.Size);
             XGraphics gfx = XGraphics.FromForm(form);
@@ -27881,7 +27879,7 @@ namespace pdf_guru
             string s = xobj.Stream.ToString();
             s = "/Tx BMC\n" + s + "\nEMC";
             xobj.Stream.Value = new RawEncoding().GetBytes(s);
-#endif
+
         }
 
         internal override void PrepareForSave()
@@ -28857,7 +28855,7 @@ namespace pdf_guru
             int count = collection.Count;
             PdfReference[] irefs = new PdfReference[count];
             collection.CopyTo(irefs, 0);
-#if true
+
             for (int i = 0; i < count; i++)
                 for (int j = 0; j < count; j++)
                     if (i != j)
@@ -28871,7 +28869,7 @@ namespace pdf_guru
                         Debug.Assert(ReferenceEquals(irefs[i].Document, irefs[j].Document));
                         GetType();
                     }
-#endif
+
         }
 
         public PdfReference[] TransitiveClosure(PdfObject pdfObject)
@@ -29575,7 +29573,7 @@ namespace pdf_guru
             return pdfFont;
         }
 
-#if true
+
         public PdfFont GetFont(string idName, byte[] fontData)
         {
             Debug.Assert(false);
@@ -29589,7 +29587,7 @@ namespace pdf_guru
             }
             return pdfFont;
         }
-#endif
+
 
         public PdfFont TryGetFont(string idName)
         {
@@ -29670,7 +29668,7 @@ namespace pdf_guru
             PdfItem res = importPage.Elements["/Resources"];
             if (res != null)
             {
-#if true
+
                 PdfObject root;
                 if (res is PdfReference)
                     root = ((PdfReference)res).Value;
@@ -29683,7 +29681,7 @@ namespace pdf_guru
 
                 Debug.Assert(root.Reference != null);
                 Elements["/Resources"] = root.Reference;
-#endif
+
             }
 
             PdfRectangle rect = importPage.Elements.GetRectangle(PdfPage.Keys.MediaBox);
@@ -29721,9 +29719,9 @@ namespace pdf_guru
             }
 
             PdfContent content = importPage.Contents.CreateSingleContent();
-#if !DEBUG
+
             content.Compressed = true;
-#endif
+
             PdfItem filter = content.Elements["/Filter"];
             if (filter != null)
                 Elements["/Filter"] = filter.Clone();
@@ -30001,7 +29999,7 @@ namespace pdf_guru
 
             _image = image;
 
-#if !SILVERLIGHT
+
             switch (_image.Format.Guid.ToString("B").ToUpper())
             {
                 case "{B96B3CAE-0728-11D3-9D7B-0000F81EF32E}":
@@ -30024,7 +30022,7 @@ namespace pdf_guru
                     break;
             }
 
-#endif
+
         }
 
 
@@ -30048,16 +30046,16 @@ namespace pdf_guru
             byte[] imageBits = null;
             int streamLength = 0;
 
-#if CORE || GDI || WPF
+
             if (_image._importedImage != null)
             {
                 ImageDataDct idd = (ImageDataDct)_image._importedImage.ImageData;
                 imageBits = idd.Data;
                 streamLength = idd.Length;
             }
-#endif
 
-#if CORE || GDI
+
+
             if (_image._importedImage == null)
             {
                 if (!_image._path.StartsWith("*"))
@@ -30092,9 +30090,9 @@ namespace pdf_guru
                     }
                     else
                     {
-#if CORE_WITH_GDI
+
                         _image._gdiImage.Save(memory, ImageFormat.Jpeg);
-#endif
+
                     }
                 }
 
@@ -30103,7 +30101,7 @@ namespace pdf_guru
                     Debug.Assert(false, "Internal error? JPEG image, but file not found!");
                 }
             }
-#endif
+
 
             if (imageBits == null)
             {
@@ -30113,9 +30111,9 @@ namespace pdf_guru
                 memory.Read(imageBits, 0, streamLength);
                 if (ownMemory)
                 {
-#if UWP || true
+ 
                     memory.Dispose();
-#endif
+
                 }
             }
 
@@ -30145,7 +30143,7 @@ namespace pdf_guru
             Elements[Keys.Height] = new PdfInteger(_image.PixelHeight);
             Elements[Keys.BitsPerComponent] = new PdfInteger(8);
 
-#if CORE || GDI || WPF
+
             if (_image._importedImage != null)
             {
                 if (_image._importedImage.Information.ImageFormat == ImageInformation.ImageFormats.JPEGCMYK ||
@@ -30164,8 +30162,8 @@ namespace pdf_guru
                     Elements[Keys.ColorSpace] = new PdfName("/DeviceRGB");
                 }
             }
-#endif
-#if CORE_WITH_GDI
+
+
             if (_image._importedImage == null)
             {
                 if ((_image._gdiImage.Flags & ((int)ImageFlags.ColorSpaceCmyk | (int)ImageFlags.ColorSpaceYcck)) != 0)
@@ -30183,13 +30181,13 @@ namespace pdf_guru
                     Elements[Keys.ColorSpace] = new PdfName("/DeviceRGB");
                 }
             }
-#endif
+
 
         }
 
         void InitializeNonJpeg()
         {
-#if CORE || GDI || WPF
+
             if (_image._importedImage != null)
             {
                 switch (_image._importedImage.Information.ImageFormat)
@@ -30215,9 +30213,9 @@ namespace pdf_guru
                 }
                 return;
             }
-#endif
 
-#if (CORE_WITH_GDI || GDI) && !WPF
+
+
             switch (_image._gdiImage.PixelFormat)
             {
                 case PixelFormat.Format24bppRgb:
@@ -30246,15 +30244,15 @@ namespace pdf_guru
                     break;
 
                 default:
-#if DEBUGxxx
+
           image.image.Save("$$$.bmp", ImageFormat.Bmp);
-#endif
+
                     throw new NotImplementedException("Image format not supported.");
             }
-#endif
+
         }
 
-#if CORE || GDI || WPF
+
         private void CreateIndexedMemoryBitmap(int bits)
         {
             ImageDataBitmap idb = (ImageDataBitmap)_image._importedImage.ImageData;
@@ -30448,7 +30446,7 @@ namespace pdf_guru
             if (_image.Interpolate)
                 Elements[Keys.Interpolate] = PdfBoolean.True;
         }
-#endif
+
 
         private static int ReadWord(byte[] ab, int offset)
         {
@@ -30465,18 +30463,18 @@ namespace pdf_guru
 
             int pdfVersion = Owner.Version;
             MemoryStream memory = new MemoryStream();
-#if CORE_WITH_GDI
+
             _image._gdiImage.Save(memory, ImageFormat.Bmp);
-#endif
+
 
             int streamLength = (int)memory.Length;
             Debug.Assert(streamLength > 0, "Bitmap image encoding failed.");
             if (streamLength > 0)
             {
-#if !NETFX_CORE && !UWP
+
                 byte[] imageBits = memory.GetBuffer();
 
-#endif
+
 
                 int height = _image.PixelHeight;
                 int width = _image.PixelWidth;
@@ -30611,9 +30609,9 @@ namespace pdf_guru
             bool segmentedColorMask = false;
 
             MemoryStream memory = new MemoryStream();
-#if CORE_WITH_GDI
+
             _image._gdiImage.Save(memory, ImageFormat.Bmp);
-#endif
+
 
             int streamLength = (int)memory.Length;
             Debug.Assert(streamLength > 0, "Bitmap image encoding failed.");
@@ -30622,9 +30620,9 @@ namespace pdf_guru
                 byte[] imageBits = new byte[streamLength];
                 memory.Seek(0, SeekOrigin.Begin);
                 memory.Read(imageBits, 0, streamLength);
-#if !UWP
+
                 memory.Close();
-#endif
+
 
                 int height = _image.PixelHeight;
                 int width = _image.PixelWidth;
@@ -30632,11 +30630,11 @@ namespace pdf_guru
                 if (ReadWord(imageBits, 0) != 0x4d42 ||
                   ReadDWord(imageBits, 2) != streamLength ||
                   ReadDWord(imageBits, 14) != 40 ||
-#if WPF
-#else
+
+
                   ReadDWord(imageBits, 18) != width ||
                   ReadDWord(imageBits, 22) != height)
-#endif
+
                 {
                     throw new NotImplementedException("ReadIndexedMemoryBitmap: unsupported format");
                 }
@@ -31593,18 +31591,18 @@ namespace pdf_guru
 
         internal void WriteBits(uint value, uint bits)
         {
-#if true
+
 
             if (bits + _bitsInBuffer > 8)
             {
                 uint bitsNow = 8 - _bitsInBuffer;
                 uint bitsRemainder = bits - bitsNow;
                 WriteBits(value >> (int)(bitsRemainder), bitsNow);
-#if USE_GOTO
-#else
+
+
                 WriteBits(value, bitsRemainder);
                 return;
-#endif
+
             }
 
             _buffer = (_buffer << (int)bits) + (value & masks[bits]);
@@ -31616,7 +31614,7 @@ namespace pdf_guru
                 _bitsInBuffer = 0;
                 ++_bytesOffsetWrite;
             }
-#endif
+
         }
 
         internal void WriteTableLine(uint[] table, uint line)
@@ -31864,10 +31862,10 @@ namespace pdf_guru
 
         public T CreateIndirectObject<T>() where T : PdfObject
         {
-#if true
+
             T obj = Activator.CreateInstance<T>();
             _document._irefTable.Add(obj);
-#endif
+
             return obj;
         }
 
@@ -32787,10 +32785,10 @@ namespace pdf_guru
             }
 
             MemoryStream ms = new MemoryStream();
-#if !SILVERLIGHT && !NETFX_CORE
+ 
             StreamWriter wrt = new StreamWriter(ms, Encoding.ASCII);
 
-#endif
+
             wrt.Write(prefix);
 
             wrt.WriteLine("1 begincodespacerange");
@@ -32803,15 +32801,15 @@ namespace pdf_guru
             wrt.WriteLine("endbfrange");
 
             wrt.Write(suffix);
-#if !UWP
+
             wrt.Close();
 
-#endif
+
 
             byte[] bytes = ms.ToArray();
-#if !UWP
+
             ms.Close();
-#endif
+
             if (Owner.Options.CompressContentStreams)
             {
                 Elements.SetName("/Filter", "/FlateDecode");
@@ -34273,10 +34271,10 @@ namespace pdf_guru
                         {
                             ScanNextChar();
 
-#if true
+
                             return CSymbol.Dictionary;
 
-#endif
+
                         }
                     }
                 }
@@ -34806,18 +34804,18 @@ namespace pdf_guru
         public ContentWriter(Stream contentStream)
         {
             _stream = contentStream;
-#if DEBUG
-#endif
+
+
         }
 
         public void Close(bool closeUnderlyingStream)
         {
             if (_stream != null && closeUnderlyingStream)
             {
-#if UWP
-#else
+
+
                 _stream.Close();
-#endif
+
                 _stream = null;
             }
         }
@@ -35343,9 +35341,9 @@ namespace pdf_guru
             int count = (int)stream.Length;
             byte[] bytes = new byte[count];
             stream.Read(bytes, 0, count);
-#if !UWP
+
             stream.Close();
-#endif
+
             return bytes;
         }
 
@@ -36556,19 +36554,19 @@ namespace pdf_guru
             zip.Write(data, 0, data.Length);
             zip.Finish();
 
-#if !NETFX_CORE && !UWP
+
             ms.Capacity = (int)ms.Length;
             return ms.GetBuffer();
-#endif
+
         }
 
         public override byte[] Decode(byte[] data, FilterParms parms)
         {
             MemoryStream msInput = new MemoryStream(data);
             MemoryStream msOutput = new MemoryStream();
-#if NET_ZIP
+
             
-#else
+
             InflaterInputStream iis = new InflaterInputStream(msInput, new Inflater(false));
             int cbRead;
             byte[] abResult = new byte[32768];
@@ -36579,23 +36577,23 @@ namespace pdf_guru
                     msOutput.Write(abResult, 0, cbRead);
             }
             while (cbRead > 0);
-#if UWP
+
             
-#else
+
             iis.Close();
-#endif
+
             msOutput.Flush();
             if (msOutput.Length >= 0)
             {
-#if NETFX_CORE || UWP
+
                 
-#else
+
                 msOutput.Capacity = (int)msOutput.Length;
                 return msOutput.GetBuffer();
-#endif
+
             }
             return null;
-#endif
+
         }
     }
     public class LzwDecode : Filter
@@ -36656,10 +36654,10 @@ namespace pdf_guru
 
             if (outputStream.Length >= 0)
             {
-#if !NETFX_CORE && !UWP
+
                 outputStream.Capacity = (int)outputStream.Length;
                 return outputStream.GetBuffer();
-#endif
+
             }
             return null;
         }
@@ -36912,7 +36910,7 @@ namespace pdf_guru
     {
         public static XColor EnsureColorMode(PdfColorMode colorMode, XColor color)
         {
-#if true
+
             if (colorMode == PdfColorMode.Rgb && color.ColorSpace != XColorSpace.Rgb)
                 return XColor.FromArgb((int)(color.A * 255), color.R, color.G, color.B);
 
@@ -36921,7 +36919,7 @@ namespace pdf_guru
 
             return color;
 
-#endif
+
         }
 
         public static XColor EnsureColorMode(PdfDocument document, XColor color)
@@ -37063,10 +37061,10 @@ namespace pdf_guru
             {
                 if (_winAnsiEncoding == null)
                 {
-#if !SILVERLIGHT && !NETFX_CORE && !UWP
+
                     _winAnsiEncoding = Encoding.GetEncoding(1252);
 
-#endif
+
                 }
                 return _winAnsiEncoding;
             }
@@ -37699,13 +37697,13 @@ namespace pdf_guru
                     return _symbol = ScanNumber();
             }
             if (char.IsDigit(ch))
-#if true_
-#else
+
+
                 if (PeekReference())
                     return _symbol = ScanNumber();
                 else
                     return _symbol = ScanNumber();
-#endif
+
 
             if (char.IsLetter(ch))
                 return _symbol = ScanKeyword();
@@ -38821,14 +38819,14 @@ namespace pdf_guru
         internal PdfReference ReadCompressedObject(PdfObjectID objectID, int index)
         {
             PdfReference iref;
-#if true
+
             Debug.Assert(_document._irefTable.ObjectTable.ContainsKey(objectID));
             if (!_document._irefTable.ObjectTable.TryGetValue(objectID, out iref))
             {
                 throw new NotImplementedException("This case is not coded or something else went wrong");
             }
 
-#endif
+
 
             if (iref.Value == null)
             {
@@ -38956,7 +38954,7 @@ namespace pdf_guru
                                 continue;
                             if (token != "n")
                                 continue;
-#if true
+
                             int idToUse = id;
                             int idChecked, generationChecked;
                             if (!CheckXRefTableEntry(position, id, generation, out idChecked, out generationChecked))
@@ -38966,7 +38964,7 @@ namespace pdf_guru
                                 else
                                     ParserDiagnostics.ThrowParserException("Invalid entry in XRef table, ID=" + id + ", Generation=" + generation + ", Position=" + position + ", ID of referenced object=" + idChecked + ", Generation of referenced object=" + generationChecked);
                             }
-#endif
+
                             PdfObjectID objectID = new PdfObjectID(idToUse, generation);
                             if (xrefTable.Contains(objectID))
                                 continue;
@@ -39279,7 +39277,7 @@ namespace pdf_guru
     {
         public static int TestPdfFile(string path)
         {
-#if !NETFX_CORE
+
             FileStream stream = null;
             try
             {
@@ -39302,7 +39300,7 @@ namespace pdf_guru
                     {
 
                         stream.Close();
-#endif
+
                     }
                 }
                 catch
@@ -39378,7 +39376,7 @@ namespace pdf_guru
 
         public static PdfDocument Open(string path, string password, PdfDocumentOpenMode openmode, PdfPasswordProvider provider)
         {
-#if !NETFX_CORE
+
             PdfDocument document;
             Stream stream = null;
             try
@@ -39393,14 +39391,14 @@ namespace pdf_guru
             finally
             {
                 if (stream != null)
-#if !UWP
+
                     stream.Close();
 
-#endif
+
             }
             return document;
 
-#endif
+
         }
 
         public static PdfDocument Open(string path)
@@ -39745,14 +39743,14 @@ namespace pdf_guru
         public void Write(PdfString value)
         {
             WriteSeparator(CharCat.Delimiter);
-#if true
+
             PdfStringEncoding encoding = (PdfStringEncoding)(value.Flags & PdfStringFlags.EncodingMask);
             string pdf = (value.Flags & PdfStringFlags.HexLiteral) == 0 ?
                 PdfEncoders.ToStringLiteral(value.Value, encoding, SecurityHandler) :
                 PdfEncoders.ToHexStringLiteral(value.Value, encoding, SecurityHandler);
             WriteRaw(pdf);
 
-#endif
+
             _lastCat = CharCat.Delimiter;
         }
 
@@ -40699,7 +40697,7 @@ namespace pdf_guru
             _ownerKey = ownerKey;
             _encryptionKey = new byte[strongEncryption ? 16 : 5];
 
-#if !NETFX_CORE
+
             _md5.Initialize();
             _md5.TransformBlock(userPad, 0, userPad.Length, userPad, 0);
             _md5.TransformBlock(ownerKey, 0, ownerKey.Length, ownerKey, 0);
@@ -40723,12 +40721,12 @@ namespace pdf_guru
                 }
             }
             Array.Copy(digest, 0, _encryptionKey, 0, _encryptionKey.Length);
-#endif
+
         }
 
         void SetupUserKey(byte[] documentID)
         {
-#if !NETFX_CORE
+
             if (_encryptionKey.Length == 16)
             {
                 _md5.TransformBlock(PasswordPadding, 0, PasswordPadding.Length, PasswordPadding, 0);
@@ -40751,7 +40749,7 @@ namespace pdf_guru
                 PrepareRC4Key(_encryptionKey);
                 EncryptRC4(PasswordPadding, _userKey);
             }
-#endif
+
         }
 
         void PrepareKey()
@@ -40825,7 +40823,7 @@ namespace pdf_guru
 
         internal void SetHashKey(PdfObjectID id)
         {
-#if !NETFX_CORE
+
             byte[] objectId = new byte[5];
             _md5.Initialize();
             objectId[0] = (byte)id.ObjectNumber;
@@ -40840,7 +40838,7 @@ namespace pdf_guru
             _keySize = _encryptionKey.Length + 5;
             if (_keySize > 16)
                 _keySize = 16;
-#endif
+
         }
 
         public void PrepareEncryption()
@@ -40899,10 +40897,10 @@ namespace pdf_guru
 
         byte[] _encryptionKey;
 
-#if !SILVERLIGHT && !UWP
+ 
         readonly MD5 _md5 = new MD5CryptoServiceProvider();
 
-#endif
+
         readonly byte[] _state = new byte[256];
 
         byte[] _ownerKey = new byte[32];
@@ -41262,9 +41260,9 @@ namespace pdf_guru
 
         public const string NuGetTags = "PDFsharp PDF creation";
 
-#if CORE
+
         public const string Technology = "";    
-#endif
+
     }
     static class PSSR
     {
@@ -41522,10 +41520,10 @@ namespace pdf_guru
                         if (_resmngr == null)
                         {
 
-#if !NETFX_CORE && !UWP
+
                             _resmngr = new ResourceManager("PdfSharp.Resources.Messages",
                                 Assembly.GetExecutingAssembly());
-#endif
+
                         }
                     }
                     finally { Lock.ExitFontFactory(); }
@@ -41538,7 +41536,7 @@ namespace pdf_guru
         [Conditional("DEBUG")]
         public static void TestResourceMessages()
         {
-#if !SILVERLIGHT
+
             string[] names = Enum.GetNames(typeof(PSMsgID));
             foreach (string name in names)
             {
@@ -41546,7 +41544,7 @@ namespace pdf_guru
                 Debug.Assert(message != null);
                 Debug.WriteLine(message);
             }
-#endif
+
         }
 
         static PSSR()
@@ -41621,38 +41619,38 @@ namespace pdf_guru
 
             if (offset < 0)
             {
-#if NETCF_1_0
 
-#else
+
+
                 throw new ArgumentOutOfRangeException("offset", "cannot be negative");
-#endif
+
             }
 
             if (count < 0)
             {
-#if NETCF_1_0
 
-#else
+
+
                 throw new ArgumentOutOfRangeException("count", "cannot be negative");
-#endif
+
             }
 
             if (offset >= buffer.Length)
             {
-#if NETCF_1_0
 
-#else
+
+
                 throw new ArgumentOutOfRangeException("offset", "not a valid index into buffer");
-#endif
+
             }
 
             if (offset + count > buffer.Length)
             {
-#if NETCF_1_0
 
-#else
+
+
                 throw new ArgumentOutOfRangeException("count", "exceeds buffer size");
-#endif
+
             }
 
             uint s1 = checksum & 0xFFFF;
@@ -41789,11 +41787,11 @@ namespace pdf_guru
 
             if (count < 0)
             {
-#if NETCF_1_0
 
-#else
+
+
                 throw new ArgumentOutOfRangeException("count", "Count cannot be less than zero");
-#endif
+
             }
 
             if (offset < 0 || offset + count > buffer.Length)
@@ -41875,10 +41873,10 @@ namespace pdf_guru
                     break;
                 }
 
-#if true
+
                 if (keys != null)
                 {
-#endif
+
                     EncryptBlock(buffer_, 0, len);
                 }
 
@@ -41892,12 +41890,12 @@ namespace pdf_guru
 
             baseOutputStream_.Flush();
 
-#if true
+
             if (keys != null)
             {
                 keys = null;
             }
-#endif
+
         }
 
         public bool IsStreamOwner
@@ -41916,10 +41914,10 @@ namespace pdf_guru
 
         string password;
 
-#if true
+
         uint[] keys;
 
-#endif
+
 
         public string Password
         {
@@ -41942,19 +41940,19 @@ namespace pdf_guru
 
         protected void EncryptBlock(byte[] buffer, int offset, int length)
         {
-#if true
+
             for (int i = offset; i < offset + length; ++i)
             {
                 byte oldbyte = buffer[i];
                 buffer[i] ^= EncryptByte();
                 UpdateKeys(oldbyte);
             }
-#endif
+
         }
 
         protected void InitializePassword(string password)
         {
-#if true
+
             keys = new uint[] {
                 0x12345678,
                 0x23456789,
@@ -41968,11 +41966,11 @@ namespace pdf_guru
                 UpdateKeys((byte)rawPassword[i]);
             }
 
-#endif
+
         }
 
 
-#if true
+
 
         protected byte EncryptByte()
         {
@@ -41987,7 +41985,7 @@ namespace pdf_guru
             keys[1] = keys[1] * 134775813 + 1;
             keys[2] = Crc32.ComputeCrc32(keys[2], (byte)(keys[1] >> 24));
         }
-#endif
+
 
         protected void Deflate()
         {
@@ -41999,9 +41997,9 @@ namespace pdf_guru
                 {
                     break;
                 }
-#if true
+
                 if (keys != null)
-#endif
+
                 {
                     EncryptBlock(buffer_, 0, deflateCount);
                 }
@@ -42078,19 +42076,19 @@ namespace pdf_guru
             throw new NotSupportedException("DeflaterOutputStream Read not supported");
         }
 
-#if !NETFX_CORE && !UWP
+
         public override IAsyncResult BeginRead(byte[] buffer, int offset, int count, AsyncCallback callback, object state)
         {
             throw new NotSupportedException("DeflaterOutputStream BeginRead not currently supported");
         }
-#endif
 
-#if !NETFX_CORE && !UWP
+
+
         public override IAsyncResult BeginWrite(byte[] buffer, int offset, int count, AsyncCallback callback, object state)
         {
             throw new NotSupportedException("BeginWrite is not supported");
         }
-#endif
+
 
         public override void Flush()
         {
@@ -42099,7 +42097,7 @@ namespace pdf_guru
             baseOutputStream_.Flush();
         }
 
-#if !NETFX_CORE && !UWP
+
         public override void Close()
         {
             if (!isClosed_)
@@ -42109,9 +42107,9 @@ namespace pdf_guru
                 try
                 {
                     Finish();
-#if true
+
                     keys = null;
-#endif
+
                 }
                 finally
                 {
@@ -42122,7 +42120,7 @@ namespace pdf_guru
                 }
             }
         }
-#endif
+
 
 
         private void GetAuthCodeIfAES()
@@ -42148,9 +42146,9 @@ namespace pdf_guru
 
         protected Stream baseOutputStream_;
 
-#if true || !NETFX_CORE && !UWP
+ 
         bool isClosed_;
-#endif
+
 
         bool isStreamOwner_ = true;
     }
@@ -42522,14 +42520,14 @@ namespace pdf_guru
             throw new NotSupportedException("InflaterInputStream WriteByte not supported");
         }
 
-#if !NETFX_CORE && !UWP
+
         public override IAsyncResult BeginWrite(byte[] buffer, int offset, int count, AsyncCallback callback, object state)
         {
             throw new NotSupportedException("InflaterInputStream BeginWrite not supported");
         }
-#endif
 
-#if !NETFX_CORE && !UWP
+
+
         public override void Close()
         {
             if (!isClosed)
@@ -42541,7 +42539,7 @@ namespace pdf_guru
                 }
             }
         }
-#endif
+
 
         public override int Read(byte[] buffer, int offset, int count)
         {
@@ -42588,9 +42586,9 @@ namespace pdf_guru
 
         private Stream baseInputStream;
 
-#if true || !NETFX_CORE
+ 
         bool isClosed;
-#endif
+
 
         bool isStreamOwner = true;
     }
@@ -42869,18 +42867,18 @@ namespace pdf_guru
 
             if (offset < 0)
             {
-#if NETCF_1_0
-#else
+
+
                 throw new ArgumentOutOfRangeException("offset", "Cannot be negative");
-#endif
+
             }
 
             if (count < 0)
             {
-#if NETCF_1_0
-#else
+
+
                 throw new ArgumentOutOfRangeException("count", "Cannot be negative");
-#endif
+
             }
 
             if (windowStart_ < windowEnd_)
@@ -45011,20 +45009,20 @@ namespace pdf_guru
 
             if (count < 0)
             {
-#if NETCF_1_0
 
-#else
+
+
                 throw new ArgumentOutOfRangeException("count", "count cannot be negative");
-#endif
+
             }
 
             if (offset < 0)
             {
-#if NETCF_1_0
 
-#else
+
+
                 throw new ArgumentOutOfRangeException("offset", "offset cannot be negative");
-#endif
+
             }
 
             if (offset + count > buffer.Length)
@@ -45741,14 +45739,14 @@ namespace pdf_guru
 
         [Obsolete("Use EndOfCentralDirectorySignature instead")]
         public const int ENDSIG = 'P' | ('K' << 8) | (5 << 16) | (6 << 24);
-#if true  
-#if SILVERLIGHT || NETFX_CORE || UWP
+  
 
-#else
+
+
         static int defaultCodePage = CultureInfo.CurrentCulture.TextInfo.ANSICodePage;
-#endif
 
-#endif
+
+
 
         public static int DefaultCodePage
         {
@@ -45775,10 +45773,10 @@ namespace pdf_guru
                 return string.Empty;
             }
 
-#if SILVERLIGHT || NETFX_CORE
-#else
+
+
             return Encoding.GetEncoding(DefaultCodePage).GetString(data, 0, count);
-#endif
+
         }
 
         public static string ConvertToString(byte[] data)
@@ -45831,10 +45829,9 @@ namespace pdf_guru
                 return new byte[0];
             }
 
-#if SILVERLIGHT || NETFX_CORE
-#else
+
             return Encoding.GetEncoding(DefaultCodePage).GetBytes(str);
-#endif
+
         }
 
         public static byte[] ConvertToArray(int flags, string str)
