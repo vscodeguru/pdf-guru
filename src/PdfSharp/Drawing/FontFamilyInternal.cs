@@ -1,7 +1,6 @@
+using PdfSharp.Internal;
 using System.Diagnostics;
 using System.Globalization;
-using PdfSharp.Internal;
-using System.Drawing;
 using GdiFontFamily = System.Drawing.FontFamily;
 
 namespace PdfSharp.Drawing
@@ -21,13 +20,11 @@ namespace PdfSharp.Drawing
 
         }
 
-#if CORE || GDI
         FontFamilyInternal(GdiFontFamily gdiFontFamily)
         {
             _sourceName = _name = gdiFontFamily.Name;
             _gdiFontFamily = gdiFontFamily;
         }
-#endif
 
 
         internal static FontFamilyInternal GetOrCreateFromName(string familyName, bool createPlatformObject)
@@ -46,7 +43,7 @@ namespace PdfSharp.Drawing
             finally { Lock.ExitFontFactory(); }
         }
 
-#if CORE || GDI
+
         internal static FontFamilyInternal GetOrCreateFromGdi(GdiFontFamily gdiFontFamily)
         {
             try
@@ -58,7 +55,6 @@ namespace PdfSharp.Drawing
             }
             finally { Lock.ExitFontFactory(); }
         }
-#endif
 
         public string SourceName
         {
@@ -72,13 +68,12 @@ namespace PdfSharp.Drawing
         }
         readonly string _name;
 
-#if CORE || GDI
         public GdiFontFamily GdiFamily
         {
             get { return _gdiFontFamily; }
         }
         readonly GdiFontFamily _gdiFontFamily;
-#endif
+
 
 
         internal string DebuggerDisplay

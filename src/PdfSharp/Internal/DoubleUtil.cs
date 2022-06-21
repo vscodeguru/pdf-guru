@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Runtime.InteropServices;
 using PdfSharp.Drawing;
-#if !EDF_CORE
+
 namespace PdfSharp.Internal
-#endif
+
 {
     internal static class DoubleUtil
     {

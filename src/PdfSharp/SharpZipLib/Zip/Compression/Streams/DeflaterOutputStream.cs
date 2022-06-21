@@ -53,10 +53,8 @@ namespace PdfSharp.SharpZipLib.Zip.Compression.Streams
                     break;
                 }
 
-#if true
                 if (keys != null)
                 {
-#endif
                     EncryptBlock(buffer_, 0, len);
                 }
 
@@ -70,12 +68,10 @@ namespace PdfSharp.SharpZipLib.Zip.Compression.Streams
 
             baseOutputStream_.Flush();
 
-#if true
             if (keys != null)
             {
                 keys = null;
             }
-#endif
         }
 
         public bool IsStreamOwner
@@ -94,10 +90,8 @@ namespace PdfSharp.SharpZipLib.Zip.Compression.Streams
 
         string password;
 
-#if true
         uint[] keys;
 
-#endif
 
         public string Password
         {
@@ -120,19 +114,16 @@ namespace PdfSharp.SharpZipLib.Zip.Compression.Streams
 
         protected void EncryptBlock(byte[] buffer, int offset, int length)
         {
-#if true
             for (int i = offset; i < offset + length; ++i)
             {
                 byte oldbyte = buffer[i];
                 buffer[i] ^= EncryptByte();
                 UpdateKeys(oldbyte);
             }
-#endif
         }
 
         protected void InitializePassword(string password)
         {
-#if true
             keys = new uint[] {
 				0x12345678,
 				0x23456789,
@@ -146,11 +137,9 @@ namespace PdfSharp.SharpZipLib.Zip.Compression.Streams
                 UpdateKeys((byte)rawPassword[i]);
             }
 
-#endif
         }
 
 
-#if true
 
         protected byte EncryptByte()
         {
@@ -165,7 +154,6 @@ namespace PdfSharp.SharpZipLib.Zip.Compression.Streams
             keys[1] = keys[1] * 134775813 + 1;
             keys[2] = Crc32.ComputeCrc32(keys[2], (byte)(keys[1] >> 24));
         }
-#endif
 
         protected void Deflate()
         {
@@ -177,9 +165,8 @@ namespace PdfSharp.SharpZipLib.Zip.Compression.Streams
                 {
                     break;
                 }
-#if true
                 if (keys != null)
-#endif
+
                 {
                     EncryptBlock(buffer_, 0, deflateCount);
                 }
@@ -256,19 +243,15 @@ namespace PdfSharp.SharpZipLib.Zip.Compression.Streams
             throw new NotSupportedException("DeflaterOutputStream Read not supported");
         }
 
-#if !NETFX_CORE && !UWP
 		public override IAsyncResult BeginRead(byte[] buffer, int offset, int count, AsyncCallback callback, object state)
 		{
 			throw new NotSupportedException("DeflaterOutputStream BeginRead not currently supported");
 		}
-#endif
 
-#if !NETFX_CORE && !UWP
 		public override IAsyncResult BeginWrite(byte[] buffer, int offset, int count, AsyncCallback callback, object state)
 		{
 			throw new NotSupportedException("BeginWrite is not supported");
 		}
-#endif
 
         public override void Flush()
         {
@@ -277,7 +260,6 @@ namespace PdfSharp.SharpZipLib.Zip.Compression.Streams
             baseOutputStream_.Flush();
         }
 
-#if !NETFX_CORE && !UWP
 		public override void Close()
 		{
 			if ( !isClosed_ ) {
@@ -285,9 +267,7 @@ namespace PdfSharp.SharpZipLib.Zip.Compression.Streams
 
 				try {
 					Finish();
-#if true
                     keys =null;
-#endif
 				}
 				finally {
 					if( isStreamOwner_ ) {
@@ -296,8 +276,6 @@ namespace PdfSharp.SharpZipLib.Zip.Compression.Streams
 				}
 			}
 		}
-#endif
-
 
         private void GetAuthCodeIfAES()
         {
@@ -322,9 +300,7 @@ namespace PdfSharp.SharpZipLib.Zip.Compression.Streams
 
         protected Stream baseOutputStream_;
 
-#if true || !NETFX_CORE && !UWP
         bool isClosed_;
-#endif
 
         bool isStreamOwner_ = true;
     }

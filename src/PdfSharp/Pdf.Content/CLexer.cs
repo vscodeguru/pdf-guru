@@ -200,11 +200,8 @@ namespace PdfSharp.Pdf.Content
                         else
                         {
                             ScanNextChar();
-
-#if true
                             return CSymbol.Dictionary;
 
-#endif
                         }
                     }
                 }

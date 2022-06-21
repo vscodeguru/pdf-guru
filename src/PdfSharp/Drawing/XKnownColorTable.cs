@@ -1,4 +1,3 @@
-
 namespace PdfSharp.Drawing
 {
     internal class XKnownColorTable

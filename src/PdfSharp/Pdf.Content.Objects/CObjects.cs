@@ -154,9 +154,7 @@ namespace PdfSharp.Pdf.Content.Objects
             int count = (int)stream.Length;
             byte[] bytes = new byte[count];
             stream.Read(bytes, 0, count);
-#if !UWP
             stream.Close();
-#endif
             return bytes;
         }
 

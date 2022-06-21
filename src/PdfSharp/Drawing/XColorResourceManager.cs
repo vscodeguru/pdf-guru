@@ -8,9 +8,7 @@ namespace PdfSharp.Drawing
     public class XColorResourceManager
     {
         public XColorResourceManager()
-#if !NETFX_CORE && !UWP
             : this(Thread.CurrentThread.CurrentUICulture)
-#endif
         { }
 
         public XColorResourceManager(CultureInfo cultureInfo)

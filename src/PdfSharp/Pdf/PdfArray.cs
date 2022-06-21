@@ -417,9 +417,7 @@ namespace PdfSharp.Pdf
         {
             get
             {
-#if true
-                return String.Format(CultureInfo.InvariantCulture, "array({0},[{1}])", ObjectID.DebuggerDisplay, _elements == null ? 0 : _elements.Count);
-#endif
+               return String.Format(CultureInfo.InvariantCulture, "array({0},[{1}])", ObjectID.DebuggerDisplay, _elements == null ? 0 : _elements.Count);
             }
         }
     }

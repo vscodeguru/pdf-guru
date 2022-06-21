@@ -47,7 +47,6 @@ namespace PdfSharp.Drawing
             return size;
         }
 
-#if CORE || GDI
         public static GdiFont CreateFont(string familyName, double emSize, GdiFontStyle style, out XFontSource fontSource)
         {
             fontSource = null;
@@ -56,7 +55,6 @@ namespace PdfSharp.Drawing
             font = new GdiFont(familyName, (float)emSize, style, GraphicsUnit.World);
             return font;
         }
-#endif
 
 
         public static ulong CalcChecksum(byte[] buffer)

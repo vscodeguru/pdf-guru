@@ -1,4 +1,3 @@
-using System;
 using System.Diagnostics;
 using GdiFont = System.Drawing.Font;
 using GdiFontStyle = System.Drawing.FontStyle;
@@ -23,27 +22,22 @@ namespace PdfSharp.Fonts
             if (FontFactory.TryGetFontResolverInfoByTypefaceKey(typefaceKey, out fontResolverInfo))
                 return fontResolverInfo;
 
-#if (CORE || GDI) && !WPF
             GdiFont gdiFont;
             XFontSource fontSource = CreateFontSource(familyName, fontResolvingOptions, out gdiFont, typefaceKey);
-#endif
+
 
             if (fontSource == null)
                 return null;
 
             if (fontResolvingOptions.OverrideStyleSimulations)
             {
-#if (CORE || GDI) && !WPF
                 fontResolverInfo = new PlatformFontResolverInfo(typefaceKey, fontResolvingOptions.MustSimulateBold, fontResolvingOptions.MustSimulateItalic, gdiFont);
-#endif
             }
             else
             {
-#if (CORE || GDI) && !WPF
                 bool mustSimulateBold = gdiFont.Bold && !fontSource.Fontface.os2.IsBold;
                 bool mustSimulateItalic = gdiFont.Italic && !fontSource.Fontface.os2.IsItalic;
                 fontResolverInfo = new PlatformFontResolverInfo(typefaceKey, mustSimulateBold, mustSimulateItalic, gdiFont);
-#endif
             }
 
             FontFactory.CacheFontResolverInfo(typefaceKey, fontResolverInfo);
@@ -51,7 +45,6 @@ namespace PdfSharp.Fonts
             return fontResolverInfo;
         }
 
-#if (CORE_WITH_GDI || GDI) && !WPF
         internal static XFontSource CreateFontSource(string familyName, FontResolvingOptions fontResolvingOptions, out GdiFont font, string typefaceKey)
         {
             if (string.IsNullOrEmpty(typefaceKey))
@@ -71,7 +64,5 @@ namespace PdfSharp.Fonts
             }
             return fontSource;
         }
-#endif
-
     }
 }

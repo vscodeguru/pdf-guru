@@ -113,14 +113,11 @@ namespace PdfSharp.Pdf.IO
         public void Write(PdfString value)
         {
             WriteSeparator(CharCat.Delimiter);
-#if true
             PdfStringEncoding encoding = (PdfStringEncoding)(value.Flags & PdfStringFlags.EncodingMask);
             string pdf = (value.Flags & PdfStringFlags.HexLiteral) == 0 ?
                 PdfEncoders.ToStringLiteral(value.Value, encoding, SecurityHandler) :
                 PdfEncoders.ToHexStringLiteral(value.Value, encoding, SecurityHandler);
             WriteRaw(pdf);
-
-#endif
             _lastCat = CharCat.Delimiter;
         }
 

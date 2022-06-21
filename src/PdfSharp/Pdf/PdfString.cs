@@ -47,11 +47,9 @@ namespace PdfSharp.Pdf
 
         public PdfString(string value)
         {
-#if true
             if (!IsRawEncoding(value))
                 _flags = PdfStringFlags.Unicode;
             _value = value;
-#endif
         }
 
         public PdfString(string value, PdfStringEncoding encoding)
@@ -126,13 +124,11 @@ namespace PdfSharp.Pdf
 
         public override string ToString()
         {
-#if true
             PdfStringEncoding encoding = (PdfStringEncoding)(_flags & PdfStringFlags.EncodingMask);
             string pdf = (_flags & PdfStringFlags.HexLiteral) == 0 ?
                 PdfEncoders.ToStringLiteral(_value, encoding, null) :
                 PdfEncoders.ToHexStringLiteral(_value, encoding, null);
             return pdf;
-#endif
         }
 
         public string ToStringFromPdfDocEncoded()

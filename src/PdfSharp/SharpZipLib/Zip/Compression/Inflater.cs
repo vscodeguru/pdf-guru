@@ -457,20 +457,12 @@ namespace PdfSharp.SharpZipLib.Zip.Compression
 
             if (count < 0)
             {
-#if NETCF_1_0
-
-#else
                 throw new ArgumentOutOfRangeException("count", "count cannot be negative");
-#endif
             }
 
             if (offset < 0)
             {
-#if NETCF_1_0
-
-#else
                 throw new ArgumentOutOfRangeException("offset", "offset cannot be negative");
-#endif
             }
 
             if (offset + count > buffer.Length)

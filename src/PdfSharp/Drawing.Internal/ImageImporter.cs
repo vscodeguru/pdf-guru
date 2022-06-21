@@ -31,7 +31,6 @@ namespace PdfSharp.Drawing.Internal
             return null;
         }
 
-#if GDI || WPF || CORE
         public ImportedImage ImportImage(string filename, PdfDocument document)
         {
             ImportedImage ii;
@@ -41,7 +40,7 @@ namespace PdfSharp.Drawing.Internal
             }
             return ii;
         }
-#endif
+
 
         private readonly List<IImageImporter> _importers = new List<IImageImporter>();
     }

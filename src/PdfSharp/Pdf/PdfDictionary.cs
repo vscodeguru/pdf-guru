@@ -585,7 +585,6 @@ namespace PdfSharp.Pdf
                         Type type = GetValueType(key);
                         if (type != null)
                         {
-#if !NETFX_CORE
                             Debug.Assert(typeof(PdfItem).IsAssignableFrom(type), "Type not allowed.");
                             if (typeof(PdfDictionary).IsAssignableFrom(type))
                             {
@@ -597,7 +596,7 @@ namespace PdfSharp.Pdf
                             }
                             else
                                 throw new NotImplementedException("Type other than array or dictionary.");
-#endif
+
                             if (options == VCF.CreateIndirect)
                             {
                                 _ownerDictionary.Owner._irefTable.Add(obj);
@@ -625,7 +624,6 @@ namespace PdfSharp.Pdf
                             Type type = GetValueType(key);
                             Debug.Assert(type != null, "No value type specified in meta information. Please send this file to PDFsharp support.");
 
-#if !NETFX_CORE
                             if (type != null && type != value.GetType())
                             {
                                 if (typeof(PdfDictionary).IsAssignableFrom(type))
@@ -641,7 +639,7 @@ namespace PdfSharp.Pdf
                                 else
                                     throw new NotImplementedException("Type other than array or dictionary.");
                             }
-#endif
+
                         }
                         return value;
                     }
@@ -693,7 +691,7 @@ namespace PdfSharp.Pdf
 
             PdfArray CreateArray(Type type, PdfArray oldArray)
             {
-#if !NETFX_CORE && !UWP
+
                 ConstructorInfo ctorInfo;
                 PdfArray array;
                 if (oldArray == null)
@@ -711,12 +709,12 @@ namespace PdfSharp.Pdf
                     array = ctorInfo.Invoke(new object[] { oldArray }) as PdfArray;
                 }
                 return array;
-#endif
+
             }
 
             PdfDictionary CreateDictionary(Type type, PdfDictionary oldDictionary)
             {
-#if !NETFX_CORE && !UWP
+
                 ConstructorInfo ctorInfo;
                 PdfDictionary dict;
                 if (oldDictionary == null)
@@ -734,12 +732,12 @@ namespace PdfSharp.Pdf
                     dict = ctorInfo.Invoke(new object[] { oldDictionary }) as PdfDictionary;
                 }
                 return dict;
-#endif
+
             }
 
             PdfItem CreateValue(Type type, PdfDictionary oldValue)
             {
-#if !NETFX_CORE && !UWP
+
                 ConstructorInfo ctorInfo = type.GetConstructor(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic,
                     null, new Type[] { typeof(PdfDocument) }, null);
                 PdfObject obj = ctorInfo.Invoke(new object[] { _ownerDictionary.Owner }) as PdfObject;
@@ -754,7 +752,7 @@ namespace PdfSharp.Pdf
                     }
                 }
                 return obj;
-#endif
+
             }
 
             public void SetValue(string key, PdfItem value)
@@ -1164,11 +1162,11 @@ namespace PdfSharp.Pdf
                 PdfItem filter = _ownerDictionary.Elements["/Filter"];
                 if (filter != null)
                 {
-#if true
+
                     byte[] bytes = Filtering.Decode(_value, filter);
                     if (bytes != null)
                         stream = PdfEncoders.RawEncoding.GetString(bytes, 0, bytes.Length);
-#endif
+
                     else
                         throw new NotImplementedException("Unknown filter");
                 }
@@ -1208,12 +1206,10 @@ namespace PdfSharp.Pdf
         {
             get
             {
-#if true
                 return String.Format(CultureInfo.InvariantCulture, "dictionary({0},[{1}])={2}", 
                     ObjectID.DebuggerDisplay, 
                     Elements.Count,
                     _elements.DebuggerDisplay);
-#endif
             }
         }
     }

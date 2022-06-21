@@ -116,10 +116,8 @@ namespace PdfSharp.Pdf.Advanced
 
         public T CreateIndirectObject<T>() where T : PdfObject
         {
-#if true
             T obj = Activator.CreateInstance<T>();
             _document._irefTable.Add(obj);
-#endif
             return obj;
         }
 

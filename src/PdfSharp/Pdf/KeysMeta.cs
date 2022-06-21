@@ -131,7 +131,6 @@ namespace PdfSharp.Pdf
     {
         public DictionaryMeta(Type type)
         {
-#if !NETFX_CORE && !UWP
             FieldInfo[] fields = type.GetFields(BindingFlags.Public | BindingFlags.Static | BindingFlags.FlattenHierarchy);
             foreach (FieldInfo field in fields)
             {
@@ -144,7 +143,6 @@ namespace PdfSharp.Pdf
                     _keyDescriptors[descriptor.KeyValue] = descriptor;
                 }
             }
-#endif
         }
 
         public KeyDescriptor this[string key]

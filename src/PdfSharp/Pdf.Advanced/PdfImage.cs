@@ -18,7 +18,6 @@ namespace PdfSharp.Pdf.Advanced
 
             _image = image;
 
-#if !SILVERLIGHT
             switch (_image.Format.Guid.ToString("B").ToUpper())
             {
                 case "{B96B3CAE-0728-11D3-9D7B-0000F81EF32E}":  
@@ -41,7 +40,6 @@ namespace PdfSharp.Pdf.Advanced
                     break;
             }
 
-#endif
         }
 
 
@@ -65,16 +63,13 @@ namespace PdfSharp.Pdf.Advanced
             byte[] imageBits = null;
             int streamLength = 0;
 
-#if CORE || GDI || WPF
             if (_image._importedImage != null)
             {
                 ImageDataDct idd = (ImageDataDct)_image._importedImage.ImageData;
                 imageBits = idd.Data;
                 streamLength = idd.Length;
             }
-#endif
 
-#if CORE || GDI
             if (_image._importedImage == null)
             {
                 if (!_image._path.StartsWith("*"))
@@ -109,18 +104,16 @@ namespace PdfSharp.Pdf.Advanced
                     }
                     else
                     {
-#if CORE_WITH_GDI
                         _image._gdiImage.Save(memory, ImageFormat.Jpeg);
-#endif
+
                     }
                 }
-
                 if ((int)memory.Length == 0)
                 {
                     Debug.Assert(false, "Internal error? JPEG image, but file not found!");
                 }
             }
-#endif
+
 
             if (imageBits == null)
             {
@@ -130,9 +123,7 @@ namespace PdfSharp.Pdf.Advanced
                 memory.Read(imageBits, 0, streamLength);
                 if (ownMemory)
                 {
-#if UWP || true
                     memory.Dispose();
-#endif
                 }
             }
 
@@ -162,7 +153,6 @@ namespace PdfSharp.Pdf.Advanced
             Elements[Keys.Height] = new PdfInteger(_image.PixelHeight);
             Elements[Keys.BitsPerComponent] = new PdfInteger(8);
 
-#if CORE || GDI || WPF
             if (_image._importedImage != null)
             {
                 if (_image._importedImage.Information.ImageFormat == ImageInformation.ImageFormats.JPEGCMYK ||
@@ -181,8 +171,7 @@ namespace PdfSharp.Pdf.Advanced
                     Elements[Keys.ColorSpace] = new PdfName("/DeviceRGB");
                 }
             }
-#endif
-#if CORE_WITH_GDI
+
             if (_image._importedImage == null)
             {
                 if ((_image._gdiImage.Flags & ((int)ImageFlags.ColorSpaceCmyk | (int)ImageFlags.ColorSpaceYcck)) != 0)
@@ -200,13 +189,11 @@ namespace PdfSharp.Pdf.Advanced
                     Elements[Keys.ColorSpace] = new PdfName("/DeviceRGB");
                 }
             }
-#endif
 
         }
 
         void InitializeNonJpeg()
         {
-#if CORE || GDI || WPF
             if (_image._importedImage != null)
             {
                 switch (_image._importedImage.Information.ImageFormat)
@@ -232,9 +219,7 @@ namespace PdfSharp.Pdf.Advanced
                 }
                 return;
             }
-#endif
 
-#if (CORE_WITH_GDI || GDI) && !WPF
             switch (_image._gdiImage.PixelFormat)
             {
                 case PixelFormat.Format24bppRgb:
@@ -263,15 +248,10 @@ namespace PdfSharp.Pdf.Advanced
                     break;
 
                 default:
-#if DEBUGxxx
-          image.image.Save("$$$.bmp", ImageFormat.Bmp);
-#endif
                     throw new NotImplementedException("Image format not supported.");
             }
-#endif
         }
 
-#if CORE || GDI || WPF
         private void CreateIndexedMemoryBitmap(int bits)
         {
             ImageDataBitmap idb = (ImageDataBitmap)_image._importedImage.ImageData;
@@ -465,7 +445,7 @@ namespace PdfSharp.Pdf.Advanced
             if (_image.Interpolate)
                 Elements[Keys.Interpolate] = PdfBoolean.True;
         }
-#endif
+
 
         private static int ReadWord(byte[] ab, int offset)
         {
@@ -482,18 +462,14 @@ namespace PdfSharp.Pdf.Advanced
 
             int pdfVersion = Owner.Version;
             MemoryStream memory = new MemoryStream();
-#if CORE_WITH_GDI
             _image._gdiImage.Save(memory, ImageFormat.Bmp);
-#endif
+
 
             int streamLength = (int)memory.Length;
             Debug.Assert(streamLength > 0, "Bitmap image encoding failed.");
             if (streamLength > 0)
             {
-#if !NETFX_CORE && !UWP
                 byte[] imageBits = memory.GetBuffer();
-
-#endif
 
                 int height = _image.PixelHeight;
                 int width = _image.PixelWidth;
@@ -628,9 +604,7 @@ namespace PdfSharp.Pdf.Advanced
             bool segmentedColorMask = false;
 
             MemoryStream memory = new MemoryStream();
-#if CORE_WITH_GDI
             _image._gdiImage.Save(memory, ImageFormat.Bmp);
-#endif
 
             int streamLength = (int)memory.Length;
             Debug.Assert(streamLength > 0, "Bitmap image encoding failed.");
@@ -639,9 +613,7 @@ namespace PdfSharp.Pdf.Advanced
                 byte[] imageBits = new byte[streamLength];
                 memory.Seek(0, SeekOrigin.Begin);
                 memory.Read(imageBits, 0, streamLength);
-#if !UWP
                 memory.Close();
-#endif
 
                 int height = _image.PixelHeight;
                 int width = _image.PixelWidth;
@@ -649,11 +621,8 @@ namespace PdfSharp.Pdf.Advanced
                 if (ReadWord(imageBits, 0) != 0x4d42 ||  
                   ReadDWord(imageBits, 2) != streamLength ||
                   ReadDWord(imageBits, 14) != 40 ||   
-#if WPF
-#else
                   ReadDWord(imageBits, 18) != width ||
                   ReadDWord(imageBits, 22) != height)
-#endif
                 {
                     throw new NotImplementedException("ReadIndexedMemoryBitmap: unsupported format");
                 }

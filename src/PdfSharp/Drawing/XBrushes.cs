@@ -1,5 +1,3 @@
-
-
 namespace PdfSharp.Drawing
 {
     public static class XBrushes

@@ -7,7 +7,6 @@ namespace PdfSharp.Pdf.Internal
     {
         public static XColor EnsureColorMode(PdfColorMode colorMode, XColor color)
         {
-#if true
             if (colorMode == PdfColorMode.Rgb && color.ColorSpace != XColorSpace.Rgb)
                 return XColor.FromArgb((int)(color.A * 255), color.R, color.G, color.B);
 
@@ -15,8 +14,6 @@ namespace PdfSharp.Pdf.Internal
                 return XColor.FromCmyk(color.A, color.C, color.M, color.Y, color.K);
 
             return color;
-
-#endif
         }
 
         public static XColor EnsureColorMode(PdfDocument document, XColor color)

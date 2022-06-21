@@ -74,8 +74,6 @@ namespace PdfSharp.Pdf.AcroForms
 
         void RenderAppearance()
         {
-#if true_       
-#else
             PdfRectangle rect = Elements.GetRectangle(PdfAnnotation.Keys.Rect);
             XForm form = new XForm(_document, rect.Size);
             XGraphics gfx = XGraphics.FromForm(form);
@@ -104,7 +102,6 @@ namespace PdfSharp.Pdf.AcroForms
             string s = xobj.Stream.ToString();
             s = "/Tx BMC\n" + s + "\nEMC";
             xobj.Stream.Value = new RawEncoding().GetBytes(s);
-#endif
         }
 
         internal override void PrepareForSave()

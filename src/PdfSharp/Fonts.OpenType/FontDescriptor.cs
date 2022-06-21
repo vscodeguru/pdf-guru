@@ -1,5 +1,4 @@
-﻿
-using PdfSharp.Drawing;
+﻿using PdfSharp.Drawing;
 
 namespace PdfSharp.Fonts.OpenType
 {

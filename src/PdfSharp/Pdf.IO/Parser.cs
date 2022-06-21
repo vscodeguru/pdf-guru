@@ -543,14 +543,12 @@ namespace PdfSharp.Pdf.IO
         internal PdfReference ReadCompressedObject(PdfObjectID objectID, int index)
         {
             PdfReference iref;
-#if true
             Debug.Assert(_document._irefTable.ObjectTable.ContainsKey(objectID));
             if (!_document._irefTable.ObjectTable.TryGetValue(objectID, out iref))
             {
                 throw new NotImplementedException("This case is not coded or something else went wrong");
             }
 
-#endif
 
             if (iref.Value == null)
             {
@@ -678,7 +676,6 @@ namespace PdfSharp.Pdf.IO
                                 continue;
                             if (token != "n")
                                 continue;
-#if true
                             int idToUse = id;
                             int idChecked, generationChecked;
                             if (!CheckXRefTableEntry(position, id, generation, out idChecked, out generationChecked))
@@ -688,7 +685,6 @@ namespace PdfSharp.Pdf.IO
                                 else
                                     ParserDiagnostics.ThrowParserException("Invalid entry in XRef table, ID=" + id + ", Generation=" + generation + ", Position=" + position + ", ID of referenced object=" + idChecked + ", Generation of referenced object=" + generationChecked);      
                             }
-#endif
                             PdfObjectID objectID = new PdfObjectID(idToUse, generation);
                             if (xrefTable.Contains(objectID))
                                 continue;

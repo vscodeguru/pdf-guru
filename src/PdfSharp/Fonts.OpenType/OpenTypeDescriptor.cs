@@ -133,10 +133,9 @@ namespace PdfSharp.Fonts.OpenType
             else
                 XHeight = (int)(0.66 * Ascender);
 
-#if !EDF_CORE
             Encoding ansi = PdfEncoders.WinAnsiEncoding;  
 
-#endif
+
 
             Encoding unicode = Encoding.Unicode;
             byte[] bytes = new byte[256];

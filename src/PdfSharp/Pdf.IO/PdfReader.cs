@@ -22,7 +22,6 @@ namespace PdfSharp.Pdf.IO
     {
         public static int TestPdfFile(string path)
         {
-#if !NETFX_CORE
             FileStream stream = null;
             try
             {
@@ -43,9 +42,7 @@ namespace PdfSharp.Pdf.IO
                 {
                     if (stream != null)
                     {
-
                         stream.Close();
-#endif
                     }
                 }
                 catch
@@ -121,7 +118,6 @@ namespace PdfSharp.Pdf.IO
 
         public static PdfDocument Open(string path, string password, PdfDocumentOpenMode openmode, PdfPasswordProvider provider)
         {
-#if !NETFX_CORE
             PdfDocument document;
             Stream stream = null;
             try
@@ -136,14 +132,10 @@ namespace PdfSharp.Pdf.IO
             finally
             {
                 if (stream != null)
-#if !UWP
                     stream.Close();
 
-#endif
             }
             return document;
-
-#endif
         }
 
         public static PdfDocument Open(string path)

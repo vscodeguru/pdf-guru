@@ -38,7 +38,6 @@ namespace PdfSharp.Pdf.Advanced
             return pdfFont;
         }
 
-#if true
         public PdfFont GetFont(string idName, byte[] fontData)
         {
             Debug.Assert(false);
@@ -52,7 +51,6 @@ namespace PdfSharp.Pdf.Advanced
             }
             return pdfFont;
         }
-#endif
 
         public PdfFont TryGetFont(string idName)
         {

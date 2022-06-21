@@ -264,10 +264,8 @@ namespace PdfSharp
                         if (_resmngr == null)
                         {
 
-#if !NETFX_CORE && !UWP
                             _resmngr = new ResourceManager("PdfSharp.Resources.Messages",
                                 Assembly.GetExecutingAssembly());
-#endif
                         }
                     }
                     finally { Lock.ExitFontFactory(); }
@@ -280,7 +278,6 @@ namespace PdfSharp
         [Conditional("DEBUG")]
         public static void TestResourceMessages()
         {
-#if !SILVERLIGHT
             string[] names = Enum.GetNames(typeof(PSMsgID));
             foreach (string name in names)
             {
@@ -288,7 +285,6 @@ namespace PdfSharp
                 Debug.Assert(message != null);
                 Debug.WriteLine(message);
             }
-#endif
         }
 
         static PSSR()

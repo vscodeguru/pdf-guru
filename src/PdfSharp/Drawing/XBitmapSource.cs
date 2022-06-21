@@ -1,4 +1,3 @@
-
 using PdfSharp.Internal;
 
 namespace PdfSharp.Drawing
@@ -9,14 +8,12 @@ namespace PdfSharp.Drawing
         {
             get
             {
-#if (CORE_WITH_GDI || GDI) && !WPF
                 try
                 {
                     Lock.EnterGdiPlus();
                     return _gdiImage.Width;
                 }
                 finally { Lock.ExitGdiPlus(); }
-#endif
             }
         }
 
@@ -24,14 +21,12 @@ namespace PdfSharp.Drawing
         {
             get
             {
-#if (CORE_WITH_GDI || GDI) && !WPF
                 try
                 {
                     Lock.EnterGdiPlus();
                     return _gdiImage.Height;
                 }
                 finally { Lock.ExitGdiPlus(); }
-#endif
             }
         }
     }

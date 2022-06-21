@@ -76,8 +76,6 @@ namespace PdfSharp.Pdf
         {
             public int Compare(PdfName l, PdfName r)
             {
-#if true_
-#else
                 if (l != null)
                 {
                     if (r != null)
@@ -87,7 +85,6 @@ namespace PdfSharp.Pdf
                 if (r != null)
                     return 1;
                 return 0;
-#endif
             }
         }
     }

@@ -33,7 +33,6 @@ namespace PdfSharp.Drawing
             return fontSource;
         }
 
-#if CORE || GDI
         internal static XFontSource GetOrCreateFromGdi(string typefaceKey, GdiFont gdiFont)
         {
             byte[] bytes = ReadFontBytesFromGdi(gdiFont);
@@ -46,9 +45,7 @@ namespace PdfSharp.Drawing
             int error = Marshal.GetLastWin32Error();
             error = Marshal.GetLastWin32Error();
             IntPtr hfont = gdiFont.ToHfont();
-#if true
             IntPtr hdc = NativeMethods.GetDC(IntPtr.Zero);
-#endif
             error = Marshal.GetLastWin32Error();
             IntPtr oldFont = NativeMethods.SelectObject(hdc, hfont);
             error = Marshal.GetLastWin32Error();
@@ -75,7 +72,7 @@ namespace PdfSharp.Drawing
 
             return bytes;
         }
-#endif
+
         static XFontSource GetOrCreateFrom(string typefaceKey, byte[] fontBytes)
         {
             XFontSource fontSource;

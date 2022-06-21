@@ -18,11 +18,8 @@ namespace PdfSharp.Pdf
             get { return _compressContentStreams; }
             set { _compressContentStreams = value; }
         }
-#if DEBUG
 
-#else
         bool _compressContentStreams = true;
-#endif
 
         public bool NoCompression
         {

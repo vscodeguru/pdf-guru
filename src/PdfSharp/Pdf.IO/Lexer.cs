@@ -85,13 +85,10 @@ namespace PdfSharp.Pdf.IO
                     return _symbol = ScanNumber();
             }
             if (char.IsDigit(ch))
-#if true_
-#else
                 if (PeekReference())
                     return _symbol = ScanNumber();
                 else
                     return _symbol = ScanNumber();
-#endif
 
             if (char.IsLetter(ch))
                 return _symbol = ScanKeyword();

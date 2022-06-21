@@ -289,11 +289,10 @@ namespace PdfSharp.Drawing.Pdf
             if (pen == null && brush == null)
                 throw new ArgumentNullException("pen");
 
-#if CORE
             Realize(pen, brush);
             AppendPath(path._corePath);
             AppendStrokeFill(pen, brush, path.FillMode, false);
-#endif
+
         }
 
         public void DrawString(string s, XFont font, XBrush brush, XRect rect, XStringFormat format)
@@ -409,40 +408,6 @@ namespace PdfSharp.Drawing.Pdf
             {
             }
 
-#if ITALIC_SIMULATION
-            if (italicSimulation)
-            {
-                if (_gfxState.ItalicSimulationOn)
-                {
-                    AdjustTdOffset(ref pos, verticalOffset, true);
-                    AppendFormatArgs("{0:" + format2 + "} {1:" + format2 + "} Td\n{2} Tj\n", pos.X, pos.Y, text);
-                }
-                else
-                {
-                    XMatrix m = new XMatrix(1, 0, Const.ItalicSkewAngleSinus, 1, pos.X, pos.Y);
-                    AppendFormatArgs("{0:" + format2 + "} {1:" + format2 + "} {2:" + format2 + "} {3:" + format2 + "} {4:" + format2 + "} {5:" + format2 + "} Tm\n{6} Tj\n",
-                        m.M11, m.M12, m.M21, m.M22, m.OffsetX, m.OffsetY, text);
-                    _gfxState.ItalicSimulationOn = true;
-                    AdjustTdOffset(ref pos, verticalOffset, false);
-                }
-            }
-            else
-            {
-                if (_gfxState.ItalicSimulationOn)
-                {
-                    XMatrix m = new XMatrix(1, 0, 0, 1, pos.X, pos.Y);
-                    AppendFormatArgs("{0:" + format2 + "} {1:" + format2 + "} {2:" + format2 + "} {3:" + format2 + "} {4:" + format2 + "} {5:" + format2 + "} Tm\n{6} Tj\n",
-                        m.M11, m.M12, m.M21, m.M22, m.OffsetX, m.OffsetY, text);
-                    _gfxState.ItalicSimulationOn = false;
-                    AdjustTdOffset(ref pos, verticalOffset, false);
-                }
-                else
-                {
-                    AdjustTdOffset(ref pos, verticalOffset, false);
-                    AppendFormatArgs("{0:" + format2 + "} {1:" + format2 + "} Td {2} Tj\n", pos.X, pos.Y, text);
-                }
-            }
-#endif
             if (underline)
             {
                 double underlinePosition = lineSpace * realizedFont.FontDescriptor._descriptor.UnderlinePosition / font.CellSpace;
@@ -868,16 +833,12 @@ namespace PdfSharp.Drawing.Pdf
                 pt2.X, pt2.Y);
         }
 
-
-
-#if CORE
         internal void AppendPath(CoreGraphicsPath path)
         {
             AppendPath(path.PathPoints, path.PathTypes);
         }
-#endif
 
-#if CORE || GDI
+
         void AppendPath(XPoint[] points, Byte[] types)
         {
             const string format = Config.SignificantFigures4;
@@ -915,7 +876,7 @@ namespace PdfSharp.Drawing.Pdf
                 }
             }
         }
-#endif
+
         internal void Append(string value)
         {
             _content.Append(value);
@@ -1209,13 +1170,11 @@ namespace PdfSharp.Drawing.Pdf
         internal XPoint WorldToView(XPoint point)
         {
             Debug.Assert(_gfxState.UnrealizedCtm.IsIdentity, "Somewhere a RealizeTransform is missing.");
-#if true
             XPoint pt = _gfxState.WorldTransform.Transform(point);
             return _gfxState.InverseEffectiveCtm.Transform(new XPoint(pt.X, PageHeightPt / DefaultViewMatrix.M22 - pt.Y));
-#endif
+
         }
 
-#if CORE || GDI
         [Conditional("DEBUG")]
         void DumpPathData(XPoint[] points, byte[] types)
         {
@@ -1226,7 +1185,6 @@ namespace PdfSharp.Drawing.Pdf
                 Debug.WriteLine(info, "PathData");
             }
         }
-#endif
 
         internal PdfDocument Owner
         {

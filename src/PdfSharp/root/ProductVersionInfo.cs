@@ -67,8 +67,6 @@ namespace PdfSharp
 
         public const string NuGetTags = "PDFsharp PDF creation";
 
-#if CORE
         public const string Technology = "";    
-#endif
     }
 }

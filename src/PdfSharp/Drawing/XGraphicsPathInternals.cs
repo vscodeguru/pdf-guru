@@ -1,5 +1,3 @@
-
-
 namespace PdfSharp.Drawing
 {
     public sealed class XGraphicsPathInternals

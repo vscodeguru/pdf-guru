@@ -44,14 +44,12 @@ namespace PdfSharp.Drawing
 
             return new XFontFamily(fontFamilyInternal);
         }
-
-#if CORE || GDI
         internal static XFontFamily GetOrCreateFromGdi(GdiFont font)
         {
             FontFamilyInternal fontFamilyInternal = FontFamilyInternal.GetOrCreateFromGdi(font.FontFamily);
             return new XFontFamily(fontFamilyInternal);
         }
-#endif
+
 
 
         public string Name
@@ -90,9 +88,9 @@ namespace PdfSharp.Drawing
         public bool IsStyleAvailable(XFontStyle style)
         {
             XGdiFontStyle xStyle = ((XGdiFontStyle)style) & XGdiFontStyle.BoldItalic;
-#if CORE
+
             throw new InvalidOperationException("In CORE build it is the responsibility of the developer to provide all required font faces.");
-#endif
+
         }
 
         [Obsolete("Use platform API directly.")]

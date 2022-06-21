@@ -3,7 +3,7 @@ using System.Diagnostics;
 using System.IO;
 
 using System.Drawing.Imaging;
-
+using PdfSharp.Internal;
 
 namespace PdfSharp.Drawing
 {
@@ -37,7 +37,7 @@ namespace PdfSharp.Drawing
         {
             if (Source == null)
                 throw new InvalidOperationException("No image source.");
-#if CORE_WITH_GDI || GDI
+
             if (Source.AssociatedGraphics != null)
             {
                 Source.DisassociateWithGraphics();
@@ -49,7 +49,7 @@ namespace PdfSharp.Drawing
                 Source._gdiImage.Save(stream, ImageFormat.Png);
             }
             finally { Lock.ExitGdiPlus(); }
-#endif
+
         }
     }
 }

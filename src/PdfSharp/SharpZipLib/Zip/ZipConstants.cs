@@ -1,11 +1,6 @@
 using System;
 using System.Globalization;
 using System.Text;
-using System.Threading;
-
-#if NETCF_1_0 || NETCF_2_0
-using System.Globalization;
-#endif
 
 namespace PdfSharp.SharpZipLib.Zip
 {
@@ -153,14 +148,7 @@ namespace PdfSharp.SharpZipLib.Zip
 
         [Obsolete("Use EndOfCentralDirectorySignature instead")]
         public const int ENDSIG = 'P' | ('K' << 8) | (5 << 16) | (6 << 24);
-#if true  
-#if SILVERLIGHT || NETFX_CORE || UWP
-
-#else
         static int defaultCodePage = CultureInfo.CurrentCulture.TextInfo.ANSICodePage;
-#endif
-  
-#endif
 
         public static int DefaultCodePage
         {
@@ -187,10 +175,7 @@ namespace PdfSharp.SharpZipLib.Zip
                 return string.Empty;
             }
 
-#if SILVERLIGHT || NETFX_CORE
-#else
             return Encoding.GetEncoding(DefaultCodePage).GetString(data, 0, count);
-#endif
         }
 
         public static string ConvertToString(byte[] data)
@@ -242,11 +227,7 @@ namespace PdfSharp.SharpZipLib.Zip
             {
                 return new byte[0];
             }
-
-#if SILVERLIGHT || NETFX_CORE
-#else
             return Encoding.GetEncoding(DefaultCodePage).GetBytes(str);
-#endif
         }
 
         public static byte[] ConvertToArray(int flags, string str)

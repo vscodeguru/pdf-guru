@@ -4,7 +4,6 @@ using System.IO;
 
 namespace PdfSharp.Drawing
 {
-#if true
     public sealed class XPrivateFontCollection
     {
         XPrivateFontCollection()
@@ -17,22 +16,15 @@ namespace PdfSharp.Drawing
         }
         internal static XPrivateFontCollection _singleton = new XPrivateFontCollection();
 
-#if GDI
- 
-#else
         [Obsolete("Use the GDI build of PDFsharp and use Add(Stream stream)")]
-#endif
+
         public static void AddFont(string filename)
         {
             throw new NotImplementedException();
         }
 
-
-#if GDI
-        
-#else
         [Obsolete("Use the GDI build of PDFsharp and use Add(Stream stream)")]
-#endif
+
         public static void AddFont(Stream stream, string facename)
         {
             throw new NotImplementedException();
@@ -53,5 +45,4 @@ namespace PdfSharp.Drawing
 
 
     }
-#endif
 }

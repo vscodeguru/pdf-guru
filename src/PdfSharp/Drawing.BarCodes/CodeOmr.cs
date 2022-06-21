@@ -28,10 +28,9 @@ namespace PdfSharp.Drawing.BarCodes
             XPoint pt = position - CodeBase.CalcDistance(AnchorType.TopLeft, Anchor, Size);
             uint value;
             uint.TryParse(Text, out value);
-#if true
             value |= 1;
             _synchronizeCode = true;
-#endif
+
             if (_synchronizeCode)
             {
                 XRect rect = new XRect(pt.X, pt.Y, _makerThickness, Size.Height);

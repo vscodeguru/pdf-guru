@@ -371,15 +371,11 @@ namespace PdfSharp.SharpZipLib.Zip.Compression.Streams
         {
             throw new NotSupportedException("InflaterInputStream WriteByte not supported");
         }
-
-#if !NETFX_CORE && !UWP
         public override IAsyncResult BeginWrite(byte[] buffer, int offset, int count, AsyncCallback callback, object state)
         {
             throw new NotSupportedException("InflaterInputStream BeginWrite not supported");
         }
-#endif
 
-#if !NETFX_CORE && !UWP
         public override void Close()
         {
             if (!isClosed)
@@ -391,7 +387,6 @@ namespace PdfSharp.SharpZipLib.Zip.Compression.Streams
                 }
             }
         }
-#endif
 
         public override int Read(byte[] buffer, int offset, int count)
         {
@@ -438,9 +433,8 @@ namespace PdfSharp.SharpZipLib.Zip.Compression.Streams
 
         private Stream baseInputStream;
 
-#if true || !NETFX_CORE
         bool isClosed;
-#endif
+
 
         bool isStreamOwner = true;
     }

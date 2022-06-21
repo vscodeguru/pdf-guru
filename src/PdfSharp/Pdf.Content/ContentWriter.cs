@@ -10,18 +10,13 @@ namespace PdfSharp.Pdf.Content
         public ContentWriter(Stream contentStream)
         {
             _stream = contentStream;
-#if DEBUG
-#endif
         }
 
         public void Close(bool closeUnderlyingStream)
         {
             if (_stream != null && closeUnderlyingStream)
             {
-#if UWP
-#else
                 _stream.Close();
-#endif
                 _stream = null;
             }
         }

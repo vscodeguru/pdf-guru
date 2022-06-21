@@ -58,7 +58,6 @@ namespace PdfSharp.Pdf.Advanced
             PdfItem res = importPage.Elements["/Resources"];
             if (res != null)    
             {
-#if true
                 PdfObject root;
                 if (res is PdfReference)
                     root = ((PdfReference)res).Value;
@@ -71,7 +70,6 @@ namespace PdfSharp.Pdf.Advanced
 
                 Debug.Assert(root.Reference != null);
                 Elements["/Resources"] = root.Reference;
-#endif
             }
 
             PdfRectangle rect = importPage.Elements.GetRectangle(PdfPage.Keys.MediaBox);
@@ -109,9 +107,7 @@ namespace PdfSharp.Pdf.Advanced
             }
 
             PdfContent content = importPage.Contents.CreateSingleContent();
-#if !DEBUG
             content.Compressed = true;
-#endif
             PdfItem filter = content.Elements["/Filter"];
             if (filter != null)
                 Elements["/Filter"] = filter.Clone();

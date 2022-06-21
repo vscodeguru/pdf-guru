@@ -141,9 +141,8 @@ namespace PdfSharp.Pdf
         public bool Opened
         {
             get { return _opened; }
-#if true
             set { _opened = value; }
-#endif
+
         }
         bool _opened;
 

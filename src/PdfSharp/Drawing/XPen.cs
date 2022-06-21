@@ -1,5 +1,4 @@
 using System;
-using PdfSharp.Internal;
 
 namespace PdfSharp.Drawing
 {

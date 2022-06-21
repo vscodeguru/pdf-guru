@@ -49,31 +49,19 @@ namespace PdfSharp.Pdf.Advanced
             }
 
             MemoryStream ms = new MemoryStream();
-#if !SILVERLIGHT && !NETFX_CORE
             StreamWriter wrt = new StreamWriter(ms, Encoding.ASCII);
-
-#endif
             wrt.Write(prefix);
-
             wrt.WriteLine("1 begincodespacerange");
             wrt.WriteLine(String.Format("<{0:X4}><{1:X4}>", lowIndex, hiIndex));
             wrt.WriteLine("endcodespacerange");
-
             wrt.WriteLine(String.Format("{0} beginbfrange", glyphIndexToCharacter.Count));
             foreach (KeyValuePair<int, char> entry in glyphIndexToCharacter)
-                wrt.WriteLine(String.Format("<{0:X4}><{0:X4}><{1:X4}>", entry.Key, (int)entry.Value));
+            wrt.WriteLine(String.Format("<{0:X4}><{0:X4}><{1:X4}>", entry.Key, (int)entry.Value));
             wrt.WriteLine("endbfrange");
-
             wrt.Write(suffix);
-#if !UWP
             wrt.Close();
-
-#endif
-
             byte[] bytes = ms.ToArray();
-#if !UWP
             ms.Close();
-#endif
             if (Owner.Options.CompressContentStreams)
             {
                 Elements.SetName("/Filter", "/FlateDecode");

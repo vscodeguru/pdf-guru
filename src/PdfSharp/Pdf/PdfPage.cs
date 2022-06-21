@@ -31,10 +31,8 @@ namespace PdfSharp.Pdf
             int rotate = Elements.GetInteger(InheritablePageKeys.Rotate);
             if (Math.Abs((rotate / 90)) % 2 == 1)
             {
-#if true
                 _orientation = PageOrientation.Landscape;
                 _orientationSetByCodeForRotatedDocument = true;
-#endif
             }
         }
 
@@ -401,7 +399,6 @@ namespace PdfSharp.Pdf
             if (_orientation == PageOrientation.Landscape && !_orientationSetByCodeForRotatedDocument)
                 MediaBox = new PdfRectangle(mediaBox.X1, mediaBox.Y1, mediaBox.Y2, mediaBox.X2);
 
-#if true
             TransparencyUsed = true;    
             if (TransparencyUsed && !Elements.ContainsKey(Keys.Group) &&
                 _document.Options.ColorMode != PdfColorMode.Undefined)
@@ -414,7 +411,6 @@ namespace PdfSharp.Pdf
                     group.Elements.SetName("/CS", "/DeviceCMYK");
                 group.Elements.SetName("/S", "/Transparency");
             }
-#endif
 
             base.WriteObject(writer);
 

@@ -27,10 +27,7 @@ namespace PdfSharp.Pdf.Internal
             {
                 if (_winAnsiEncoding == null)
                 {
-#if !SILVERLIGHT && !NETFX_CORE && !UWP
                     _winAnsiEncoding = Encoding.GetEncoding(1252);
-
-#endif
                 }
                 return _winAnsiEncoding;
             }

@@ -324,9 +324,7 @@ namespace PdfSharp.Pdf
             CloneElement(page, importPage, PdfPage.Keys.BleedBox, true);
             CloneElement(page, importPage, PdfPage.Keys.TrimBox, true);
             CloneElement(page, importPage, PdfPage.Keys.ArtBox, true);
-#if true
             CloneElement(page, importPage, PdfPage.Keys.Annots, false);
-#endif
             return page;
         }
 
@@ -408,9 +406,7 @@ namespace PdfSharp.Pdf
             }
 
             Elements.SetName(Keys.Type, "/Pages");
-#if true
             Elements.SetValue(Keys.Kids, array);
-#endif
             Elements.SetInteger(Keys.Count, array.Elements.Count);
         }
 
@@ -418,7 +414,7 @@ namespace PdfSharp.Pdf
         {
             PdfDictionary kid = (PdfDictionary)iref.Value;
 
-#if true
+
             string type = kid.Elements.GetName(Keys.Type);
             if (type == "/Page")
             {
@@ -432,7 +428,6 @@ namespace PdfSharp.Pdf
                 return new PdfDictionary[] { kid };
             }
 
-#endif
 
             Debug.Assert(kid.Elements.GetName(Keys.Type) == "/Pages");
             PdfPage.InheritValues(kid, ref values);

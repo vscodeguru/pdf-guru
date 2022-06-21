@@ -4,9 +4,8 @@ using System.Globalization;
 using System.Runtime.InteropServices;
 using PdfSharp.Internal;
 
-#if !EDF_CORE
 namespace PdfSharp.Drawing
-#endif
+
 {
     [DebuggerDisplay("{DebuggerDisplay}")]
     [Serializable]

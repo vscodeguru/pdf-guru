@@ -156,9 +156,9 @@ namespace PdfSharp.Drawing.BarCodes
                 char newenc = enc;           
                 if (targetLength - targetposition <= 1 && (enc == 'c' || enc == 't') || targetLength - targetposition <= 2 && enc == 'x')
                     enc = 'a';                 
-#if !SILVERLIGHT
+
                 newenc = char.ToLower(encoding[sourceposition]);
-#endif
+
                 switch (newenc)
                 {                           
                     case 'c':                 
@@ -627,9 +627,8 @@ namespace PdfSharp.Drawing.BarCodes
         public XImage CreateImage(char[] code, int rows, int columns, int pixelsize)
         {
 
-#if CORE || NETFX_CORE || UWP
             return null;
-#endif
+
         }
 
         struct Ecc200Block

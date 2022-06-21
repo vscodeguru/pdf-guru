@@ -61,10 +61,8 @@ namespace PdfSharp.Pdf.Filters
 
             if (outputStream.Length >= 0)
             {
-#if !NETFX_CORE && !UWP
                 outputStream.Capacity = (int)outputStream.Length;
                 return outputStream.GetBuffer();
-#endif
             }
             return null;
         }

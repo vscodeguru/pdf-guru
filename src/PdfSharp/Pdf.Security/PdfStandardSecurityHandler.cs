@@ -259,8 +259,6 @@ namespace PdfSharp.Pdf.Security
         {
             _ownerKey = ownerKey;
             _encryptionKey = new byte[strongEncryption ? 16 : 5];
-
-#if !NETFX_CORE
             _md5.Initialize();
             _md5.TransformBlock(userPad, 0, userPad.Length, userPad, 0);
             _md5.TransformBlock(ownerKey, 0, ownerKey.Length, ownerKey, 0);
@@ -284,12 +282,10 @@ namespace PdfSharp.Pdf.Security
                 }
             }
             Array.Copy(digest, 0, _encryptionKey, 0, _encryptionKey.Length);
-#endif
         }
 
         void SetupUserKey(byte[] documentID)
         {
-#if !NETFX_CORE
             if (_encryptionKey.Length == 16)
             {
                 _md5.TransformBlock(PasswordPadding, 0, PasswordPadding.Length, PasswordPadding, 0);
@@ -312,7 +308,6 @@ namespace PdfSharp.Pdf.Security
                 PrepareRC4Key(_encryptionKey);
                 EncryptRC4(PasswordPadding, _userKey);
             }
-#endif
         }
 
         void PrepareKey()
@@ -386,7 +381,6 @@ namespace PdfSharp.Pdf.Security
 
         internal void SetHashKey(PdfObjectID id)
         {
-#if !NETFX_CORE
             byte[] objectId = new byte[5];
             _md5.Initialize();
             objectId[0] = (byte)id.ObjectNumber;
@@ -401,7 +395,6 @@ namespace PdfSharp.Pdf.Security
             _keySize = _encryptionKey.Length + 5;
             if (_keySize > 16)
                 _keySize = 16;
-#endif
         }
 
         public void PrepareEncryption()
@@ -460,10 +453,7 @@ namespace PdfSharp.Pdf.Security
 
         byte[] _encryptionKey;
 
-#if !SILVERLIGHT && !UWP
         readonly MD5 _md5 = new MD5CryptoServiceProvider();
-
-#endif
         readonly byte[] _state = new byte[256];
 
         byte[] _ownerKey = new byte[32];

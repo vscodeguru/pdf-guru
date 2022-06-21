@@ -3,7 +3,6 @@ using System.Runtime.InteropServices;
 
 namespace PdfSharp.Internal
 {
-#if CORE || GDI || WPF
     static class NativeMethods
     {
         public const int GDI_ERROR = -1;
@@ -111,5 +110,5 @@ namespace PdfSharp.Internal
         [DllImport("gdi32.dll")]
         public static extern int GetDeviceCaps(IntPtr hdc, int nIndex);
     }
-#endif
+
 }

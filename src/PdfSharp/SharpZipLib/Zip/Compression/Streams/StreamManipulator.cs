@@ -5,12 +5,9 @@ namespace PdfSharp.SharpZipLib.Zip.Compression.Streams
 
     internal class StreamManipulator
     {
-        #region Constructors
         public StreamManipulator()
         {
-        }
-        #endregion
-
+        }   
         public int PeekBits(int bitCount)
         {
             if (bitsInBuffer_ < bitCount)
@@ -130,18 +127,12 @@ namespace PdfSharp.SharpZipLib.Zip.Compression.Streams
 
             if (offset < 0)
             {
-#if NETCF_1_0
-#else
                 throw new ArgumentOutOfRangeException("offset", "Cannot be negative");
-#endif
             }
 
             if (count < 0)
             {
-#if NETCF_1_0
-#else
                 throw new ArgumentOutOfRangeException("count", "Cannot be negative");
-#endif
             }
 
             if (windowStart_ < windowEnd_)
@@ -167,13 +158,12 @@ namespace PdfSharp.SharpZipLib.Zip.Compression.Streams
             windowEnd_ = end;
         }
 
-        #region Instance Fields
         private byte[] window_;
         private int windowStart_;
         private int windowEnd_;
 
         private uint buffer_;
         private int bitsInBuffer_;
-        #endregion
+      
     }
 }

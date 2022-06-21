@@ -3,7 +3,6 @@ using System.Diagnostics;
 using System.Globalization;
 using System.ComponentModel;
 using System.Drawing;
-using System.Drawing.Drawing2D;
 using GdiFontFamily = System.Drawing.FontFamily;
 using GdiFont = System.Drawing.Font;
 using GdiFontStyle = System.Drawing.FontStyle;
@@ -45,7 +44,6 @@ namespace PdfSharp.Drawing
             Initialize();
         }
 
-#if CORE || GDI
         public XFont(GdiFontFamily fontFamily, double emSize, XFontStyle style)
             : this(fontFamily, emSize, style, new XPdfFontOptions(GlobalFontSettings.DefaultFontEncoding))
         { }
@@ -76,7 +74,7 @@ namespace PdfSharp.Drawing
             _pdfOptions = pdfOptions;
             InitializeFromGdi();
         }
-#endif
+
 
         void Initialize()
         {
@@ -86,9 +84,8 @@ namespace PdfSharp.Drawing
 
             if (StringComparer.OrdinalIgnoreCase.Compare(_familyName, GlobalFontSettings.DefaultFontName) == 0)
             {
-#if CORE || GDI || WPF
                 _familyName = "Calibri";
-#endif
+
             }
 
             _glyphTypeface = XGlyphTypeface.GetOrCreateFrom(_familyName, fontResolvingOptions);
@@ -96,7 +93,6 @@ namespace PdfSharp.Drawing
             CreateDescriptorAndInitializeFontMetrics();
         }
 
-#if CORE || GDI
         void InitializeFromGdi()
         {
             try
@@ -124,7 +120,7 @@ namespace PdfSharp.Drawing
             }
             finally { Lock.ExitFontFactory(); }
         }
-#endif
+
 
         void CreateDescriptorAndInitializeFontMetrics()    
         {
@@ -249,19 +245,14 @@ namespace PdfSharp.Drawing
         public double GetHeight()
         {
             double value = CellSpace * _emSize / UnitsPerEm;
-#if CORE || NETFX_CORE || UWP
             return value;
-#endif
         }
 
         [Obsolete("Use GetHeight() without parameter.")]
         public double GetHeight(XGraphics graphics)
         {
-#if true
             throw new InvalidOperationException("Honestly: Use GetHeight() without parameter!");
-#else
 
-#endif
         }
 
         [Browsable(false)]
@@ -304,7 +295,6 @@ namespace PdfSharp.Drawing
         internal XStyleSimulations StyleSimulations;
 
 
-#if CORE || GDI
         public GdiFontFamily GdiFontFamily
         {
             get { return _gdiFontFamily; }
@@ -326,13 +316,11 @@ namespace PdfSharp.Drawing
               (font.Underline ? XFontStyle.Underline : 0);
         }
 
-#if true || UseGdiObjects
         public static implicit operator XFont(GdiFont font)
         {
             return new XFont(font);
         }
-#endif
-#endif
+
         internal string Selector
         {
             get { return _selector; }

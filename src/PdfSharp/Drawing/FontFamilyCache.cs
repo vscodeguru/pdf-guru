@@ -1,15 +1,9 @@
+using PdfSharp.Internal;
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
-using System.Globalization;
-using System.IO;
 using System.Text;
-using PdfSharp.Fonts;
-using PdfSharp.Fonts.OpenType;
-using PdfSharp.Internal;
-using PdfSharp.Pdf;
-
 namespace PdfSharp.Drawing
+
 {
     internal sealed class FontFamilyCache
     {

@@ -32,9 +32,8 @@ namespace PdfSharp.Pdf
             Initialize();
             Info.CreationDate = _creation;
 
-#if !NETFX_CORE
             _outStream = new FileStream(filename, FileMode.Create);
-#endif
+
         }
 
         public PdfDocument(Stream outputStream)
@@ -129,20 +128,18 @@ namespace PdfSharp.Pdf
             }
         }
 
-#if true 
         public void Save(string path)
         {
             if (!CanModify)
                 throw new InvalidOperationException(PSSR.CannotModify);
 
-#if !NETFX_CORE
             using (Stream stream = new FileStream(path, FileMode.Create, FileAccess.Write, FileShare.None))
             {
                 Save(stream);
             }
-#endif
+
         }
-#endif
+
         public void Save(Stream stream, bool closeStream)
         {
             if (!CanModify)
@@ -167,11 +164,9 @@ namespace PdfSharp.Pdf
                 if (stream != null)
                 {
                     if (closeStream)
-#if UWP
- 
-#else
+
                         stream.Close();
-#endif
+
                     else
                     {
                         if (stream.CanRead && stream.CanSeek)
@@ -278,12 +273,10 @@ namespace PdfSharp.Pdf
 
             Catalog.PrepareForSave();
 
-#if true
             int removed = _irefTable.Compact();
             if (removed != 0)
                 Debug.WriteLine("PrepareForSave: Number of deleted unreachable objects: " + removed);
             _irefTable.Renumber();
-#endif
         }
 
         public bool CanSave(ref string message)

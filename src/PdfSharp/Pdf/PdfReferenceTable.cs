@@ -179,7 +179,6 @@ namespace PdfSharp.Pdf
             int count = collection.Count;
             PdfReference[] irefs = new PdfReference[count];
             collection.CopyTo(irefs, 0);
-#if true
             for (int i = 0; i < count; i++)
                 for (int j = 0; j < count; j++)
                     if (i != j)
@@ -193,7 +192,6 @@ namespace PdfSharp.Pdf
                         Debug.Assert(ReferenceEquals(irefs[i].Document, irefs[j].Document));
                         GetType();
                     }
-#endif
         }
 
         public PdfReference[] TransitiveClosure(PdfObject pdfObject)

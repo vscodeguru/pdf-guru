@@ -2,7 +2,6 @@
 using System.Diagnostics;
 using System.Collections.Generic;
 
-
 using PdfSharp.Internal;
 
 namespace PdfSharp.Drawing
