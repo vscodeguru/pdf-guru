@@ -561,18 +561,15 @@ namespace PdfSharp.Pdf.Advanced
 
         internal void WriteBits(uint value, uint bits)
         {
-#if true
 
             if (bits + _bitsInBuffer > 8)
             {
                 uint bitsNow = 8 - _bitsInBuffer;
                 uint bitsRemainder = bits - bitsNow;
                 WriteBits(value >> (int)(bitsRemainder), bitsNow);   
-#if USE_GOTO
-#else
+
         WriteBits(value, bitsRemainder);
         return;
-#endif
             }
 
             _buffer = (_buffer << (int)bits) + (value & masks[bits]);
@@ -584,7 +581,6 @@ namespace PdfSharp.Pdf.Advanced
                 _bitsInBuffer = 0;
                 ++_bytesOffsetWrite;
             }
-#endif
         }
 
         internal void WriteTableLine(uint[] table, uint line)
